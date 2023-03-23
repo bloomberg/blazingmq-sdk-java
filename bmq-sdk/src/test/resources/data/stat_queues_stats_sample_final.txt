@@ -1,0 +1,8 @@
+::::: Queues >>
+                          |          In         |                    Out                  
+                          |    bytes  | messages|    bytes  |  messages| compression ratio
+--------------------------+-----------+---------+-----------+----------+------------------
+queues                    | 122.71 MiB|   12,987|   5.38 GiB| 6,748,707|             4.686
+  (bmq://test/queue1)     |  39.29 KiB|       10|   5.22 GiB| 5,516,361|             5.987
+  bmq://test/queue2?id=foo| 122.46 MiB|   12,323| 166.89 MiB| 1,232,345|             1.789
+  bmq://test/queue1       | 220.34 KiB|      654|     1023 B|         1|             1.556

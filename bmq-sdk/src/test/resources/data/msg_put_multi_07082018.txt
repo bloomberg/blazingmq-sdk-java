@@ -1,0 +1,40 @@
+[PutEvent]
+[EventHeader]
+	FragmentBit  : 0
+	Length       : 256
+	Type         : PUT
+	HeaderWords  : 2
+	TypeSpecific : 0
+[PutHeader]
+	Flags        : 3
+	MessageWords : 31
+	OptionsWords : 0
+	HeaderWords  : 8
+	QueueId      : 9876
+	CorrelationId: 1234
+	Crc32c       : 3469549003
+[PuTMessage]
+Payload : 
+     0:   1b000010 00031000 00040008 14000008     |................|
+    16:   00091800 00080002 656e636f 64696e67     |........encoding|
+    32:   00000003 74696d65 7374616d 70000000     |....timestamp...|
+    48:   00499602 d269646d 79436f6f 6c496401     |.I...idmyCoolId.|
+    64:   61626364 65666768 696a6b6c 6d6e6f70     |abcdefghijklmnop|
+    80:   71727374 75767778 797a0202              |qrstuvwxyz..    |
+
+[PutHeader]
+	Flags        : 3
+	MessageWords : 31
+	OptionsWords : 0
+	HeaderWords  : 8
+	QueueId      : 9876
+	CorrelationId: 1234
+	Crc32c       : 3469549003
+[PuTMessage]
+Payload : 
+     0:   1b000010 00031000 00040008 14000008     |................|
+    16:   00091800 00080002 656e636f 64696e67     |........encoding|
+    32:   00000003 74696d65 7374616d 70000000     |....timestamp...|
+    48:   00499602 d269646d 79436f6f 6c496401     |.I...idmyCoolId.|
+    64:   61626364 65666768 696a6b6c 6d6e6f70     |abcdefghijklmnop|
+    80:   71727374 75767778 797a0202              |qrstuvwxyz..    |

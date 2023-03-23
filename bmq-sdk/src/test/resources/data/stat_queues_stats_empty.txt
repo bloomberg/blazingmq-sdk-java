@@ -1,0 +1,5 @@
+::::: Queues >>
+      |                        In                       |                        Out                      | Compression Ratio
+      | bytes (delta)| bytes| messages (delta)| messages| bytes (delta)| bytes| messages (delta)| messages| delta| total
+------+--------------+------+-----------------+---------+--------------+------+-----------------+---------+------+------
+queues|              |      |                 |         |              |      |                 |         |      |      
