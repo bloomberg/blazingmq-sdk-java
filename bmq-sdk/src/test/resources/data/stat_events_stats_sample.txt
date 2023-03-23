@@ -1,0 +1,9 @@
+::::: Events >>
+  Type   |             delta           |           absolute          
+         |  messages | events|   bytes |  messages | events|   bytes 
+---------+-----------+-------+---------+-----------+-------+---------
+  PUT    | 60,000,002|      3| 3.30 GiB| 60,000,124|     11| 3.30 GiB
+  CONTROL|           |     10|    700 B|           |     16| 1.03 KiB
+  ACK    | 60,000,004|      3| 2.01 GiB| 60,000,109|      6| 2.01 GiB
+  PUSH   |           |       |         |         14|      1|    652 B
+  CONFIRM|           |       |         |          5|      5|    180 B

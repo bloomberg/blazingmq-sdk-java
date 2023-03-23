@@ -1,0 +1,9 @@
+{
+    "bmq.test.mmap.priority": {
+        "mode":           "priority"
+    },
+    "bmq.test.mmap.fanout": {
+        "mode":           "fanout",
+        "fanout.appids":  ["foo", "bar", "baz"]
+    }
+}

@@ -1,0 +1,5 @@
+::::: Event Queue >>
+                      Queue                      |               Queue Time              
+Enqueue Delta| Dequeue Delta| Size| Max| Abs. Max|    Min  |    Avg  |    Max  | Abs. Max
+-------------+--------------+-----+----+---------+---------+---------+---------+---------
+            7|             4|    3|   4|       10| 35.13 us| 42.12 us| 50.05 us| 80.12 us

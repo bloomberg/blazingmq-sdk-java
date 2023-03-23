@@ -1,0 +1,5 @@
+::::: Queues >>
+      |        In      |                 Out               
+      | bytes| messages| bytes| messages| compression ratio
+------+------+---------+------+---------+------------------
+queues|      |         |      |         |                  
