@@ -57,11 +57,11 @@ limitations under the License. -->
     <maven.deploy.skip>true</maven.deploy.skip>
     <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
 
-    <git.url></git.url>
-    <artifactory.central.url></artifactory.central.url>
-    <artifactory.snapshot.url></artifactory.snapshot.url>
+    <git.url />
+    <artifactory.central.url />
+    <artifactory.snapshot.url />
 
-    <sonar.host.url></sonar.host.url>
+    <sonar.host.url />
     <sonar.scm.disabled>true</sonar.scm.disabled>
     <sonar.java.source>8</sonar.java.source>
 
@@ -280,7 +280,7 @@ limitations under the License. -->
           <groupId>com.github.ferstl</groupId>
           <artifactId>depgraph-maven-plugin</artifactId>
           <version>3.3.0</version>
-          <configuration></configuration>
+          <configuration />
           <executions>
             <execution>
               <id>aggregate</id>
@@ -324,16 +324,14 @@ limitations under the License. -->
               <includes>
                 <include>pom.xml</include>
               </includes>
-              <sortPom></sortPom>
+              <sortPom>
+                <!-- Override default values below so maven release plugin can update the pom and build the project -->
+                <expandEmptyElements>false</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+              </sortPom>
             </pom>
-            <markdown>
-              <includes>
-                <include>**/*.md</include>
-              </includes>
-              <flexmark></flexmark>
-            </markdown>
             <java>
-              <toggleOffOn></toggleOffOn>
+              <toggleOffOn />
               <includes>
                 <include>src/main/java*/**/*.java</include>
                 <include>src/test/java/**/*.java</include>
