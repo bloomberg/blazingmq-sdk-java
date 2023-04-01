@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Sample application which connects to BlossomQ broker and consumes messages. Part of the BlossomQ
+ * Sample application which connects to BlazingMQ broker and consumes messages. Part of the BlazingMQ
  * tutorial.
  *
  * <h2>Producer/Consumer use case</h2>
@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * In a nutshell, this example does the following:
  *
  * <ul>
- *   <li>1. Connects to BlossomQ framework
+ *   <li>1. Connects to BlazingMQ framework
  *   <li>2. Opens queue in read mode
  *   <li>3. Consumes messages from the queue
  * </ul>
@@ -77,7 +77,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Finally, {@code Consumer} implements {@link AutoCloseable} interface. When used in
  * 'try-with-resources' statement, {@link #close} method will be called automatically after
- * execution of the block. Thus the connection to BlossomQ framework will be properly closed.
+ * execution of the block. Thus the connection to BlazingMQ framework will be properly closed.
  */
 public class Consumer
         implements AutoCloseable, SessionEventHandler, QueueEventHandler, PushMessageHandler {
@@ -232,7 +232,7 @@ public class Consumer
         }
 
         if (session != null) {
-            // Gracefully disconnect from the BlossomQ broker and stop the operation of this session
+            // Gracefully disconnect from the BlazingMQ broker and stop the operation of this session
             logger.info("Stopping session");
 
             // Sometimes it's not possible to stop the session, so an exception may be thrown
@@ -277,10 +277,10 @@ public class Consumer
             // Expect user input in UTF8 encoding
             sc.nextLine();
         } catch (BMQException e) {
-            // Catch BlossomQ specific exception first
+            // Catch BlazingMQ specific exception first
             logger.error("BMQException: {}, StackTrace: {}", e.getMessage(), Util.getStackTrace(e));
 
-            // BlossomQ related handling code
+            // BlazingMQ related handling code
         } catch (Exception e) {
             // Catch other exceptions
             logger.error("Exception: {}, StackTrace: {}", e.getMessage(), Util.getStackTrace(e));

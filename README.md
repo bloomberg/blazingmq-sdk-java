@@ -1,12 +1,12 @@
-# BlossomQ Java SDK
+# BlazingMQ Java SDK
 
 This repository provides the official Java client library as well as examples
-for applications to interact with BlossomQ.  BlossomQ is an open source message
-queue system with focus on efficiency, reliability and rich feature set.
-Please see BlossomQ [documentation](www.github.com/bloomberg/blossomq) for more
-details about BlossomQ.
+for applications to interact with BlazingMQ.  BlazingMQ is an open source
+message queue system with focus on efficiency, reliability and rich feature
+set.  Please see BlazingMQ [documentation](www.github.com/bloomberg/blazingmq)
+for more details about BlazingMQ.
 
-This Java client is fully supported by BlossomQ team and we aim to provide
+This Java client is fully supported by BlazingMQ team and we aim to provide
 feature and/or API parity with our C++ client library.
 
 ## Menu
@@ -23,7 +23,7 @@ feature and/or API parity with our C++ client library.
 
 This repository contains two modules:
 
-- `bmq-sdk`: contains BlossomQ Java client library code
+- `bmq-sdk`: contains BlazingMQ Java client library code
 - `bmq-examples`: contains sample producer and consumer clients
 
 ### Build and Install the JARs
@@ -52,13 +52,13 @@ $ mvn exec:java -Dexec.mainClass="com.bloomberg.bmq.examples.Producer"
 ```
 
 Above command expects that `bmq-sdk` JAR is installed locally.  Also note that
-BlossomQ backend must be running for producer/consumer examples to run
+BlazingMQ backend must be running for producer/consumer examples to run
 successfully.
 
-### Building BlossomQ Backend
+### Building BlazingMQ Backend
 
-Detailed instructions to build BlossomQ backend (BlossomQ message brokers, etc)
-can be found [here](www.github.com/bloomberg/blossomq).
+Detailed instructions to build BlazingMQ backend (BlazingMQ message brokers,
+etc) can be found [here](www.github.com/bloomberg/blazingmq).
 
 ### Supported JDKs
 

@@ -20,8 +20,8 @@ limitations under the License. -->
   <version>0.0.10-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>BlossomQ Java SDK Bundle</name>
-  <description>BlossomQ Java SDK Bundle</description>
+  <name>BlazingMQ Java SDK Bundle</name>
+  <description>BlazingMQ Java SDK Bundle</description>
   <organization>
     <name>Bloomberg L.P.</name>
   </organization>

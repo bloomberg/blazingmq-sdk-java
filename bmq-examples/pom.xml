@@ -26,8 +26,8 @@ limitations under the License. -->
   <version>0.0.10-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>BlossomQ Java SDK Examples</name>
-  <description>Examples of Java SDK for using BlossomQ</description>
+  <name>BlazingMQ Java SDK Examples</name>
+  <description>Examples of Java SDK for using BlazingMQ</description>
   <organization>
     <name>Bloomberg L.P.</name>
   </organization>
