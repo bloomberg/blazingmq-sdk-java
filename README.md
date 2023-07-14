@@ -1,13 +1,32 @@
+<p align="center">
+  <a href="https://bloomberg.github.io/blazingmq">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/images/blazingmq_logo_label_dark.svg">
+      <img src="assets/images/blazingmq_logo_label.svg" width="70%">
+    </picture>
+  </a>
+</p>
+
+---
+
+[![BlazingMQ](https://github.com/bloomberg/blazingmq)](BlazingMQ)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
+![Java](https://img.shields.io/badge/Java-blue)
+![Maven](https://img.shields.io/badge/Maven-blue)
+![MessageQueue](https://img.shields.io/badge/MessageQueue-blue)
+[![Documentation](https://img.shields.io/badge/Documentation-blue)](https://bloomberg.github.io/blazingmq)
+
 # BlazingMQ Java SDK
 
 This repository provides the official Java client library as well as examples
 for applications to interact with BlazingMQ.  BlazingMQ is an open source
 message queue system with focus on efficiency, reliability and rich feature
-set.  Please see BlazingMQ [documentation](www.github.com/bloomberg/blazingmq)
-for more details about BlazingMQ.
+set.  Please see BlazingMQ [repo](www.github.com/bloomberg/blazingmq) and
+[documentation](https://bloomberg.github.io/blazingmq) and for more details
+about BlazingMQ.
 
-This Java client is fully supported by BlazingMQ team and we aim to provide
-feature and/or API parity with our C++ client library.
+This Java client is fully supported by the BlazingMQ team and we provide
+feature and/or API parity with the BlazingMQ C++ client library.
 
 ## Menu
 
@@ -157,4 +176,3 @@ vulnerability reports private until we've had an opportunity to review and
 address them.
 
 ---
-
