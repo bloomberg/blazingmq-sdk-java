@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_test:
+    name: "Check if BlazingMQ Java SDK can build and pass unit tests with JDK ${{ matrix.Java }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '8', '11', '17' ]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: ${{ matrix.java }}
+    - name: Build and Test with Maven
+      run:  mvn -B -q -Dspotbugs.skip=true -Dspotless.check.skip=true test
