@@ -9,7 +9,7 @@
 
 ---
 
-[![BlazingMQ](https://github.com/bloomberg/blazingmq)](BlazingMQ)
+[![BlazingMQ](https://img.shields.io/badge/BlazingMQ-blue)](https://github.com/bloomberg/blazingmq)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
 ![Java](https://img.shields.io/badge/Java-blue)
 ![Maven](https://img.shields.io/badge/Maven-blue)
