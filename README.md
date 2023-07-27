@@ -21,7 +21,7 @@
 This repository provides the official Java client library as well as examples
 for applications to interact with BlazingMQ.  BlazingMQ is an open source
 message queue system with focus on efficiency, reliability and rich feature
-set.  Please see BlazingMQ [repo](www.github.com/bloomberg/blazingmq) and
+set.  Please see BlazingMQ [repo](https://github.com/bloomberg/blazingmq) and
 [documentation](https://bloomberg.github.io/blazingmq) and for more details
 about BlazingMQ.
 
