@@ -11,9 +11,9 @@
 
 [![BlazingMQ](https://img.shields.io/badge/BlazingMQ-blue)](https://github.com/bloomberg/blazingmq)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
-![Java](https://img.shields.io/badge/Java-blue)
-![Maven](https://img.shields.io/badge/Maven-blue)
-![MessageQueue](https://img.shields.io/badge/MessageQueue-blue)
+[![Java](https://img.shields.io/badge/Java-blue)](#)
+[![Maven](https://img.shields.io/badge/Maven-blue)](#)
+[![MessageQueue](https://img.shields.io/badge/MessageQueue-blue)](#)
 [![Documentation](https://img.shields.io/badge/Documentation-blue)](https://bloomberg.github.io/blazingmq)
 
 # BlazingMQ Java SDK
@@ -168,7 +168,7 @@ in the project, please contact us at opensource@bloomberg.net.
 ## Security Vulnerability Reporting
 
 If you believe you have identified a security vulnerability in this project,
-please send email to the project team at opensource@bloomberg.net, detailing
+please send an email to the project team at opensource@bloomberg.net, detailing
 the suspected issue and any methods you've found to reproduce it.
 
 Please do NOT open an issue in the GitHub repository, as we'd prefer to keep
