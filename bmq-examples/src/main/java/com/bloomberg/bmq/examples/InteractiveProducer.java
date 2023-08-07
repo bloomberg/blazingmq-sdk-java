@@ -91,7 +91,7 @@ public class InteractiveProducer
         implements AutoCloseable, SessionEventHandler, QueueEventHandler, AckMessageHandler {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    static final Uri uri = new Uri("bmq://bmq.tutorial.hello/test-queue");
+    static final Uri uri = new Uri("bmq://bmq.test.mem.priority/test-queue");
 
     AbstractSession session;
     Queue queue;
