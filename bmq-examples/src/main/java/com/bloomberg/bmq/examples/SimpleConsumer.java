@@ -87,7 +87,7 @@ public class SimpleConsumer {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        final Uri uri = new Uri("bmq://bmq.tutorial.hello/queue-simple");
+        final Uri uri = new Uri("bmq://bmq.test.mem.priority/queue-simple");
         final Duration TIMEOUT = Duration.ofSeconds(15); // 15 seconds
         final int MSG_TIMEOUT = 60; // 60 seconds
 

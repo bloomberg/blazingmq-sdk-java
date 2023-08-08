@@ -65,7 +65,7 @@ public class SimpleProducer {
     }
 
     public static void main(String[] args) {
-        final Uri uri = new Uri("bmq://bmq.tutorial.hello/queue-simple");
+        final Uri uri = new Uri("bmq://bmq.test.mem.priority/queue-simple");
         final Duration TIMEOUT = Duration.ofSeconds(15); // 15 seconds
 
         String brokerUri = System.getenv("BMQ_BROKER_URI");
