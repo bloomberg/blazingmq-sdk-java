@@ -25,7 +25,7 @@ jobs:
   #     with:
   #       distribution: 'zulu'
   #       java-version: ${{ matrix.java }}
-  #   - name: Build and Test with Maven
+  #   - name: Build and run unit tests with Maven
   #     run:  mvn -B -q -Dspotbugs.skip=true -Dspotless.check.skip=true test
 
   integration_test:
@@ -45,5 +45,5 @@ jobs:
     - name: Build BlazingMQ docker image
       working-directory: blazingmq
       run: docker compose -f docker/single-node/docker-compose.yaml build
-    - name: Build and Test with Maven
-      run:  mvn -B -q -Dspotbugs.skip=true -Dspotless.check.skip=true integration-test
+    - name: Build and run integration tests with Maven
+      run: mvn -DskipUnitTests=true -Dspotbugs.skip=true -Dit.dockerImage=bmqbrkr:latest verify
