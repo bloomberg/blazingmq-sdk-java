@@ -26,7 +26,7 @@ jobs:
   #       distribution: 'zulu'
   #       java-version: ${{ matrix.java }}
   #   - name: Build and run unit tests with Maven
-  #     run:  mvn -B -q -Dspotbugs.skip=true -Dspotless.check.skip=true test
+  #     run:  mvn --batch-mode --quiet -Dspotbugs.skip=true -Dspotless.check.skip=true test
 
   integration_test:
     name: "Check if BlazingMQ Java SDK pass integration tests with JDK ${{ matrix.Java }}"
@@ -46,4 +46,4 @@ jobs:
       working-directory: blazingmq
       run: docker compose -f docker/single-node/docker-compose.yaml build
     - name: Build and run integration tests with Maven
-      run: mvn -DskipUnitTests=true -Dspotbugs.skip=true -Dit.dockerImage=bmqbrkr:latest verify
+      run: mvn --batch-mode --quiet -DskipUnitTests=true -Dspotbugs.skip=true -Dit.dockerImage=bmqbrkr:latest verify

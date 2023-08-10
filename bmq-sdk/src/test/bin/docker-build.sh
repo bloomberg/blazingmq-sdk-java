@@ -32,4 +32,5 @@ cd "$(dirname "$0")"/../docker
 
 docker --version
 docker info
-docker build --pull --tag bmq-broker-java-it --build-arg "image=$image" .
+# Remove --pull if docker registry is used
+docker build --tag bmq-broker-java-it --build-arg "image=$image" .
