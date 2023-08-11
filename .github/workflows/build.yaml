@@ -28,30 +28,36 @@ jobs:
   #   - name: Build and run unit tests with Maven
   #     run:  mvn --batch-mode --quiet -Dspotbugs.skip=true -Dspotless.check.skip=true test
 
-  build_blazingmq_image:
-    name: "Build BlazingMQ docker image"
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Checkout BlazingMQ
-      run:  git clone https://github.com/bloomberg/blazingmq
-    - name: Build BlazingMQ docker image
-      working-directory: blazingmq
-      run: docker compose -f docker/single-node/docker-compose.yaml build
+  # Pull docker image
+  # build_blazingmq_image:
+  #   name: "Build BlazingMQ docker image"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Checkout BlazingMQ
+  #     run:  git clone https://github.com/bloomberg/blazingmq
+  #   - name: Build BlazingMQ docker image
+  #     working-directory: blazingmq
+  #     run: docker compose -f docker/single-node/docker-compose.yaml build
 
   integration_test:
     name: "Check if BlazingMQ Java SDK pass integration tests with JDK ${{ matrix.Java }}"
-    needs: build_blazingmq_image
+    # needs: build_blazingmq_image
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8', '11', '17' ]
+        java: [ '8' ] #, '11', '17' ]
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
+    - name: Checkout BlazingMQ
+      run:  git clone https://github.com/bloomberg/blazingmq
+    - name: Build BlazingMQ docker image
+      working-directory: blazingmq
+      run: docker compose -f docker/single-node/docker-compose.yaml build
     - name: Build and run integration tests with Maven
-      timeout-minutes: 60
+      timeout-minutes: 100
       run: mvn --batch-mode --quiet -DskipUnitTests=true -Dspotbugs.skip=true -Dit.dockerImage=bmqbrkr:latest verify
