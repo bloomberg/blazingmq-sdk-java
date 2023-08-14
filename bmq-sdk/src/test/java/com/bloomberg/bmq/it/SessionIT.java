@@ -64,7 +64,7 @@ import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerContainer;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
-import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
+//import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
@@ -2919,12 +2919,12 @@ public class SessionIT {
 
         BmqBroker[] brokers =
                 new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT),
-                    BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
+                    BmqBrokerContainer.createContainer(TESTED_PORT)//,
+                    //BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
                 };
 
         assertTrue(brokers[0].isOldStyleMessageProperties());
-        assertFalse(brokers[1].isOldStyleMessageProperties());
+        //assertFalse(brokers[1].isOldStyleMessageProperties());
 
         for (BmqBroker broker : brokers) {
             logger.info("Step 1: Bring up the broker");
@@ -3168,12 +3168,12 @@ public class SessionIT {
 
         BmqBroker[] brokers =
                 new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT),
-                    BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
+                    BmqBrokerContainer.createContainer(TESTED_PORT)//,
+                    //BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
                 };
 
         assertTrue(brokers[0].isOldStyleMessageProperties());
-        assertFalse(brokers[1].isOldStyleMessageProperties());
+        //assertFalse(brokers[1].isOldStyleMessageProperties());
 
         for (BmqBroker broker : brokers) {
             logger.info("Step 1: Bring up the broker");

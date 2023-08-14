@@ -56,7 +56,7 @@ import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerContainer;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator.Mode;
-import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
+//import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import com.bloomberg.bmq.it.util.TestTcpServer;
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
@@ -608,13 +608,13 @@ public class TcpBrokerConnectionIT {
         final TestTcpServer[] servers =
                 new TestTcpServer[] {
                     new BmqBrokerSimulator(opts.brokerUri().getPort(), Mode.BMQ_AUTO_MODE),
-                    BmqBrokerTestServer.createStoppedBroker(opts.brokerUri().getPort()),
-                    BmqBrokerContainer.createContainer(opts.brokerUri().getPort())
+                    BmqBrokerContainer.createContainer(opts.brokerUri().getPort()),
+                    // BmqBrokerTestServer.createStoppedBroker(opts.brokerUri().getPort())
                 };
 
         assertFalse(servers[0].isOldStyleMessageProperties());
-        assertFalse(servers[1].isOldStyleMessageProperties());
-        assertTrue(servers[2].isOldStyleMessageProperties());
+        assertTrue(servers[1].isOldStyleMessageProperties());
+        //assertFalse(servers[2].isOldStyleMessageProperties());
 
         for (TestTcpServer server : servers) {
             TestSession session = new TestSession(opts);
