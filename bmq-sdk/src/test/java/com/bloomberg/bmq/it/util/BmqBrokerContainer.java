@@ -132,10 +132,10 @@ public class BmqBrokerContainer implements BmqBroker {
             basePath = getBbDataTmp();
         }
 
-        // If null, then use tmp directory in home location (~/tmp/bmq-broker)
+        // If null, then use tmp directory in home location (/tmp/bmq-broker)
         if (basePath == null) {
-            basePath = Paths.get("~/tmp/bmq-broker");
-            logger.info("Use '~/tmp/bmq-broker' location");
+            basePath = Paths.get("/tmp/bmq-broker");
+            logger.info("Use '/tmp/bmq-broker' location");
         }
 
         tempDir =
