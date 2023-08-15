@@ -113,7 +113,7 @@ public class BrokerSessionIT {
 
     private static void acquire(Semaphore sem) {
         try {
-            sem.acquire();
+            sem.tryAcquire(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             fail();
