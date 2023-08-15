@@ -138,6 +138,9 @@ public class BmqBrokerContainer implements BmqBroker {
             logger.info("Use '/tmp/bmq-broker' location");
         }
 
+        Files.createDirectories(basePath, PosixFilePermissions.asFileAttribute(
+                PosixFilePermissions.fromString("rwxr-xr-x")));
+
         tempDir =
                 Files.createTempDirectory(
                         basePath, // base path
