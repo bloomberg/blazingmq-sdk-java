@@ -3,4 +3,9 @@ FROM ${image}
 
 ENV BMQ_DOCKER_TMPDIR=/tmp/bmq-broker
 
-COPY domains.json /opt/bb/etc/bmq/domains.json
+COPY config/ /etc/local/bmq/
+RUN ls -la /etc/local/bmq/*
+
+CMD [ "/usr/local/bin/bmqbrkr"  \
+    , "/etc/local/bmq"          \
+    ]
