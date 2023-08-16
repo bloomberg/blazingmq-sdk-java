@@ -362,7 +362,7 @@ limitations under the License. -->
             <!-- this line interferes with jacoco execution -->
             <skip>${skipUnitTests}</skip>
             <parallel>classesAndMethods</parallel>
-            <threadCount>6</threadCount>
+            <threadCount>1</threadCount>
             <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
