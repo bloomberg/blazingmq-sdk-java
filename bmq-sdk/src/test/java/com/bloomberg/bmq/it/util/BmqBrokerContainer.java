@@ -105,8 +105,6 @@ public class BmqBrokerContainer implements BmqBroker {
                 client.createContainerCmd(IMAGE_NAME)
                         .withName(name)
                         .withHostConfig(hostConfig)
-                        .withAttachStdout(true)
-                        .withAttachStderr(true)
                         .exec()
                         .getId();
 
@@ -325,6 +323,7 @@ public class BmqBrokerContainer implements BmqBroker {
                             try {
                                 out.append(item.toString());
                                 out.newLine();
+                                logger.info("#Container{}: {}", containerName, item);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
