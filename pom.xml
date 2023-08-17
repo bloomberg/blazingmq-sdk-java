@@ -70,7 +70,7 @@ limitations under the License. -->
     <!-- Rerun failed unit tests up to 3 times -->
     <surefire.rerunFailingTestsCount>3</surefire.rerunFailingTestsCount>
 
-    <failsafe.forkCount>4</failsafe.forkCount>
+    <failsafe.forkCount>1</failsafe.forkCount>
 
     <!-- Rerun failed integrations tests up to 3 times -->
     <failsafe.rerunFailingTestsCount>3</failsafe.rerunFailingTestsCount>

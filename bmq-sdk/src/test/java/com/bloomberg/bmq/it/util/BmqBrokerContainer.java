@@ -105,6 +105,8 @@ public class BmqBrokerContainer implements BmqBroker {
                 client.createContainerCmd(IMAGE_NAME)
                         .withName(name)
                         .withHostConfig(hostConfig)
+                        .withAttachStdout(true)
+                        .withAttachStderr(true)
                         .exec()
                         .getId();
 
