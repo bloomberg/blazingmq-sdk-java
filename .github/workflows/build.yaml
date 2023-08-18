@@ -55,16 +55,27 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: Checkout BlazingMQ
       run:  git clone https://github.com/bloomberg/blazingmq
-    - name: Build BlazingMQ docker image
+
+    - name: Build base BlazingMQ docker image
       working-directory: blazingmq
       run: docker compose -f docker/single-node/docker-compose.yaml build
+
+    - name: Build IT image
+      working-directory: bmq-sdk/src/test/docker
+      run: docker build --tag bmq-broker-java-it --build-arg "image=bmqbrkr:latest" .
+
+    - name: Run IT image
+      run: docker run bmq-broker-java-it:latest
+
     - name: Build and run integration tests with Maven
       timeout-minutes: 120
       run: mvn --batch-mode --quiet -DskipUnitTests=true -Dspotbugs.skip=true -Dspotless.check.skip=true -Dit.dockerImage=bmqbrkr:latest verify
+
     - name: Compress collected broker logs
       if: success() || failure()
       working-directory: /tmp/bmq-broker
       run: tar -zcvf broker_logs.tar.gz /tmp/bmq-broker/bmq-broker-java-it*
+
     - name: Upload broker logs as artifacts
       if: success() || failure()
       uses: actions/upload-artifact@v3
