@@ -64,9 +64,6 @@ jobs:
       working-directory: bmq-sdk/src/test/docker
       run: docker build --tag bmq-broker-java-it --build-arg "image=bmqbrkr:latest" .
 
-    - name: Run IT image
-      run: docker run bmq-broker-java-it:latest
-
     - name: Build and run integration tests with Maven
       timeout-minutes: 120
       run: mvn --batch-mode --quiet -DskipUnitTests=true -Dspotbugs.skip=true -Dspotless.check.skip=true -Dit.dockerImage=bmqbrkr:latest verify
