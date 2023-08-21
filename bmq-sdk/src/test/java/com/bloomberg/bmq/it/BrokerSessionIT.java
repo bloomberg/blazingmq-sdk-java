@@ -241,9 +241,9 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueAsyncTest.");
         logger.info("=================================================================");
 
-        final int TESTED_PORT = 30114;
+        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(SystemUtil.getEphemeralPort(), Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
@@ -337,8 +337,6 @@ public class BrokerSessionIT {
             verifyConfigureRequest(++reqId, server.nextClientRequest());
             verifyConfigureRequest(++reqId, server.nextClientRequest());
             verifyCloseRequest(++reqId, server.nextClientRequest(), queue.getParameters());
-
-            logger.info("#TESTED_PORT 30114");
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {

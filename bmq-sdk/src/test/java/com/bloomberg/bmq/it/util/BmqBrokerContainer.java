@@ -323,7 +323,6 @@ public class BmqBrokerContainer implements BmqBroker {
                             try {
                                 out.append(item.toString());
                                 out.newLine();
-                                logger.info("#Container{}: {}", containerName, item);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
