@@ -47,17 +47,25 @@ class NetResolver {
         resolvedHosts.clear();
         isUnknownHost = false;
 
-        if (uri != null) {
-            String host = uri.getHost();
-            if (host == null) {
-                host = uri.getPath();
-            }
-            try {
-                resolvedHosts.addAll(Arrays.asList(InetAddress.getAllByName(host)));
-            } catch (UnknownHostException e) {
+        if (uri == null) {
+            return;
+        }
+
+        String host = uri.getHost();
+        if (host == null) {
+            host = uri.getPath();
+            if (host == null || host.isEmpty()) {
                 isUnknownHost = true;
-                logger.warn("Failed to resolve host {}: {}", host, e);
+                logger.warn("Failed to get host from uri: {}", uri);
+                return;
             }
+        }
+
+        try {
+            resolvedHosts.addAll(Arrays.asList(InetAddress.getAllByName(host)));
+        } catch (UnknownHostException e) {
+            isUnknownHost = true;
+            logger.warn("Failed to resolve host {}: {}", host, e);
         }
     }
 

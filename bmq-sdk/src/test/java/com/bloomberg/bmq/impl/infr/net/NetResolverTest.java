@@ -43,7 +43,7 @@ public class NetResolverTest {
         assertNull(uri);
 
         String[] uris = {
-            "tcp://localhost:30114", "www.bloomberg.com", "tcp://255.255.255.255:30114"
+            "tcp://localhost:30114", "www.apache.org", "tcp://255.255.255.255:30114"
         };
 
         try {
@@ -83,12 +83,8 @@ public class NetResolverTest {
                 URI uri = new URI(u);
                 nr.setUri(uri);
 
-                if (nr.isUnknownHost()) {
-                    assertEquals(uri, nr.getNextUri());
-                } else {
-                    // If we reach this line the only resolved host should be localhost
-                    assertEquals("127.0.0.1", nr.getNextUri().getHost());
-                }
+                assertTrue(nr.isUnknownHost());
+                assertEquals(uri, nr.getNextUri());
             } catch (URISyntaxException e) {
                 logger.error(e.toString());
                 fail();
