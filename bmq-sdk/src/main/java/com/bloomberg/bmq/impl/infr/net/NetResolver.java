@@ -15,7 +15,6 @@
  */
 package com.bloomberg.bmq.impl.infr.net;
 
-import com.bloomberg.bmq.impl.infr.net.intf.Resolver;
 import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.URI;
@@ -26,16 +25,14 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class NetResolver implements Resolver {
+class NetResolver {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private URI uri;
-    private LinkedList<InetAddress> resolvedHosts;
+    private final LinkedList<InetAddress> resolvedHosts = new LinkedList<>();
 
-    public NetResolver() {
-        resolvedHosts = new LinkedList<>();
-    }
+    private URI uri;
+    private boolean isUnknownHost;
 
     public void setUri(URI uri) {
         this.uri = uri;
@@ -48,21 +45,30 @@ class NetResolver implements Resolver {
 
     private void init() {
         resolvedHosts.clear();
-        if (uri != null) {
-            String host = uri.getHost();
-            if (host == null) {
-                host = uri.getPath();
+        isUnknownHost = false;
+
+        if (uri == null) {
+            return;
+        }
+
+        String host = uri.getHost();
+        if (host == null) {
+            host = uri.getPath();
+            if (host == null || host.isEmpty()) {
+                isUnknownHost = true;
+                logger.warn("Failed to get host from uri: {}", uri);
+                return;
             }
-            try {
-                resolvedHosts.addAll(Arrays.asList(InetAddress.getAllByName(host)));
-            } catch (UnknownHostException e) {
-                logger.error("Failed to resolve host {}: {}", host, e);
-                throw new IllegalArgumentException("Failed to resolve host " + host);
-            }
+        }
+
+        try {
+            resolvedHosts.addAll(Arrays.asList(InetAddress.getAllByName(host)));
+        } catch (UnknownHostException e) {
+            isUnknownHost = true;
+            logger.warn("Failed to resolve host {}: {}", host, e);
         }
     }
 
-    @Override
     public URI getNextUri() {
         URI nextUri = null;
         if (resolvedHosts.isEmpty()) {
@@ -80,11 +86,15 @@ class NetResolver implements Resolver {
             }
 
         } catch (NoSuchElementException e) {
-            logger.error("Empty host list");
+            logger.warn("Empty host list");
         }
         if (nextUri == null) {
             nextUri = uri;
         }
         return nextUri;
+    }
+
+    public boolean isUnknownHost() {
+        return isUnknownHost;
     }
 }

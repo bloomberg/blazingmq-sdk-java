@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.impl.infr.net;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -42,7 +43,7 @@ public class NetResolverTest {
         assertNull(uri);
 
         String[] uris = {
-            "tcp://localhost:30114", "www.bloomberg.com", "tcp://255.255.255.255:30114"
+            "tcp://localhost:30114", "www.apache.org", "tcp://255.255.255.255:30114"
         };
 
         try {
@@ -81,10 +82,9 @@ public class NetResolverTest {
             try {
                 URI uri = new URI(u);
                 nr.setUri(uri);
-                // If we reach this line the only resolved host should be localhost
-                assertEquals(1, nr.numResolvedHosts());
-                uri = nr.getNextUri();
-                assertEquals("127.0.0.1", uri.getHost());
+
+                assertTrue(nr.isUnknownHost());
+                assertEquals(uri, nr.getNextUri());
             } catch (URISyntaxException e) {
                 logger.error(e.toString());
                 fail();
@@ -92,5 +92,22 @@ public class NetResolverTest {
                 logger.info(e.toString());
             }
         }
+    }
+
+    @Test
+    public void testUnknownHost() throws URISyntaxException, InterruptedException {
+
+        NetResolver nr = new NetResolver();
+        assertFalse(nr.isUnknownHost());
+
+        URI unknown = new URI("tcp://unknownhost:30114");
+        nr.setUri(unknown);
+        assertTrue(nr.isUnknownHost());
+        assertEquals(unknown, nr.getNextUri());
+
+        URI known = new URI("tcp://localhost:30114");
+        nr.setUri(known);
+        assertFalse(nr.isUnknownHost());
+        assertEquals(new URI("tcp://127.0.0.1:30114"), nr.getNextUri());
     }
 }
