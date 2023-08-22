@@ -262,7 +262,7 @@ public class BmqBrokerContainer implements BmqBroker {
 
     @Override
     public boolean isOldStyleMessageProperties() {
-        return true;
+        return false;
     }
 
     @Override
