@@ -613,7 +613,7 @@ public class TcpBrokerConnectionIT {
                 };
 
         assertFalse(servers[0].isOldStyleMessageProperties());
-        assertTrue(servers[1].isOldStyleMessageProperties());
+        assertFalse(servers[1].isOldStyleMessageProperties());
         //assertFalse(servers[2].isOldStyleMessageProperties());
 
         for (TestTcpServer server : servers) {
