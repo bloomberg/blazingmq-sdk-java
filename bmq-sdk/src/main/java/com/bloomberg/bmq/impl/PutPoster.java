@@ -126,12 +126,14 @@ public final class PutPoster {
         int msgCount = putBuilder.messageCount();
         logger.debug("Sending {} PUT messages...", msgCount);
 
+        // TODO: if there is an exception in 'writeBuffer', clean unackedPuts
+        // that were added here but were not sent
+        registerUnackedPuts(packedMsgs);
+        
         writeBuffer(putBuilder.build());
 
         // Update statistics
         eventsStats.onEvent(EventType.PUT, eventLength, msgCount);
-
-        registerSentPuts(packedMsgs);
     }
 
     private void writeBuffer(ByteBuffer[] payload) throws BMQException {
@@ -142,7 +144,7 @@ public final class PutPoster {
         }
     }
 
-    private void registerSentPuts(Collection<PutMessageImpl> msgs) {
+    private void registerUnackedPuts(Collection<PutMessageImpl> msgs) {
         for (PutMessageImpl p : msgs) {
             if (p.correlationId() != null) {
                 unacknowledgedPuts.put(p.correlationId(), p);
