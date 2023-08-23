@@ -280,7 +280,7 @@ public class SessionStressIT {
 
         void validateSingleMode() throws BMQException {
 
-            logger.info("Begin validation. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Begin validation. Memory used: {} MB", TestTools.getUsedMemoryMB());
 
             final int NUM_MESSAGES = pushMessages.size();
 
