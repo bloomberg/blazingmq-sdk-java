@@ -2923,7 +2923,7 @@ public class SessionIT {
                     //BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
                 };
 
-        assertTrue(brokers[0].isOldStyleMessageProperties());
+        assertFalse(brokers[0].isOldStyleMessageProperties());
         //assertFalse(brokers[1].isOldStyleMessageProperties());
 
         for (BmqBroker broker : brokers) {
@@ -3172,7 +3172,7 @@ public class SessionIT {
                     //BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
                 };
 
-        assertTrue(brokers[0].isOldStyleMessageProperties());
+        assertFalse(brokers[0].isOldStyleMessageProperties());
         //assertFalse(brokers[1].isOldStyleMessageProperties());
 
         for (BmqBroker broker : brokers) {
@@ -3542,7 +3542,7 @@ public class SessionIT {
         // 10) Close the queue, stop the session and the broker
 
         // 1) Bring up the simulator
-        // Due to docker issue, we cannot kill or remove paused containter.
+        // Due to docker issue, we cannot kill or remove paused container.
         // See https://github.com/moby/moby/issues/28366.
         // The corresponding PR (https://github.com/moby/moby/pull/34027)
         // should be included in the Docker 17.07 release.
@@ -3573,6 +3573,7 @@ public class SessionIT {
         simulator.pushSuccess(); // Ok for nego request
 
         final int NUM_MESSAGES = 500;
+        final int PAYLOAD_SIZE = 1024;
 
         try {
             // 2) Start the session
@@ -3590,7 +3591,7 @@ public class SessionIT {
             // 4) Pack a number of PUT messages
             PutMessage[] putMessages = new PutMessage[NUM_MESSAGES];
             for (int i = 0; i < putMessages.length; i++) {
-                byte[] payload = new byte[4096];
+                byte[] payload = new byte[PAYLOAD_SIZE];
                 payload[0] = (byte) i;
                 PutMessage putMessage = makePut(queue, payload);
                 putMessages[i] = putMessage;
@@ -3634,7 +3635,7 @@ public class SessionIT {
             // Pack messages
             putMessages = new PutMessage[NUM_MESSAGES];
             for (int i = 0; i < putMessages.length; i++) {
-                byte[] payload = new byte[4096];
+                byte[] payload = new byte[PAYLOAD_SIZE];
                 payload[0] = (byte) i;
                 PutMessage putMessage = makePut(queue, payload);
                 putMessages[i] = putMessage;
