@@ -1128,7 +1128,7 @@ public class TcpBrokerConnectionIT {
             session.start();
 
             session.startStatus();
-            fail("Expected exception during 'start'");
+            fail("Expected exception during start status exchange");
         } catch (IllegalStateException e) {
             assertEquals("Missed start status", e.getMessage());
         }
@@ -1138,7 +1138,7 @@ public class TcpBrokerConnectionIT {
             session.stop();
 
             session.stopStatus();
-            fail("Expected exception during 'stop'");
+            fail("Expected exception during stop status exchange");
         } catch (IllegalStateException e) {
             assertEquals("Missed stop status", e.getMessage());
         }
