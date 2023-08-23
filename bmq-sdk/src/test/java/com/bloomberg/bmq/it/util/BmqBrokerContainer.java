@@ -195,7 +195,7 @@ public class BmqBrokerContainer implements BmqBroker {
 
         // For BlazingMQ broker running in container default tier should be the 'lcl-{guest
         // hostname}'
-        defaultTier = "lcl";
+        defaultTier = "lcl-localhost";
         //defaultTier = "lcl-" + getHostname();
         isStarted = true;
     }
