@@ -1115,8 +1115,8 @@ public class TcpBrokerConnectionIT {
         logger.info("======================================================");
 
         // 1) Create session with a valid but unresolved broker URI
-        // 2) Verify that start call returns CONNECT_FAILURE status
-        // 3) Stop and linger the session
+        // 2) Verify that no start status received with a given timeout
+        // 3) Verify that no stop status received with a given timeout
 
         // 1) Create session with a valid but unresolved broker URI
         SessionOptions opts =
@@ -1124,16 +1124,21 @@ public class TcpBrokerConnectionIT {
         TestSession session = new TestSession(new ConnectionOptions(opts));
 
         try {
-            // 2) Verify that start call returns CONNECT_FAILURE status
+            // 2) Verify that no start status received with a given timeout
             session.start();
 
-            assertEquals(StartStatus.CONNECT_FAILURE, session.startStatus());
+            fail("Expected exception during 'start'");
+        } catch (IllegalStateException e) {
+            assertEquals("Missed start status", e.getMessage());
+        }
 
-        } finally {
-            // 3) Stop and linger the session
+        try {
+            // 3) Verify that no stop status received with a given timeout
             session.stop();
-            assertEquals(StopStatus.SUCCESS, session.stopStatus());
-            assertEquals(GenericResult.SUCCESS, session.linger());
+
+            fail("Expected exception during 'stop'");
+        } catch (IllegalStateException e) {
+            assertEquals("Missed stop status", e.getMessage());
         }
 
         logger.info("====================================================");

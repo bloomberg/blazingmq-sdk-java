@@ -126,11 +126,14 @@ public final class PutPoster {
         int msgCount = putBuilder.messageCount();
         logger.debug("Sending {} PUT messages...", msgCount);
 
-        // TODO: if there is an exception in 'writeBuffer', clean unackedPuts
-        // that were added here but were not sent
         registerUnackedPuts(packedMsgs);
-        
-        writeBuffer(putBuilder.build());
+
+        try {
+            writeBuffer(putBuilder.build());
+        } catch (BMQException e) {
+            removeUnackedPuts(packedMsgs);
+            throw e;
+        }
 
         // Update statistics
         eventsStats.onEvent(EventType.PUT, eventLength, msgCount);
@@ -151,6 +154,15 @@ public final class PutPoster {
             }
         }
         logger.debug("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
+    }
+
+    private void removeUnackedPuts(Collection<PutMessageImpl> msgs) {
+        for (PutMessageImpl p : msgs) {
+            if (p.correlationId() != null) {
+                unacknowledgedPuts.remove(p.correlationId(), p);
+            }
+        }
+        logger.info("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
     }
 
     public void registerAck(AckMessageImpl ackMsg) {
