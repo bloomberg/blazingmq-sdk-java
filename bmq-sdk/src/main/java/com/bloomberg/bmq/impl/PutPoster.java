@@ -124,7 +124,7 @@ public final class PutPoster {
 
         int eventLength = putBuilder.eventLength();
         int msgCount = putBuilder.messageCount();
-        logger.info("Sending {} PUT messages...", msgCount);
+        logger.debug("Sending {} PUT messages...", msgCount);
 
         writeBuffer(putBuilder.build());
 
@@ -148,7 +148,7 @@ public final class PutPoster {
                 unacknowledgedPuts.put(p.correlationId(), p);
             }
         }
-        logger.info("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
+        logger.debug("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
     }
 
     public void registerAck(AckMessageImpl ackMsg) {
