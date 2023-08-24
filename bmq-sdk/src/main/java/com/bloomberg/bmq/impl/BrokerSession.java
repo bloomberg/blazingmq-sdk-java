@@ -368,12 +368,13 @@ public final class BrokerSession
                 (BrokerConnection.StartStatus status) -> {
                     logger.info("Start callback: {}", status);
                     onStartTimeoutFuture.cancel(false);
+                    isStarting.set(false);
                     switch (status) {
                         case SUCCESS:
-                            enqueueConnected();
-
                             // Enabled scheduled stats dumping
                             stats.enableDumping();
+
+                            enqueueConnected();
                             break;
                         case CANCELLED:
                             enqueueCanceled();
@@ -382,7 +383,6 @@ public final class BrokerSession
                             enqueueError();
                             break;
                     }
-                    isStarting.set(false);
                 });
     }
 
@@ -491,13 +491,14 @@ public final class BrokerSession
                             logger.debug("Broker connection stopped.");
 
                             onStopTimeoutFuture.cancel(false);
-                            enqueueDisconnected();
-                            isStopping.set(false);
 
                             // Disable scheduled stats dumping
                             stats.disableDumping();
                             // Print final statistics
                             stats.dumpFinal();
+
+                            isStopping.set(false);
+                            enqueueDisconnected();
                         },
                         scheduler);
 

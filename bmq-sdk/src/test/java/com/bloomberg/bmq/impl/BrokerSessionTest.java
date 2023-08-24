@@ -1487,4 +1487,45 @@ public class BrokerSessionTest {
             obj.session().linger();
         }
     }
+
+    @Test
+    public void testMultipleStartAsync() {
+        final Duration TIMEOUT = Duration.ofSeconds(1);
+        final TestSession testSession = new TestSession();
+
+        testSession.session().startAsync(TIMEOUT);
+        testSession.sendNegotiationRespose(
+                testSession.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
+        testSession.verifySessionEvent(BrokerSessionEvent.Type.e_CONNECTED);
+
+        // Ensure that after receiving CONNECTED event `startAsync` may be called again to receive
+        // CONNECTED
+        // event but not CONNECTION_IN_PROGRESS.
+        for (int i = 0; i < 10000; ++i) {
+            testSession.session().startAsync(TIMEOUT);
+            testSession.verifySessionEvent(BrokerSessionEvent.Type.e_CONNECTED);
+        }
+
+        testSession.stop();
+    }
+
+    @Test
+    public void testMultipleStopAsync() {
+        final Duration TIMEOUT = Duration.ofSeconds(1);
+        final TestSession testSession = new TestSession();
+
+        testSession.start();
+
+        testSession.session.stopAsync(TIMEOUT);
+        testSession.sendDisconnectResponse(testSession.verifyDisconnectRequest());
+        testSession.verifySessionEvent(BrokerSessionEvent.Type.e_DISCONNECTED);
+
+        // Ensure that after receiving DISCONNECTED event `stopAsync` may be called again to receive
+        // DISCONNECTED
+        // event but not DISCONNECTION_IN_PROGRESS.
+        for (int i = 0; i < 10000; ++i) {
+            testSession.session().stopAsync(TIMEOUT);
+            testSession.verifySessionEvent(BrokerSessionEvent.Type.e_DISCONNECTED);
+        }
+    }
 }
