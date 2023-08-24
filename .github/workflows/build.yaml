@@ -62,7 +62,7 @@ jobs:
       run: tar -zcvf broker_logs.tar.gz /tmp/bmq-broker/bmq-broker-java-it*
 
     - name: Upload broker logs as artifacts
-      if: success() || failure()
+      if: failure()
       uses: actions/upload-artifact@v3
       with:
         name: broker_logs
