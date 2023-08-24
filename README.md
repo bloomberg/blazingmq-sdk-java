@@ -77,7 +77,7 @@ successfully.
 ### Building BlazingMQ Backend
 
 Detailed instructions to build BlazingMQ backend (BlazingMQ message brokers,
-etc) can be found [here](www.github.com/bloomberg/blazingmq).
+etc) can be found [here](https://www.github.com/bloomberg/blazingmq).
 
 ### Supported JDKs
 
