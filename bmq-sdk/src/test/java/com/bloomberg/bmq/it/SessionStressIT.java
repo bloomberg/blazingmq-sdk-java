@@ -162,7 +162,7 @@ public class SessionStressIT {
                 String guid = pm.messageGUID().toString();
                 AckMessage lastAck = ackMessages.peekLast();
 
-                logger.info("Got PUSH with GUID: {}", guid);
+                logger.debug("Got PUSH with GUID: {}", guid);
 
                 // Send Confirm
                 if (GenericResult.SUCCESS == pm.confirm()) {
@@ -178,7 +178,7 @@ public class SessionStressIT {
                 }
             } else if (event instanceof AckMessage) {
                 AckMessage msg = (AckMessage) event;
-                logger.info("Got ACK [{}] with GUID: {}", msg.status(), msg.messageGUID());
+                logger.debug("Got ACK [{}] with GUID: {}", msg.status(), msg.messageGUID());
                 ackMessages.add(msg);
             }
             return state;
@@ -259,14 +259,14 @@ public class SessionStressIT {
         }
 
         void printStat() {
-            logger.error("Sent PUTs: {}", putMessages.size());
-            logger.error("Got ACKs : {}", ackMessages.size());
-            logger.error("Got PUSHs: {}", pushMessages.size());
+            logger.info("Sent PUTs: {}", putMessages.size());
+            logger.info("Got ACKs : {}", ackMessages.size());
+            logger.info("Got PUSHs: {}", pushMessages.size());
 
             if (pushMessages.size() > 0) {
-                logger.error("Last PUT : {}", putMessages.peekLast());
-                logger.error("Last ACK : {}", ackMessages.peekLast());
-                logger.error("Last PUSH: {}", pushMessages.peekLast());
+                logger.info("Last PUT : {}", putMessages.peekLast());
+                logger.info("Last ACK : {}", ackMessages.peekLast());
+                logger.info("Last PUSH: {}", pushMessages.peekLast());
             }
         }
 
@@ -280,7 +280,7 @@ public class SessionStressIT {
 
         void validateSingleMode() throws BMQException {
 
-            logger.error("Begin validation. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Begin validation. Memory used: {} MB", TestTools.getUsedMemoryMB());
 
             final int NUM_MESSAGES = pushMessages.size();
 

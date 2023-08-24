@@ -128,7 +128,7 @@ public class BrokerSessionStressIT {
                                 String payload = createPayload(payloadSize, Integer.toString(i));
                                 PutMessageImpl msg =
                                         TestTools.preparePutMessage(payload, isOldStyleProperties);
-                                logger.info("Sending {}", msg);
+                                logger.debug("Sending {}", msg);
 
                                 putMessages.add(msg);
                                 payloads.add(
@@ -163,7 +163,7 @@ public class BrokerSessionStressIT {
                             String guid = pm.messageGUID().toString();
                             AckMessageImpl lastAck = ackMessages.peekLast();
 
-                            logger.info("Got PUSH with GUID: {}", guid);
+                            logger.debug("Got PUSH with GUID: {}", guid);
                             if (guid.endsWith("00000000000000000")) {
                                 logger.error("Got strange PUSH: {}", pm);
                                 logger.error("Previous PUSH: {}", pushMessages.peekLast());
@@ -184,9 +184,9 @@ public class BrokerSessionStressIT {
                             }
                         } else if (event instanceof AckMessageEvent) {
                             AckMessageImpl msg = ((AckMessageEvent) event).rawMessage();
-                            logger.info(
+                            logger.debug(
                                     "Got ACK [{}] with GUID: {}", msg.status(), msg.messageGUID());
-                            logger.info("Got ACK: {}", msg);
+                            logger.debug("Got ACK: {}", msg);
                             ackMessages.add(msg);
                         }
                         break;
