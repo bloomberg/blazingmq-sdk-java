@@ -2706,6 +2706,7 @@ public class BrokerSessionIT {
 
     /**
      * Critical test to check opened queue can be closed if there is a pending configure request.
+     * TODO: is 'just after' done good enough?
      *
      * <ul>
      *   <li>start test server in manual mode
