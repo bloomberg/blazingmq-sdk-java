@@ -121,7 +121,7 @@ public class BmqBrokerContainer implements BmqBroker {
         //  1. If `BMQ_DOCKER_TMPDIR` env var is set and that directory exists,
         //     create temp directory there
         //  2. Else, if `/bb/data/tmp` exists, create temp directory there
-        //  3. Else, create temp directory in home location (~/tmp/bmq-broker)
+        //  3. Else, create temp directory in tmp location (/tmp/bmq-broker)
 
         Path tempDir;
         // Check `BMQ_DOCKER_TMPDIR` first
@@ -132,7 +132,7 @@ public class BmqBrokerContainer implements BmqBroker {
             basePath = getBbDataTmp();
         }
 
-        // If null, then use tmp directory in home location (/tmp/bmq-broker)
+        // If null, then use tmp directory in tmp location (/tmp/bmq-broker)
         if (basePath == null) {
             basePath = Paths.get("/tmp/bmq-broker");
             logger.info("Use '/tmp/bmq-broker' location");
@@ -195,8 +195,7 @@ public class BmqBrokerContainer implements BmqBroker {
 
         // For BlazingMQ broker running in container default tier should be the 'lcl-{guest
         // hostname}'
-        defaultTier = "lcl-localhost";
-        //defaultTier = "lcl-" + getHostname();
+        defaultTier = "lcl-" + getHostname();
         isStarted = true;
     }
 

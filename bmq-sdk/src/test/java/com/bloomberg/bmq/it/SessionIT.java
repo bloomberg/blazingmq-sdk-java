@@ -40,7 +40,6 @@ import com.bloomberg.bmq.PushMessageHandler;
 import com.bloomberg.bmq.PutMessage;
 import com.bloomberg.bmq.Queue;
 import com.bloomberg.bmq.QueueControlEvent;
-import com.bloomberg.bmq.QueueEvent;
 import com.bloomberg.bmq.QueueEventHandler;
 import com.bloomberg.bmq.QueueFlags;
 import com.bloomberg.bmq.QueueOptions;
@@ -64,21 +63,17 @@ import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerContainer;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
-//import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -2919,12 +2914,10 @@ public class SessionIT {
 
         BmqBroker[] brokers =
                 new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT)//,
-                    //BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
+                    BmqBrokerContainer.createContainer(TESTED_PORT)
                 };
 
         assertFalse(brokers[0].isOldStyleMessageProperties());
-        //assertFalse(brokers[1].isOldStyleMessageProperties());
 
         for (BmqBroker broker : brokers) {
             logger.info("Step 1: Bring up the broker");
@@ -3168,12 +3161,10 @@ public class SessionIT {
 
         BmqBroker[] brokers =
                 new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT)//,
-                    //BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
+                    BmqBrokerContainer.createContainer(TESTED_PORT)
                 };
 
         assertFalse(brokers[0].isOldStyleMessageProperties());
-        //assertFalse(brokers[1].isOldStyleMessageProperties());
 
         for (BmqBroker broker : brokers) {
             logger.info("Step 1: Bring up the broker");
