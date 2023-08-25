@@ -57,7 +57,7 @@ jobs:
       run: mvn --batch-mode --quiet -DskipUnitTests=true -Dspotbugs.skip=true -Dspotless.check.skip=true -Dit.dockerImage=bmqbrkr:latest verify
 
     - name: Compress collected broker logs
-      if: success() || failure()
+      if: failure()
       working-directory: /tmp/bmq-broker
       run: tar -zcvf broker_logs.tar.gz /tmp/bmq-broker/bmq-broker-java-it*
 
