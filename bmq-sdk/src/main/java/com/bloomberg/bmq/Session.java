@@ -1219,6 +1219,16 @@ public final class Session implements AbstractSession {
             public Session session() {
                 return Session.this;
             }
+
+            @Override
+            public String toString() {
+                StringBuilder sb = new StringBuilder();
+                sb.append("[ Queue URI: ")
+                        .append(queue().uri())
+                        .append(" ]")
+                        .append(impl.toString());
+                return sb.toString();
+            }
         }
 
         private class PushMessageAdapter implements com.bloomberg.bmq.PushMessage {
@@ -1353,6 +1363,16 @@ public final class Session implements AbstractSession {
             @Override
             public CorrelationId correlationId() {
                 return impl.correlationId();
+            }
+
+            @Override
+            public String toString() {
+                StringBuilder sb = new StringBuilder();
+                sb.append("[ Queue URI: ")
+                        .append(queue().uri())
+                        .append(" ]")
+                        .append(impl.toString());
+                return sb.toString();
             }
         }
 
