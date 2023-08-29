@@ -362,8 +362,9 @@ limitations under the License. -->
             <!-- this line interferes with jacoco execution -->
             <skip>${skipUnitTests}</skip>
             <parallel>classesAndMethods</parallel>
-            <threadCount>1</threadCount>
+            <threadCount>4</threadCount>
             <trimStackTrace>false</trimStackTrace>
+            <useFile>false</useFile>
           </configuration>
         </plugin>
 
@@ -444,6 +445,7 @@ limitations under the License. -->
                 <forkCount>${failsafe.forkCount}</forkCount>
                 <reuseForks>true</reuseForks>
                 <trimStackTrace>false</trimStackTrace>
+                <useFile>false</useFile>
               </configuration>
             </execution>
           </executions>
