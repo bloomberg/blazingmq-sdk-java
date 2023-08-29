@@ -409,6 +409,28 @@ public final class SessionOptions {
         }
 
         /**
+         * Copies another 'SessionOptions' into this builder.
+         *
+         * @param options specifies options which is copied into the builder
+         * @return Builder this object
+         */
+        public Builder copyFrom(SessionOptions options) {
+
+            brokerUri = options.brokerUri;
+            startTimeout = options.startTimeout;
+            stopTimeout = options.stopTimeout;
+            writeWaterMark = options.writeWaterMark;
+            inboundWaterMark = options.inboundWaterMark;
+            statsDumpInterval = options.statsDumpInterval;
+            openQueueTimeout = options.openQueueTimeout;
+            configureQueueTimeout = options.configureQueueTimeout;
+            closeQueueTimeout = options.closeQueueTimeout;
+            hostHealthMonitor = options.hostHealthMonitor;
+
+            return this;
+        }
+
+        /**
          * Sets URI to connect with the broker.
          *
          * @param value URI to set
