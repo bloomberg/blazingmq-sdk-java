@@ -2912,19 +2912,10 @@ public class SessionIT {
 
         final int TESTED_PORT = SystemUtil.getEphemeralPort();
 
-        BmqBroker[] brokers =
-                new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT)
-                };
-
-        assertFalse(brokers[0].isOldStyleMessageProperties());
-
-        for (BmqBroker broker : brokers) {
+        try (BmqBroker broker = BmqBrokerContainer.createContainer(TESTED_PORT)) {
             logger.info("Step 1: Bring up the broker");
-            logger.info(
-                    "Broker: {}, isOldStyleProperties: {}",
-                    broker,
-                    broker.isOldStyleMessageProperties());
+
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -3159,19 +3150,10 @@ public class SessionIT {
 
         final int TESTED_PORT = SystemUtil.getEphemeralPort();
 
-        BmqBroker[] brokers =
-                new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT)
-                };
-
-        assertFalse(brokers[0].isOldStyleMessageProperties());
-
-        for (BmqBroker broker : brokers) {
+        try (BmqBroker broker = BmqBrokerContainer.createContainer(TESTED_PORT)) {
             logger.info("Step 1: Bring up the broker");
-            logger.info(
-                    "Broker: {}, isOldStyleProperties: {}",
-                    broker,
-                    broker.isOldStyleMessageProperties());
+
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
