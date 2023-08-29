@@ -3113,13 +3113,12 @@ public class SessionIT {
 
                 broker.setDropTmpFolder();
             } finally {
-                // try-catch block, broker is not closed here yet
                 logger.info("Step 9: Stop the session and the broker");
 
                 session.stop(DEFAULT_TIMEOUT);
                 session.linger();
             }
-        }
+        } // close broker resource here
 
         logger.info("===================================");
         logger.info("END Testing SessionIT testQueueAck.");
@@ -3207,13 +3206,12 @@ public class SessionIT {
 
                 broker.setDropTmpFolder();
             } finally {
-                // try-catch block, broker is not closed here yet
                 logger.info("Step 9: Stop the session and the broker");
 
                 session.stop(DEFAULT_TIMEOUT);
                 session.linger();
             }
-        }
+        } // close broker resource here
 
         logger.info("===========================================");
         logger.info("END Testing SessionIT testQueueCompression.");
