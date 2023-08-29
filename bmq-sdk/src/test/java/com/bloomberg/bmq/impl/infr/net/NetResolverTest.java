@@ -42,9 +42,7 @@ public class NetResolverTest {
         assertEquals(0, nr.numResolvedHosts());
         assertNull(uri);
 
-        String[] uris = {
-            "tcp://localhost:30114", "www.apache.org", "tcp://255.255.255.255:30114"
-        };
+        String[] uris = {"tcp://localhost:30114", "www.apache.org", "tcp://255.255.255.255:30114"};
 
         try {
             for (String u : uris) {

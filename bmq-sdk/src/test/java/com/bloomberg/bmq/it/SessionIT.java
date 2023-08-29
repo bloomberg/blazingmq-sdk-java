@@ -3113,18 +3113,17 @@ public class SessionIT {
 
                 broker.setDropTmpFolder();
             } finally {
+                // try-catch block, broker is not closed here yet
                 logger.info("Step 9: Stop the session and the broker");
 
                 session.stop(DEFAULT_TIMEOUT);
                 session.linger();
-
-                broker.close();
-
-                logger.info("===================================");
-                logger.info("END Testing SessionIT testQueueAck.");
-                logger.info("===================================");
             }
         }
+
+        logger.info("===================================");
+        logger.info("END Testing SessionIT testQueueAck.");
+        logger.info("===================================");
     }
 
     @Test
@@ -3208,18 +3207,17 @@ public class SessionIT {
 
                 broker.setDropTmpFolder();
             } finally {
+                // try-catch block, broker is not closed here yet
                 logger.info("Step 9: Stop the session and the broker");
 
                 session.stop(DEFAULT_TIMEOUT);
                 session.linger();
-
-                broker.close();
-
-                logger.info("===========================================");
-                logger.info("END Testing SessionIT testQueueCompression.");
-                logger.info("===========================================");
             }
         }
+
+        logger.info("===========================================");
+        logger.info("END Testing SessionIT testQueueCompression.");
+        logger.info("===========================================");
     }
 
     private void sendVerifyPut(

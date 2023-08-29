@@ -19,7 +19,6 @@ import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
