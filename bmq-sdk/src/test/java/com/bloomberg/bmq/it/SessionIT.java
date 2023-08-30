@@ -40,7 +40,6 @@ import com.bloomberg.bmq.PushMessageHandler;
 import com.bloomberg.bmq.PutMessage;
 import com.bloomberg.bmq.Queue;
 import com.bloomberg.bmq.QueueControlEvent;
-import com.bloomberg.bmq.QueueEvent;
 import com.bloomberg.bmq.QueueEventHandler;
 import com.bloomberg.bmq.QueueFlags;
 import com.bloomberg.bmq.QueueOptions;
@@ -64,21 +63,17 @@ import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerContainer;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
-import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -2917,21 +2912,10 @@ public class SessionIT {
 
         final int TESTED_PORT = SystemUtil.getEphemeralPort();
 
-        BmqBroker[] brokers =
-                new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT),
-                    BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
-                };
-
-        assertTrue(brokers[0].isOldStyleMessageProperties());
-        assertFalse(brokers[1].isOldStyleMessageProperties());
-
-        for (BmqBroker broker : brokers) {
+        try (BmqBroker broker = BmqBrokerContainer.createContainer(TESTED_PORT)) {
             logger.info("Step 1: Bring up the broker");
-            logger.info(
-                    "Broker: {}, isOldStyleProperties: {}",
-                    broker,
-                    broker.isOldStyleMessageProperties());
+
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -3133,14 +3117,12 @@ public class SessionIT {
 
                 session.stop(DEFAULT_TIMEOUT);
                 session.linger();
-
-                broker.close();
-
-                logger.info("===================================");
-                logger.info("END Testing SessionIT testQueueAck.");
-                logger.info("===================================");
             }
-        }
+        } // close broker resource here
+
+        logger.info("===================================");
+        logger.info("END Testing SessionIT testQueueAck.");
+        logger.info("===================================");
     }
 
     @Test
@@ -3166,21 +3148,10 @@ public class SessionIT {
 
         final int TESTED_PORT = SystemUtil.getEphemeralPort();
 
-        BmqBroker[] brokers =
-                new BmqBroker[] {
-                    BmqBrokerContainer.createContainer(TESTED_PORT),
-                    BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)
-                };
-
-        assertTrue(brokers[0].isOldStyleMessageProperties());
-        assertFalse(brokers[1].isOldStyleMessageProperties());
-
-        for (BmqBroker broker : brokers) {
+        try (BmqBroker broker = BmqBrokerContainer.createContainer(TESTED_PORT)) {
             logger.info("Step 1: Bring up the broker");
-            logger.info(
-                    "Broker: {}, isOldStyleProperties: {}",
-                    broker,
-                    broker.isOldStyleMessageProperties());
+
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -3239,14 +3210,12 @@ public class SessionIT {
 
                 session.stop(DEFAULT_TIMEOUT);
                 session.linger();
-
-                broker.close();
-
-                logger.info("===========================================");
-                logger.info("END Testing SessionIT testQueueCompression.");
-                logger.info("===========================================");
             }
-        }
+        } // close broker resource here
+
+        logger.info("===========================================");
+        logger.info("END Testing SessionIT testQueueCompression.");
+        logger.info("===========================================");
     }
 
     private void sendVerifyPut(
@@ -3542,7 +3511,7 @@ public class SessionIT {
         // 10) Close the queue, stop the session and the broker
 
         // 1) Bring up the simulator
-        // Due to docker issue, we cannot kill or remove paused containter.
+        // Due to docker issue, we cannot kill or remove paused container.
         // See https://github.com/moby/moby/issues/28366.
         // The corresponding PR (https://github.com/moby/moby/pull/34027)
         // should be included in the Docker 17.07 release.
@@ -3573,6 +3542,7 @@ public class SessionIT {
         simulator.pushSuccess(); // Ok for nego request
 
         final int NUM_MESSAGES = 500;
+        final int PAYLOAD_SIZE = 1024;
 
         try {
             // 2) Start the session
@@ -3590,7 +3560,7 @@ public class SessionIT {
             // 4) Pack a number of PUT messages
             PutMessage[] putMessages = new PutMessage[NUM_MESSAGES];
             for (int i = 0; i < putMessages.length; i++) {
-                byte[] payload = new byte[4096];
+                byte[] payload = new byte[PAYLOAD_SIZE];
                 payload[0] = (byte) i;
                 PutMessage putMessage = makePut(queue, payload);
                 putMessages[i] = putMessage;
@@ -3634,7 +3604,7 @@ public class SessionIT {
             // Pack messages
             putMessages = new PutMessage[NUM_MESSAGES];
             for (int i = 0; i < putMessages.length; i++) {
-                byte[] payload = new byte[4096];
+                byte[] payload = new byte[PAYLOAD_SIZE];
                 payload[0] = (byte) i;
                 PutMessage putMessage = makePut(queue, payload);
                 putMessages[i] = putMessage;
@@ -3952,453 +3922,6 @@ public class SessionIT {
             logger.info("=====================================================");
             logger.info("END Testing SessionIT openCloseMultipleSubqueuesTest.");
             logger.info("=====================================================");
-        }
-    }
-
-    /**
-     * Ensure that users can open priority queue with a tier specified in uri.
-     *
-     * <ul>
-     *   <li>start broker
-     *   <li>create session
-     *   <li>start session
-     *   <li>create and open priority queue with tier for reading and writing
-     *   <li>create and open priority queue w/o tier for reading
-     *   <li>post and receive messages
-     *   <li>close queues
-     *   <li>create and open priority queue with tier for reading and writing
-     *   <li>create and open priority queue w/o tier for reading and writing
-     *   <li>post and receive messages
-     *   <li>close queues
-     *   <li>stop session
-     * </ul>
-     */
-    @Test
-    public void testPriorityQueueTierOverride() throws BMQException, IOException {
-        // TODO: refactor to make it less verbose
-
-        logger.info("======================================================");
-        logger.info("BEGIN Testing SessionIT testPriorityQueueTierOverride.");
-        logger.info("======================================================");
-
-        logger.info("1. start broker");
-        BmqBroker broker = BmqBroker.createStartedBroker();
-
-        final String DOMAIN = BmqBroker.Domains.Priority.value();
-        final String TIER = broker.defaultTier();
-        final String QUEUE = "java-queue";
-
-        final Uri URI = new Uri(String.format("bmq://%s/%s", DOMAIN, QUEUE));
-        final Uri QUALIFIED_URI = new Uri(String.format("bmq://%s.~%s/%s", DOMAIN, TIER, QUEUE));
-
-        logger.info("2. create session");
-        TestSession session = new TestSession(broker.sessionOptions());
-
-        try {
-            logger.info("3. start session");
-            session.start(DEFAULT_TIMEOUT);
-
-            // One queue with tier for reading and writing (post two messages, receive one message)
-            // One queue w/o tier for reading (receive one message)
-            logger.info("4. create and open priority queue with tier for reading and writing");
-            Queue qualifiedQueue = session.getReadWriteQueue(QUALIFIED_URI, true);
-            qualifiedQueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            // Ensure Queue::uri() returns proper value with tier
-            assertEquals(
-                    String.format("bmq://%s.~%s/%s", DOMAIN, TIER, QUEUE),
-                    qualifiedQueue.uri().toString());
-
-            logger.info("5. create and open priority queue w/o tier for reading");
-            Queue queue = session.getReaderQueue(URI);
-            queue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("6. post and receive messages");
-            PutMessage putMsg1 = makePut(qualifiedQueue, "msg1");
-            qualifiedQueue.post(putMsg1);
-            PutMessage putMsg2 = makePut(qualifiedQueue, "msg2");
-            qualifiedQueue.post(putMsg2);
-
-            List<AckMessage> acks = new ArrayList<>();
-            List<PushMessage> pushs = new ArrayList<>();
-
-            // Receive messages
-            for (Event ev; (ev = session.waitAnyEvent(1)) != null; ) {
-                if (ev instanceof AckMessage) {
-                    acks.add((AckMessage) ev);
-                    continue;
-                }
-                if (ev instanceof PushMessage) {
-                    pushs.add((PushMessage) ev);
-                    continue;
-                }
-
-                throw new IllegalStateException("Got unexpected event: " + ev);
-            }
-
-            // Verify ACK messages
-            assertEquals(2, acks.size());
-            verifyReceivedAckMessages(session, qualifiedQueue, acks, putMsg1, putMsg2);
-
-            // Verify PUSH messages
-            assertEquals(2, pushs.size());
-
-            List<Queue> pushQueues =
-                    pushs.stream().map(QueueEvent::queue).collect(Collectors.toList());
-            assertTrue(pushQueues.contains(qualifiedQueue));
-            assertTrue(pushQueues.contains(queue));
-
-            List<String> pushPayloads =
-                    pushs.stream()
-                            .map(m -> StandardCharsets.UTF_8.decode(m.payload()[0]).toString())
-                            .collect(Collectors.toList());
-            assertTrue(pushPayloads.contains("msg1"));
-            assertTrue(pushPayloads.contains("msg2"));
-
-            // Confirm messages
-            for (PushMessage pushMsg : pushs) {
-                assertEquals(GenericResult.SUCCESS, pushMsg.confirm());
-            }
-
-            logger.info("7. close queues");
-            qualifiedQueue.close(DEFAULT_TIMEOUT);
-            queue.close(DEFAULT_TIMEOUT);
-
-            // One queue with tier for reading and writing (post one message, receive one message)
-            // One queue w/o tier for reading and writing (post one message, receive one message)
-            logger.info("8. create and open priority queue with tier for reading and writing");
-            qualifiedQueue = session.getReadWriteQueue(QUALIFIED_URI, true);
-            qualifiedQueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("9. create and open priority queue w/o tier for reading and writing");
-            queue = session.getReadWriteQueue(URI, true);
-            queue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("10. post and receive messages");
-            PutMessage putMsg3 = makePut(qualifiedQueue, "msg3");
-            qualifiedQueue.post(putMsg3);
-            PutMessage putMsg4 = makePut(queue, "msg4");
-            queue.post(putMsg4);
-
-            pushs = new ArrayList<>();
-
-            Map<Queue, List<AckMessage>> queueAcks = new HashMap<>();
-
-            // Receive messages
-            for (Event ev; (ev = session.waitAnyEvent(1)) != null; ) {
-                if (ev instanceof AckMessage) {
-                    AckMessage ackMsg = (AckMessage) ev;
-
-                    // Put ack into queue-acks map
-                    List<AckMessage> ackMessages =
-                            queueAcks.getOrDefault(ackMsg.queue(), new ArrayList<>());
-                    ackMessages.add(ackMsg);
-
-                    queueAcks.putIfAbsent(ackMsg.queue(), ackMessages);
-                    continue;
-                }
-                if (ev instanceof PushMessage) {
-                    pushs.add((PushMessage) ev);
-                    continue;
-                }
-
-                throw new IllegalStateException("Got unexpected event: " + ev);
-            }
-
-            // Verify ACK messages
-            assertEquals(2, queueAcks.size());
-            verifyReceivedAckMessages(
-                    session, qualifiedQueue, queueAcks.get(qualifiedQueue), putMsg3);
-            verifyReceivedAckMessages(session, queue, queueAcks.get(queue), putMsg4);
-
-            // Verify PUSH messages
-            assertEquals(2, pushs.size());
-
-            pushQueues = pushs.stream().map(QueueEvent::queue).collect(Collectors.toList());
-            assertTrue(pushQueues.contains(qualifiedQueue));
-            assertTrue(pushQueues.contains(queue));
-
-            pushPayloads =
-                    pushs.stream()
-                            .map(m -> StandardCharsets.UTF_8.decode(m.payload()[0]).toString())
-                            .collect(Collectors.toList());
-            assertTrue(pushPayloads.contains("msg3"));
-            assertTrue(pushPayloads.contains("msg4"));
-
-            // Confirm messages
-            for (PushMessage pushMsg : pushs) {
-                assertEquals(GenericResult.SUCCESS, pushMsg.confirm());
-            }
-
-            logger.info("11. close queues");
-            qualifiedQueue.close(DEFAULT_TIMEOUT);
-            queue.close(DEFAULT_TIMEOUT);
-
-            broker.setDropTmpFolder();
-
-        } catch (Exception e) {
-            logger.error("Exception", e);
-            throw e;
-        } finally {
-            logger.info("12. stop session");
-            session.stop(DEFAULT_TIMEOUT);
-            session.linger();
-
-            broker.close();
-
-            logger.info("====================================================");
-            logger.info("END Testing SessionIT testPriorityQueueTierOverride.");
-            logger.info("====================================================");
-        }
-    }
-
-    /**
-     * Ensure that users can open fanout queue with a tier specified in uri.
-     *
-     * <ul>
-     *   <li>start broker
-     *   <li>create session
-     *   <li>start session
-     *   <li>create and open fanout queue with tier for writing
-     *   <li>create and open subqueues (FOO with and w/o tier, BAR w/o tier)
-     *   <li>post and receive messages
-     *   <li>close queues
-     *   <li>create and open fanout queues with and w/o tier for writing
-     *   <li>create and open subqueues (FOO with and w/o tier, BAR w/o tier)
-     *   <li>post and receive messages
-     *   <li>close queues
-     *   <li>stop session
-     * </ul>
-     */
-    @Test
-    public void testFanoutQueueTierOverride() throws BMQException, IOException {
-        // TODO: refactor to make it less verbose
-
-        logger.info("====================================================");
-        logger.info("BEGIN Testing SessionIT testFanoutQueueTierOverride.");
-        logger.info("====================================================");
-
-        logger.info("1. start broker");
-        BmqBroker broker = BmqBroker.createStartedBroker();
-
-        final String DOMAIN = BmqBroker.Domains.Fanout.value();
-        final String TIER = broker.defaultTier();
-        final String QUEUE = "java-queue";
-
-        final Uri URI = new Uri(String.format("bmq://%s/%s", DOMAIN, QUEUE));
-        final Uri QUALIFIED_URI = new Uri(String.format("bmq://%s.~%s/%s", DOMAIN, TIER, QUEUE));
-
-        final Uri URI_FOO = new Uri(String.format("%s?id=foo", URI));
-        final Uri URI_BAR = new Uri(String.format("%s?id=bar", URI));
-
-        final Uri QUALIFIED_URI_FOO = new Uri(String.format("%s?id=foo", QUALIFIED_URI));
-
-        logger.info("2. create session");
-        TestSession session = new TestSession(broker.sessionOptions());
-
-        try {
-            logger.info("3. start session");
-            session.start(DEFAULT_TIMEOUT);
-
-            // One queue with tier for writing (post two messages)
-            // FOO subqueue w/o tier (receive one message)
-            // FOO subqueue with tier (receive one message)
-            // BAR subqueue w/o tier (receive two messages)
-            logger.info("4. create and open fanout queue with tier for writing");
-            Queue qualifiedWriteQueue = session.getWriterQueue(QUALIFIED_URI, true);
-            qualifiedWriteQueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("5. create and open subqueues (FOO with and w/o tier, BAR w/o tier)");
-            Queue fooSubqueue = session.getReaderQueue(URI_FOO);
-            fooSubqueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            Queue qualifiedFooSubqueue = session.getReaderQueue(QUALIFIED_URI_FOO);
-            qualifiedFooSubqueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            Queue barSubqueue = session.getReaderQueue(URI_BAR);
-            barSubqueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("6. post and receive messages");
-            PutMessage putMsg1 = makePut(qualifiedWriteQueue, "msg1");
-            qualifiedWriteQueue.post(putMsg1);
-            PutMessage putMsg2 = makePut(qualifiedWriteQueue, "msg2");
-            qualifiedWriteQueue.post(putMsg2);
-
-            List<AckMessage> acks = new ArrayList<>();
-            List<PushMessage> pushs = new ArrayList<>();
-
-            Map<Queue, List<String>> queuePayloads = new HashMap<>();
-
-            // Receive messages
-            for (Event ev; (ev = session.waitAnyEvent(1)) != null; ) {
-                if (ev instanceof AckMessage) {
-                    acks.add((AckMessage) ev);
-                    continue;
-                }
-                if (ev instanceof PushMessage) {
-                    PushMessage pushMsg = (PushMessage) ev;
-                    pushs.add(pushMsg);
-
-                    // Put message payload into queue-payloads map
-                    List<String> payloads =
-                            queuePayloads.getOrDefault(pushMsg.queue(), new ArrayList<>());
-                    String pushPayload =
-                            StandardCharsets.UTF_8.decode(pushMsg.payload()[0]).toString();
-                    payloads.add(pushPayload);
-
-                    queuePayloads.putIfAbsent(pushMsg.queue(), payloads);
-                    continue;
-                }
-
-                throw new IllegalStateException("Got unexpected event: " + ev);
-            }
-
-            // Verify ACK messages
-            assertEquals(2, acks.size());
-            verifyReceivedAckMessages(session, qualifiedWriteQueue, acks, putMsg1, putMsg2);
-
-            // Verify PUSH messages
-            assertEquals(4, pushs.size());
-
-            assertEquals(3, queuePayloads.size());
-
-            List<String> allFooPayloads = new ArrayList<>();
-            allFooPayloads.addAll(queuePayloads.get(fooSubqueue));
-            allFooPayloads.addAll(queuePayloads.get(qualifiedFooSubqueue));
-            assertEquals(2, allFooPayloads.size());
-            assertTrue(allFooPayloads.contains("msg1"));
-            assertTrue(allFooPayloads.contains("msg2"));
-
-            List<String> barPayloads = queuePayloads.get(barSubqueue);
-            assertEquals(2, barPayloads.size());
-            assertTrue(barPayloads.contains("msg1"));
-            assertTrue(barPayloads.contains("msg2"));
-
-            // Confirm messages
-            for (PushMessage pushMsg : pushs) {
-                assertEquals(GenericResult.SUCCESS, pushMsg.confirm());
-            }
-
-            logger.info("7. close queues");
-            qualifiedWriteQueue.close(DEFAULT_TIMEOUT);
-            fooSubqueue.close(DEFAULT_TIMEOUT);
-            qualifiedFooSubqueue.close(DEFAULT_TIMEOUT);
-            barSubqueue.close(DEFAULT_TIMEOUT);
-
-            // One queue w/o tier for writing (post one message)
-            // One queue with tier for writing (post one message)
-            // FOO subqueue w/o tier (receive one message)
-            // FOO subqueue with tier (receive one message)
-            // BAR subqueue w/o tier (receive two messages)
-            logger.info("8. create and open fanout queues with and w/o tier for writing");
-            Queue writeQueue = session.getWriterQueue(URI, true);
-            writeQueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            qualifiedWriteQueue = session.getWriterQueue(QUALIFIED_URI, true);
-            qualifiedWriteQueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("9. create and open subqueues (FOO with and w/o tier, BAR w/o tier)");
-            fooSubqueue = session.getReaderQueue(URI_FOO);
-            fooSubqueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            qualifiedFooSubqueue = session.getReaderQueue(QUALIFIED_URI_FOO);
-            qualifiedFooSubqueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            barSubqueue = session.getReaderQueue(URI_BAR);
-            barSubqueue.open(QUEUE_OPTIONS, DEFAULT_TIMEOUT);
-
-            logger.info("10. post and receive messages");
-            PutMessage putMsg3 = makePut(qualifiedWriteQueue, "msg3");
-            writeQueue.post(putMsg3);
-            PutMessage putMsg4 = makePut(qualifiedWriteQueue, "msg4");
-            qualifiedWriteQueue.post(putMsg4);
-
-            pushs = new ArrayList<>();
-
-            queuePayloads = new HashMap<>();
-
-            Map<Queue, List<AckMessage>> queueAcks = new HashMap<>();
-
-            // Receive messages
-            for (Event ev; (ev = session.waitAnyEvent(1)) != null; ) {
-                if (ev instanceof AckMessage) {
-                    AckMessage ackMsg = (AckMessage) ev;
-
-                    // Put ack into queue-acks map
-                    List<AckMessage> ackMessages =
-                            queueAcks.getOrDefault(ackMsg.queue(), new ArrayList<>());
-                    ackMessages.add(ackMsg);
-
-                    queueAcks.putIfAbsent(ackMsg.queue(), ackMessages);
-                    continue;
-                }
-                if (ev instanceof PushMessage) {
-                    PushMessage pushMsg = (PushMessage) ev;
-                    pushs.add(pushMsg);
-
-                    // Put message payload into queue-payloads map
-                    List<String> payloads =
-                            queuePayloads.getOrDefault(pushMsg.queue(), new ArrayList<>());
-                    String pushPayload =
-                            StandardCharsets.UTF_8.decode(pushMsg.payload()[0]).toString();
-                    payloads.add(pushPayload);
-
-                    queuePayloads.putIfAbsent(pushMsg.queue(), payloads);
-                    continue;
-                }
-
-                throw new IllegalStateException("Got unexpected event: " + ev);
-            }
-
-            // Verify ACK messages
-            assertEquals(2, queueAcks.size());
-            verifyReceivedAckMessages(session, writeQueue, queueAcks.get(writeQueue), putMsg3);
-            verifyReceivedAckMessages(
-                    session, qualifiedWriteQueue, queueAcks.get(qualifiedWriteQueue), putMsg4);
-
-            // Verify PUSH messages
-            assertEquals(4, pushs.size());
-            assertEquals(3, queuePayloads.size());
-
-            allFooPayloads = new ArrayList<>();
-            allFooPayloads.addAll(queuePayloads.get(fooSubqueue));
-            allFooPayloads.addAll(queuePayloads.get(qualifiedFooSubqueue));
-            assertEquals(2, allFooPayloads.size());
-            assertTrue(allFooPayloads.contains("msg3"));
-            assertTrue(allFooPayloads.contains("msg4"));
-
-            barPayloads = queuePayloads.get(barSubqueue);
-            assertEquals(2, barPayloads.size());
-            assertTrue(barPayloads.contains("msg3"));
-            assertTrue(barPayloads.contains("msg4"));
-
-            // Confirm messages
-            for (PushMessage pushMsg : pushs) {
-                assertEquals(GenericResult.SUCCESS, pushMsg.confirm());
-            }
-
-            logger.info("11. close queues");
-            writeQueue.close(DEFAULT_TIMEOUT);
-            qualifiedWriteQueue.close(DEFAULT_TIMEOUT);
-            fooSubqueue.close(DEFAULT_TIMEOUT);
-            qualifiedFooSubqueue.close(DEFAULT_TIMEOUT);
-            barSubqueue.close(DEFAULT_TIMEOUT);
-
-            broker.setDropTmpFolder();
-
-        } catch (Exception e) {
-            logger.error("Exception", e);
-            throw e;
-        } finally {
-            logger.info("12. stop session");
-            session.stop(DEFAULT_TIMEOUT);
-            session.linger();
-
-            broker.close();
-
-            logger.info("==================================================");
-            logger.info("END Testing SessionIT testFanoutQueueTierOverride.");
-            logger.info("==================================================");
         }
     }
 

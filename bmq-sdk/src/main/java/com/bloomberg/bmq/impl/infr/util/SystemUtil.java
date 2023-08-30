@@ -94,7 +94,8 @@ public class SystemUtil {
         // but there could be issues with multiple interfaces, etc.
         String res = System.getenv("HOSTNAME");
         if (res == null) {
-            res = "UNKNOWN";
+            logger.warn("HOSTNAME env variable is not set, using 'localhost'");
+            res = "localhost";
         }
         return res;
     }

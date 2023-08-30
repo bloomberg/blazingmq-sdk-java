@@ -126,12 +126,17 @@ public final class PutPoster {
         int msgCount = putBuilder.messageCount();
         logger.debug("Sending {} PUT messages...", msgCount);
 
-        writeBuffer(putBuilder.build());
+        registerUnackedPuts(packedMsgs);
+
+        try {
+            writeBuffer(putBuilder.build());
+        } catch (BMQException e) {
+            removeUnackedPuts(packedMsgs);
+            throw e;
+        }
 
         // Update statistics
         eventsStats.onEvent(EventType.PUT, eventLength, msgCount);
-
-        registerSentPuts(packedMsgs);
     }
 
     private void writeBuffer(ByteBuffer[] payload) throws BMQException {
@@ -142,13 +147,22 @@ public final class PutPoster {
         }
     }
 
-    private void registerSentPuts(Collection<PutMessageImpl> msgs) {
+    private void registerUnackedPuts(Collection<PutMessageImpl> msgs) {
         for (PutMessageImpl p : msgs) {
             if (p.correlationId() != null) {
                 unacknowledgedPuts.put(p.correlationId(), p);
             }
         }
         logger.debug("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
+    }
+
+    private void removeUnackedPuts(Collection<PutMessageImpl> msgs) {
+        for (PutMessageImpl p : msgs) {
+            if (p.correlationId() != null) {
+                unacknowledgedPuts.remove(p.correlationId(), p);
+            }
+        }
+        logger.info("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
     }
 
     public void registerAck(AckMessageImpl ackMsg) {
