@@ -146,7 +146,7 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void testCopyFrom() {
+    public void testBuilderWithOptions() {
         // GSON cannot serialize Duration type, so add simple adapter to convert Duration to string
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(
@@ -161,9 +161,11 @@ public class SessionOptionsTest {
         Gson gson = gsonBuilder.create();
 
         SessionOptions defaulOptions = SessionOptions.createDefault();
+        assertEquals(gson.toJson(defaulOptions), gson.toJson(SessionOptions.builder().build()));
+
         assertEquals(
                 gson.toJson(defaulOptions),
-                gson.toJson(SessionOptions.builder().copyFrom(defaulOptions).build()));
+                gson.toJson(SessionOptions.builder(defaulOptions).build()));
 
         Duration startTimeout = Duration.ofSeconds(1);
         Duration stopTimeout = Duration.ofMinutes(1);
@@ -176,7 +178,6 @@ public class SessionOptionsTest {
 
         assertNotEquals(gson.toJson(defaulOptions), gson.toJson(newOptions));
         assertEquals(
-                gson.toJson(newOptions),
-                gson.toJson(SessionOptions.builder().copyFrom(newOptions).build()));
+                gson.toJson(newOptions), gson.toJson(SessionOptions.builder(newOptions).build()));
     }
 }

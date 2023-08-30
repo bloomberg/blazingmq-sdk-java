@@ -256,7 +256,18 @@ public final class SessionOptions {
      * @return Builder session options setter
      */
     public static Builder builder() {
-        return new Builder();
+        return builder(createDefault());
+    }
+
+    /**
+     * Returns a helper class object to set different session level options.
+     *
+     * @param options specifies options which initializes the builder
+     * @return Builder session options setter
+     */
+    public static Builder builder(SessionOptions options) {
+        Argument.expectNonNull(options, "options");
+        return new Builder(options);
     }
 
     /**
@@ -395,27 +406,7 @@ public final class SessionOptions {
             return new SessionOptions(this);
         }
 
-        private Builder() {
-            brokerUri = DEFAULT_URI;
-            startTimeout = DEFAULT_START_TIMEOUT;
-            stopTimeout = DEFAULT_STOP_TIMEOUT;
-            writeWaterMark = new WriteBufferWaterMark();
-            inboundWaterMark = new InboundEventBufferWaterMark();
-            statsDumpInterval = DEFAULT_STATS_DUMP_INTERVAL;
-            openQueueTimeout = QUEUE_OPERATION_TIMEOUT;
-            configureQueueTimeout = QUEUE_OPERATION_TIMEOUT;
-            closeQueueTimeout = QUEUE_OPERATION_TIMEOUT;
-            hostHealthMonitor = null;
-        }
-
-        /**
-         * Copies another 'SessionOptions' into this builder.
-         *
-         * @param options specifies options which is copied into the builder
-         * @return Builder this object
-         */
-        public Builder copyFrom(SessionOptions options) {
-
+        private Builder(SessionOptions options) {
             brokerUri = options.brokerUri;
             startTimeout = options.startTimeout;
             stopTimeout = options.stopTimeout;
@@ -426,8 +417,6 @@ public final class SessionOptions {
             configureQueueTimeout = options.configureQueueTimeout;
             closeQueueTimeout = options.closeQueueTimeout;
             hostHealthMonitor = options.hostHealthMonitor;
-
-            return this;
         }
 
         /**
