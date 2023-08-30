@@ -25,5 +25,46 @@ jobs:
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
-    - name: Build and Test with Maven
-      run:  mvn -B -q -Dspotbugs.skip=true -Dspotless.check.skip=true test
+    - name: Build and run unit tests with Maven
+      run:  mvn --batch-mode -Dspotbugs.skip=true -Dspotless.check.skip=true test
+
+  integration_test:
+    name: "Check if BlazingMQ Java SDK pass integration tests with JDK ${{ matrix.Java }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '8', '11', '17' ]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: ${{ matrix.java }}
+    - name: Checkout BlazingMQ
+      run:  git clone https://github.com/bloomberg/blazingmq
+
+    # Pull docker image instead
+    - name: Build base BlazingMQ docker image
+      working-directory: blazingmq
+      run: docker compose -f docker/single-node/docker-compose.yaml build
+
+    - name: Build IT image
+      working-directory: bmq-sdk/src/test/docker
+      run: docker build --tag bmq-broker-java-it --build-arg "image=bmqbrkr:latest" .
+
+    - name: Build and run integration tests with Maven
+      timeout-minutes: 120
+      run: mvn --batch-mode -DskipUnitTests=true -Dspotbugs.skip=true -Dspotless.check.skip=true -Dit.dockerImage=bmqbrkr:latest verify
+
+    - name: Compress collected broker logs
+      if: failure()
+      working-directory: /tmp/bmq-broker
+      run: tar -zcvf broker_logs.tar.gz /tmp/bmq-broker/bmq-broker-java-it*
+
+    - name: Upload broker logs as artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: broker_logs
+        path: /tmp/bmq-broker/broker_logs.tar.gz
+        retention-days: 5

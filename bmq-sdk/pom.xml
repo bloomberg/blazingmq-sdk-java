@@ -381,7 +381,7 @@ limitations under the License. -->
     </profile>
 
     <profile>
-      <!-- This profile builds docker image for integration tests and cleans up runnings containers. -->
+      <!-- This profile builds docker image for integration tests and cleans up running containers. -->
       <id>dockerized-brokers</id>
       <activation>
         <property>

@@ -19,7 +19,6 @@ import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
@@ -62,7 +61,13 @@ class NetResolver {
         }
 
         try {
-            resolvedHosts.addAll(Arrays.asList(InetAddress.getAllByName(host)));
+            for (InetAddress address : InetAddress.getAllByName(host)) {
+                // Resolve to ipv4 addresses only
+                boolean isIpv4 = (address.getAddress().length == 4);
+                if (isIpv4) {
+                    resolvedHosts.add(address);
+                }
+            }
         } catch (UnknownHostException e) {
             isUnknownHost = true;
             logger.warn("Failed to resolve host {}: {}", host, e);

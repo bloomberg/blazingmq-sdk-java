@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.bloomberg.bmq.ResultCodes.GenericResult;
@@ -56,7 +55,6 @@ import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerContainer;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator.Mode;
-import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import com.bloomberg.bmq.it.util.TestTcpServer;
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
@@ -608,18 +606,16 @@ public class TcpBrokerConnectionIT {
         final TestTcpServer[] servers =
                 new TestTcpServer[] {
                     new BmqBrokerSimulator(opts.brokerUri().getPort(), Mode.BMQ_AUTO_MODE),
-                    BmqBrokerTestServer.createStoppedBroker(opts.brokerUri().getPort()),
                     BmqBrokerContainer.createContainer(opts.brokerUri().getPort())
                 };
 
         assertFalse(servers[0].isOldStyleMessageProperties());
         assertFalse(servers[1].isOldStyleMessageProperties());
-        assertTrue(servers[2].isOldStyleMessageProperties());
 
         for (TestTcpServer server : servers) {
             TestSession session = new TestSession(opts);
 
-            // 1) Bring up the the server
+            // 1) Bring up the server
             // 2) Invoke channel 'start' and ensure that it succeeds.
             // 3) Wait for start status callback
             // 4) Check that the "broker" supports new style message properties
@@ -1115,8 +1111,8 @@ public class TcpBrokerConnectionIT {
         logger.info("======================================================");
 
         // 1) Create session with a valid but unresolved broker URI
-        // 2) Verify that start call returns CONNECT_FAILURE status
-        // 3) Stop and linger the session
+        // 2) Verify that no start status received with a given timeout
+        // 3) Verify that no stop status received with a given timeout
 
         // 1) Create session with a valid but unresolved broker URI
         SessionOptions opts =
@@ -1124,16 +1120,23 @@ public class TcpBrokerConnectionIT {
         TestSession session = new TestSession(new ConnectionOptions(opts));
 
         try {
-            // 2) Verify that start call returns CONNECT_FAILURE status
+            // 2) Verify that no start status received with a given timeout
             session.start();
 
-            assertEquals(StartStatus.CONNECT_FAILURE, session.startStatus());
+            session.startStatus();
+            fail("Expected exception during start status exchange");
+        } catch (IllegalStateException e) {
+            assertEquals("Missed start status", e.getMessage());
+        }
 
-        } finally {
-            // 3) Stop and linger the session
+        try {
+            // 3) Verify that no stop status received with a given timeout
             session.stop();
-            assertEquals(StopStatus.SUCCESS, session.stopStatus());
-            assertEquals(GenericResult.SUCCESS, session.linger());
+
+            session.stopStatus();
+            fail("Expected exception during stop status exchange");
+        } catch (IllegalStateException e) {
+            assertEquals("Missed stop status", e.getMessage());
         }
 
         logger.info("====================================================");

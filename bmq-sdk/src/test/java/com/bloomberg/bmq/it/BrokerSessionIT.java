@@ -20,7 +20,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -111,15 +110,6 @@ public class BrokerSessionIT {
         return new QueueImpl(session, uri, flags, handler, null, null);
     }
 
-    private static void acquire(Semaphore sem) {
-        try {
-            sem.acquire();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            fail();
-        }
-    }
-
     private static void verifyDisconnectRequest(int id, ControlMessageChoice request) {
         logger.info("Verify disconnect request: {}", request);
 
@@ -195,7 +185,9 @@ public class BrokerSessionIT {
             ResultCodes.GenericCode status,
             QueueHandle queue) {
         assertNotNull(event);
-        assertTrue(event instanceof QueueControlEvent);
+        assertTrue(
+                "Expected 'QueueControlEvent', received '" + event.getClass().getName() + "'",
+                event instanceof QueueControlEvent);
 
         QueueControlEvent queueControlEvent = (QueueControlEvent) event;
         assertEquals(eventType, queueControlEvent.getEventType());
@@ -205,7 +197,9 @@ public class BrokerSessionIT {
 
     private static void verifyBrokerSessionEvent(Event event, BrokerSessionEvent.Type eventType) {
         assertNotNull(event);
-        assertTrue(event instanceof BrokerSessionEvent);
+        assertTrue(
+                "Expected 'BrokerSessionEvent', received '" + event.getClass().getName() + "'",
+                event instanceof BrokerSessionEvent);
 
         BrokerSessionEvent brokerSessionEvent = (BrokerSessionEvent) event;
         assertEquals(eventType, brokerSessionEvent.getEventType());
@@ -285,7 +279,7 @@ public class BrokerSessionIT {
             // Check substreamcount == 1 after sending open queue request
             assertEquals(1, queueManager.getSubStreamCount(queue));
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             assertEquals(QueueState.e_OPENED, queue.getState());
             assertEquals(1, events.size());
             Event event = events.pollLast();
@@ -303,7 +297,7 @@ public class BrokerSessionIT {
             // Check substreamcount hasn't changed
             assertEquals(1, queueManager.getSubStreamCount(queue));
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             assertEquals(1, events.size());
             event = events.pollLast();
             assertNotNull(event);
@@ -320,7 +314,7 @@ public class BrokerSessionIT {
             // Substreamcount should decrement back to zero
             assertEquals(0, queueManager.getSubStreamCount(queue));
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             assertEquals(QueueState.e_CLOSED, queue.getState());
             assertEquals(1, events.size());
             event = events.pollLast();
@@ -1010,7 +1004,7 @@ public class BrokerSessionIT {
             // NOTE: must be executed in the context of the scheduler
             service.execute(requestManager::cancelAllRequests);
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
 
             // Queue should close
             assertEquals(QueueState.e_CLOSED, queue.getState());
@@ -1128,7 +1122,7 @@ public class BrokerSessionIT {
             // bad response for configure request
             server.pushSuccess(); // ok for close
             queue.closeAsync(TEST_REQUEST_TIMEOUT);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             assertEquals(1, events.size());
             Event event = events.poll();
             assertEquals(QueueControlEvent.TYPE_ID, event.getDispatchId());
@@ -1246,7 +1240,7 @@ public class BrokerSessionIT {
             server.pushItem(StatusCategory.E_SUCCESS, REQUEST_DELAY);
             server.pushSuccess(); // ok for close
             queue.closeAsync(SEQUENCE_TIMEOUT);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
 
             // Verify requests
             verifyOpenRequest(++reqId, server.nextClientRequest());
@@ -1378,7 +1372,7 @@ public class BrokerSessionIT {
             // NOTE: must be executed in the context of the scheduler
             service.execute(requestManager::cancelAllRequests);
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
 
             // Queue should close
             assertEquals(QueueState.e_CLOSED, queue.getState());
@@ -1495,7 +1489,7 @@ public class BrokerSessionIT {
             assertEquals(CloseQueueResult.TIMEOUT, queue.close(SEQUENCE_TIMEOUT));
             assertEquals(0, events.size());
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             // Substreamcount should decrement back to zero
             assertEquals(0, queueManager.getSubStreamCount(queue));
 
@@ -1637,7 +1631,7 @@ public class BrokerSessionIT {
             // Check substreamcount == 1 after sending open queue request
             assertEquals(1, queueManager.getSubStreamCount(queue));
             // Wait for timeout failure of the open queue sequence.
-            acquire(openQueueSema);
+            TestTools.acquireSema(openQueueSema);
             logger.info("Open queue sequence finished");
 
             // === Test timeline: ~2 sec after start
@@ -1812,7 +1806,7 @@ public class BrokerSessionIT {
             // Check substreamcount == 1 after sending open queue request
             assertEquals(1, queueManager.getSubStreamCount(queue));
             // Wait for timeout failure of the open queue sequence.
-            acquire(openQueueSema);
+            TestTools.acquireSema(openQueueSema);
             logger.info("Open queue sequence finished");
 
             // === Test timeline: ~3 sec after start
@@ -1963,7 +1957,7 @@ public class BrokerSessionIT {
             assertEquals(
                     OpenQueueResult.SUCCESS,
                     queue.openAsync(queueOptions, SEQUENCE_TIMEOUT).get(TEST_FUTURE_TIMEOUT));
-            acquire(openQueueSema);
+            TestTools.acquireSema(openQueueSema);
             // Check substreamcount == 1 after sending open queue request
             assertEquals(1, queueManager.getSubStreamCount(queue));
 
@@ -1980,7 +1974,7 @@ public class BrokerSessionIT {
                             .setConsumerPriority(FAILED_TO_APPLY_CUSTOMER_PRIORITY)
                             .build();
             queue.configureAsync(failedOptions, SEQUENCE_TIMEOUT);
-            acquire(configureQueueSema);
+            TestTools.acquireSema(configureQueueSema);
             // === Test timeline: ~1 sec after start
             TestTools.sleepForSeconds(2);
             // === Test timeline: ~3 sec after start
@@ -2649,7 +2643,7 @@ public class BrokerSessionIT {
                     (res == CloseQueueResult.ALREADY_CLOSED
                             || res == CloseQueueResult.UNKNOWN_QUEUE));
 
-            acquire(closeQueueSema);
+            TestTools.acquireSema(closeQueueSema);
             // Check substreamcount and close request
             assertEquals(0, queueManager.getSubStreamCount((QueueImpl) q1));
 
@@ -2706,6 +2700,7 @@ public class BrokerSessionIT {
 
     /**
      * Critical test to check opened queue can be closed if there is a pending configure request.
+     * TODO: is 'just after' done good enough?
      *
      * <ul>
      *   <li>start test server in manual mode
@@ -3301,7 +3296,7 @@ public class BrokerSessionIT {
                     q1.configureAsync(hostHealthUnspecifiedOptions, SEQUENCE_TIMEOUT)
                             .get(TEST_FUTURE_TIMEOUT));
             // wait for queue event
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_CONFIGURE_RESULT,
@@ -3326,10 +3321,10 @@ public class BrokerSessionIT {
             session.onHostHealthStateChanged(HostHealthState.Unhealthy);
 
             // wait for two events
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyBrokerSessionEvent(events.pollLast(), BrokerSessionEvent.Type.e_HOST_UNHEALTHY);
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_SUSPEND_RESULT,
@@ -3413,13 +3408,13 @@ public class BrokerSessionIT {
                     ConfigureQueueResult.SUCCESS,
                     q3.configureAsync(sensitiveOptions, SEQUENCE_TIMEOUT).get(TEST_FUTURE_TIMEOUT));
             // wait for queue events
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_SUSPEND_RESULT,
                     ConfigureQueueResult.SUCCESS,
                     q3);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_CONFIGURE_RESULT,
@@ -3445,19 +3440,19 @@ public class BrokerSessionIT {
 
             // wait for three events
             // write-only queue should be resumed earlier due to skipped configure request
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_RESUME_RESULT,
                     ConfigureQueueResult.SUCCESS,
                     q3);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_RESUME_RESULT,
                     ConfigureQueueResult.SUCCESS,
                     q2);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyBrokerSessionEvent(
                     events.pollLast(), BrokerSessionEvent.Type.e_HOST_HEALTH_RESTORED);
 
@@ -3681,11 +3676,11 @@ public class BrokerSessionIT {
             server.pushSuccess();
             session.onHostHealthStateChanged(HostHealthState.Unhealthy);
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyBrokerSessionEvent(events.pollLast(), BrokerSessionEvent.Type.e_HOST_UNHEALTHY);
 
             logger.info("8. queue suspends (send deconfigure parameters)");
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_SUSPEND_RESULT,
@@ -3765,7 +3760,7 @@ public class BrokerSessionIT {
             assertEquals(currentOptions, service.submit(queue::getQueueOptions).get());
 
             logger.info("12. queue suspends (send deconfigure parameters)");
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_SUSPEND_RESULT,
@@ -3816,11 +3811,11 @@ public class BrokerSessionIT {
             assertEquals(currentOptions, service.submit(queue::getQueueOptions).get());
 
             logger.info(("15. reconnecting and reopen queue"));
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyBrokerSessionEvent(events.pollLast(), BrokerSessionEvent.Type.e_CONNECTION_LOST);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyBrokerSessionEvent(events.pollLast(), BrokerSessionEvent.Type.e_RECONNECTED);
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_REOPEN_RESULT,
@@ -3836,7 +3831,7 @@ public class BrokerSessionIT {
             // Verify options are not updated
             assertEquals(currentOptions, service.submit(queue::getQueueOptions).get());
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyBrokerSessionEvent(events.pollLast(), BrokerSessionEvent.Type.e_STATE_RESTORED);
 
             logger.info(
@@ -3860,7 +3855,7 @@ public class BrokerSessionIT {
             session.onHostHealthStateChanged(HostHealthState.Healthy);
 
             logger.info("18. queue resumes (send queue parameters)");
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
             verifyQueueControlEvent(
                     events.pollLast(),
                     QueueControlEvent.Type.e_QUEUE_RESUME_RESULT,
@@ -4000,7 +3995,7 @@ public class BrokerSessionIT {
             // Check substreamcount == 0 after receiveng  open queue bad response
             assertEquals(0, queueManager.getSubStreamCount(queue));
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
 
             logger.info("Step 6. check the only open request was sent");
             verifyOpenRequest(++reqId, server.nextClientRequest());
@@ -4031,7 +4026,7 @@ public class BrokerSessionIT {
             // Check substreamcount == 0 after receiveng  configure queue bad response
             assertEquals(0, queueManager.getSubStreamCount(queue));
 
-            acquire(testSema);
+            TestTools.acquireSema(testSema);
 
             logger.info("Step 9. check open and config requests were sent");
 
@@ -4259,7 +4254,7 @@ public class BrokerSessionIT {
             // Substreamcount should increment
             assertEquals(++numOpened, queueManager.getSubStreamCount(validQueue));
 
-            acquire(subQueueTestSema);
+            TestTools.acquireSema(subQueueTestSema);
 
             verifyOpenRequest(++reqId, server.nextClientRequest());
             // Wait for and verify close request
@@ -4309,7 +4304,7 @@ public class BrokerSessionIT {
             // Substreamcount should increment
             assertEquals(++numOpened, queueManager.getSubStreamCount(validQueue));
 
-            acquire(subQueueTestSema);
+            TestTools.acquireSema(subQueueTestSema);
 
             verifyOpenRequest(++reqId, server.nextClientRequest());
             verifyConfigureRequest(++reqId, server.nextClientRequest());
@@ -4464,7 +4459,7 @@ public class BrokerSessionIT {
                     CloseQueueResult.UNKNOWN, badCloseConfigResponseQueue.close(SEQUENCE_TIMEOUT));
             assertEquals(QueueState.e_CLOSED, badCloseConfigResponseQueue.getState());
 
-            acquire(subQueueTestSema);
+            TestTools.acquireSema(subQueueTestSema);
 
             verifyConfigureRequest(++reqId, server.nextClientRequest());
             verifyCloseRequest(
@@ -4488,7 +4483,7 @@ public class BrokerSessionIT {
                     CloseQueueResult.TIMEOUT, lateCloseConfigResponseQueue.close(SEQUENCE_TIMEOUT));
             assertEquals(QueueState.e_CLOSED, lateCloseConfigResponseQueue.getState());
 
-            acquire(subQueueTestSema);
+            TestTools.acquireSema(subQueueTestSema);
 
             verifyConfigureRequest(++reqId, server.nextClientRequest());
             verifyCloseRequest(
@@ -4567,7 +4562,7 @@ public class BrokerSessionIT {
             assertEquals(--numOpened, queueManager.getSubStreamCount(validQueue));
 
             // Wait for late close response
-            acquire(subQueueTestSema);
+            TestTools.acquireSema(subQueueTestSema);
 
             verifyConfigureRequest(++reqId, server.nextClientRequest());
             // final close request
@@ -5148,7 +5143,7 @@ public class BrokerSessionIT {
             server.pushItem(StatusCategory.E_SUCCESS, TIMEOUT.minusMillis(500));
             session.stopAsync(null);
 
-            acquire(stopSema);
+            TestTools.acquireSema(stopSema);
 
             int reqId = 0;
             verifyDisconnectRequest(++reqId, server.nextClientRequest());
@@ -5323,7 +5318,7 @@ public class BrokerSessionIT {
             verifyDisconnectRequest(++reqId, server.nextClientRequest());
 
             // Wait for event
-            acquire(closeSema);
+            TestTools.acquireSema(closeSema);
 
             assertEquals(1, events.size());
             BrokerSessionEvent sessionEvent = (BrokerSessionEvent) events.pollLast();
@@ -5521,7 +5516,7 @@ public class BrokerSessionIT {
             session.stopAsync(TEST_REQUEST_TIMEOUT);
 
             // Wait for in progress event
-            acquire(closeSema);
+            TestTools.acquireSema(closeSema);
 
             assertEquals(1, events.size());
             BrokerSessionEvent sessionEvent = (BrokerSessionEvent) events.pollLast();
@@ -5531,7 +5526,7 @@ public class BrokerSessionIT {
                     sessionEvent.getEventType());
 
             // Wait for in disconnected event
-            acquire(closeSema);
+            TestTools.acquireSema(closeSema);
 
             assertEquals(1, events.size());
             sessionEvent = (BrokerSessionEvent) events.pollLast();

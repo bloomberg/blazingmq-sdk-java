@@ -71,7 +71,8 @@ public class TestTools {
 
         try {
             if (!sema.tryAcquire(permits, sec, TimeUnit.SECONDS)) {
-                logger.info("Semaphore timeout");
+                logger.error("Semaphore timeout");
+                Thread.dumpStack();
             }
         } catch (InterruptedException e) {
             logger.error("Interrupted: ", e);
@@ -81,7 +82,7 @@ public class TestTools {
 
     public static void sleepForSeconds(int seconds) {
         try {
-            Thread.sleep(seconds * 1000);
+            Thread.sleep(seconds * 1000L);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
