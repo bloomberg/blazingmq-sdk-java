@@ -26,7 +26,7 @@ jobs:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
     - name: Build and run unit tests with Maven
-      run:  mvn --batch-mode -Dspotbugs.skip=true -Dspotless.check.skip=true test
+      run:  mvn --batch-mode -Dspotbugs.skip=true test
 
   integration_test:
     name: "Check if BlazingMQ Java SDK pass integration tests with JDK ${{ matrix.Java }}"
@@ -54,7 +54,7 @@ jobs:
 
     - name: Build and run integration tests with Maven
       timeout-minutes: 120
-      run: mvn --batch-mode -DskipUnitTests=true -Dspotbugs.skip=true -Dspotless.check.skip=true -Dit.dockerImage=bmqbrkr:latest verify
+      run: mvn --batch-mode -DskipUnitTests=true -Dspotbugs.skip=true -Dit.dockerImage=bmqbrkr:latest verify
 
     - name: Compress collected broker logs
       if: failure()
