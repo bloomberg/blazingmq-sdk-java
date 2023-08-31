@@ -230,7 +230,7 @@ public class RequestManager {
             // Usage:
             // - BEFORE RequestManager.sendRequest invocation
             // - in RequestManager routines
-            // - in Reqest routines under RequestManager synchronization
+            // - in Request routines under RequestManager synchronization
             // - AFTER Request.waitForResponse return control.
             // Thread notation: from CONTROL thread
             if (!onTimeoutFuture.isDone()) {

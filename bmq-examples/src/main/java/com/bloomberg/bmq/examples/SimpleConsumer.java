@@ -100,7 +100,7 @@ public class SimpleConsumer {
                 SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build();
         final AbstractSession session = new Session(sessionOptions, event -> {});
 
-        final BlockingQueue<String> receivedMessages = new LinkedBlockingQueue<String>();
+        final BlockingQueue<String> receivedMessages = new LinkedBlockingQueue<>();
 
         try {
             logger.info("Starting the session");

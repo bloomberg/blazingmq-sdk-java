@@ -59,9 +59,7 @@ public class SimpleProducer {
     private static ByteBuffer getBinaryPayload(String payload) {
         // Convert String to ByteBuffer
         byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
-
-        return bb;
+        return ByteBuffer.wrap(bytes);
     }
 
     public static void main(String[] args) {
