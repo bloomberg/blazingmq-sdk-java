@@ -587,8 +587,9 @@ public final class Session implements AbstractSession {
         if (handler == null) {
             String msg =
                     "Queue event handler was not provided. It will be mandatory in "
-                            + "one of the the upcoming releases of BLazingMQ Java SDK. Please provide "
-                            + "non-null and valid queue event handler.";
+                            + "one of the the upcoming releases of BlazingMQ Java SDK. Please provide "
+                            + "non-null and valid queue event handler.  Please reach out to BlazingMQ "
+                            + "team with any questions.";
             logger.error(msg);
         }
 
@@ -887,7 +888,8 @@ public final class Session implements AbstractSession {
             PushMessageImpl msg = ev.rawMessage();
             Integer[] subQueueIds = msg.subQueueIds();
             for (Integer subQId : subQueueIds) {
-                QueueId qid = QueueId.createInstance(msg.queueId(), subQId);
+                //                QueueId qid = QueueId.createInstance(msg.queueId(), subQId);
+                QueueId qid = QueueId.createInstance(msg.queueId(), 0);
                 QueueHandle queue = brokerSession.lookupQueue(qid);
                 if (queue != null) {
                     queue.handlePushMessage(msg);
@@ -1243,6 +1245,18 @@ public final class Session implements AbstractSession {
             public MessageGUID messageGUID() {
                 return impl.messageGUID();
             }
+
+            @Override
+            public CorrelationId correlationId() {
+                for (Integer sId : impl.subQueueIds()) {
+                    Map.Entry<SubscriptionHandle, Subscription> entry =
+                            QueueAdapter.this.impl.getQueueOptions().getSubscriptions().get(sId);
+                    if (entry != null) {
+                        return entry.getKey().getCorrelationId();
+                    }
+                }
+                throw new BMQException("Undefined correlationId for PushMessage");
+            };
 
             @Override
             public Queue queue() {

@@ -24,6 +24,7 @@ import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
 import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
 import com.bloomberg.bmq.impl.infr.util.Argument;
@@ -307,22 +308,28 @@ public abstract class QueueControlStrategy<RESULT extends GenericCode> {
 
     protected RequestManager.Request createConfigureQueueRequest() {
         QueueImpl q = getQueue();
-        RequestManager.Request req = getRequestManager().createRequest();
-        ControlMessageChoice msg = new ControlMessageChoice();
-        msg.makeConfigureQueueStream();
-        req.setRequest(msg);
-        req.request().configureQueueStream().setId(q.getQueueId());
+
         SubQueueIdInfo subQueueIdInfo = null;
         if (q.getSubQueueId() != QueueId.k_DEFAULT_SUBQUEUE_ID) {
             subQueueIdInfo = new SubQueueIdInfo(q.getSubQueueId(), q.getUri().id());
         }
 
-        QueueStreamParameters params = createParameters(subQueueIdInfo);
-        req.request().configureQueueStream().setStreamParameters(params);
+        ControlMessageChoice msg = new ControlMessageChoice();
+        msg.makeConfigureStream();
+
+        RequestManager.Request req = getRequestManager().createRequest();
+        req.setRequest(msg);
+        req.request().configureStream().setId(q.getQueueId());
+        StreamParameters params = createStreamParameters(subQueueIdInfo);
+        req.request().configureStream().setStreamParameters(params);
+
         return req;
     }
 
     protected QueueStreamParameters createParameters(SubQueueIdInfo subQueueIdInfo) {
+        // TODO: not used, consider removing
+        // This function was used for the old style ConfigureQueueStream request (without
+        // subscriptions)
         QueueStreamParameters params;
         Long flags = getQueue().getParameters().getFlags();
         int qId = getQueue().getQueueId();
@@ -331,6 +338,18 @@ public abstract class QueueControlStrategy<RESULT extends GenericCode> {
             params = QueueStreamParameters.createParameters(qId, subQueueIdInfo, ops);
         } else {
             params = QueueStreamParameters.createDeconfigureParameters(qId, subQueueIdInfo);
+        }
+        return params;
+    }
+
+    protected StreamParameters createStreamParameters(SubQueueIdInfo subQueueIdInfo) {
+        StreamParameters params;
+        Long flags = getQueue().getParameters().getFlags();
+        QueueOptions ops = getQueueOptions();
+        if (QueueFlags.isReader(flags)) {
+            params = StreamParameters.createParameters(subQueueIdInfo, ops);
+        } else {
+            params = StreamParameters.createDeconfigureParameters(subQueueIdInfo);
         }
         return params;
     }

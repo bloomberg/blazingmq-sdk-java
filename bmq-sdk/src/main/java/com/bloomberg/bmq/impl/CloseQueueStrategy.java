@@ -21,6 +21,7 @@ import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
 import com.bloomberg.bmq.impl.intf.BrokerConnection;
@@ -65,8 +66,15 @@ public class CloseQueueStrategy extends QueueControlStrategy<CloseQueueCode> {
 
     @Override
     protected QueueStreamParameters createParameters(SubQueueIdInfo subQueueIdInfo) {
+        // TODO must not be used, old configure parameters format, consider remove
         int qId = getQueue().getQueueId();
         return QueueStreamParameters.createDeconfigureParameters(qId, subQueueIdInfo);
+    }
+
+    @Override
+    protected StreamParameters createStreamParameters(SubQueueIdInfo subQueueIdInfo) {
+        //        int qId = getQueue().getQueueId();
+        return StreamParameters.createDeconfigureParameters(subQueueIdInfo);
     }
 
     @Override

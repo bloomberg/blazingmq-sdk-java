@@ -23,6 +23,8 @@ public class ControlMessageChoice {
     private OpenQueueResponse openQueueResponse;
     private ConfigureQueueStream configureQueueStream;
     private ConfigureQueueStreamResponse configureQueueStreamResponse;
+    private ConfigureStream configureStream;
+    private ConfigureStreamResponse configureStreamResponse;
     private CloseQueue closeQueue;
     private CloseQueueResponse closeQueueResponse;
     private Disconnect disconnect;
@@ -65,6 +67,16 @@ public class ControlMessageChoice {
     public final void makeConfigureQueueStreamResponse() {
         reset();
         configureQueueStreamResponse = new ConfigureQueueStreamResponse();
+    }
+
+    public final void makeConfigureStream() {
+        reset();
+        configureStream = new ConfigureStream();
+    }
+
+    public final void makeConfigureStreamResponse() {
+        reset();
+        configureStreamResponse = new ConfigureStreamResponse();
     }
 
     public final void makeCloseQueue() {
@@ -115,6 +127,14 @@ public class ControlMessageChoice {
         return configureQueueStreamResponse != null;
     }
 
+    public final boolean isConfigureStreamValue() {
+        return configureStream != null;
+    }
+
+    public final boolean isConfigureStreamResponseValue() {
+        return configureStreamResponse != null;
+    }
+
     public final boolean isCloseQueueValue() {
         return closeQueue != null;
     }
@@ -143,6 +163,14 @@ public class ControlMessageChoice {
         return configureQueueStreamResponse;
     }
 
+    public final ConfigureStream configureStream() {
+        return configureStream;
+    }
+
+    public final ConfigureStreamResponse configureStreamResponse() {
+        return configureStreamResponse;
+    }
+
     public final CloseQueue closeQueue() {
         return closeQueue;
     }
@@ -162,6 +190,8 @@ public class ControlMessageChoice {
     public void init() {
         configureQueueStream = null;
         configureQueueStreamResponse = null;
+        configureStream = null;
+        configureStreamResponse = null;
         status = null;
         openQueue = null;
         openQueueResponse = null;
@@ -182,6 +212,8 @@ public class ControlMessageChoice {
     public Boolean isEmpty() {
         return configureQueueStream == null
                 && configureQueueStreamResponse == null
+                && configureStream == null
+                && configureStreamResponse == null
                 && status == null
                 && openQueue == null
                 && openQueueResponse == null

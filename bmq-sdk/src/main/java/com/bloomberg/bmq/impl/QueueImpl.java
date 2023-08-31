@@ -122,7 +122,8 @@ public class QueueImpl implements QueueHandle {
     }
 
     public QueueOptions getQueueOptions() {
-        assert brokerSession.isInSessionExecutor();
+        // TODO: immutable object, why in session executor thread required?
+        //        assert brokerSession.isInSessionExecutor();
         return queueOptions; // expose immutable object(thread-safe)
     }
 

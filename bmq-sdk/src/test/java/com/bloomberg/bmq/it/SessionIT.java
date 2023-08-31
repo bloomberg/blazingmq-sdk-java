@@ -54,13 +54,14 @@ import com.bloomberg.bmq.SessionEvent;
 import com.bloomberg.bmq.SessionEventHandler;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Uri;
+import com.bloomberg.bmq.impl.infr.msg.ConsumerInfo;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
 import com.bloomberg.bmq.impl.infr.proto.Protocol;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
+import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
@@ -471,7 +472,7 @@ public class SessionIT {
         logger.info("Verify configure request: {}", request);
 
         assertNotNull(request);
-        assertTrue(request.isConfigureQueueStreamValue());
+        assertTrue(request.isConfigureStreamValue());
     }
 
     private static void verifyCloseRequest(ControlMessageChoice request) {
@@ -2852,7 +2853,7 @@ public class SessionIT {
         // 4) Open a queue for reading, get and confirm PUSH message
         // 5) Verify PUSH message has no properties
         // 6) Open the queue for writing without ACK flag and post a PUT message
-        //    without CorrelationId and but with properties.
+        //    without CorrelationId but with properties.
         //    There should be no incoming ACK event.
         // 7) Open a queue for reading, get and confirm PUSH message
         // 8) Verify PUSH message has properties
@@ -3844,7 +3845,7 @@ public class SessionIT {
             for (int i = 0; i < SUBQUEUE_NUM * 2; i++) {
                 ControlMessageChoice request = server.nextClientRequest();
 
-                if (request.isConfigureQueueStreamValue()) {
+                if (request.isConfigureStreamValue()) {
                     verifyConfigureRequest(request);
                 } else {
                     numCloseRequests++;
@@ -4635,21 +4636,19 @@ public class SessionIT {
                 ControlMessageChoice msg = server.nextClientRequest();
                 verifyConfigureRequest(msg);
 
-                QueueStreamParameters parameters = msg.configureQueueStream().streamParameters();
+                ConsumerInfo info =
+                        TestTools.getDefaultConsumerInfo(msg.configureStream().streamParameters());
                 // 'maxUnconfirmedMessages' should be taken from 'newOptions'.
-                assertEquals(
-                        newOptions.getMaxUnconfirmedMessages(),
-                        parameters.maxUnconfirmedMessages());
+                assertEquals(newOptions.getMaxUnconfirmedMessages(), info.maxUnconfirmedMessages());
                 // 'consumerPriority' should be taken from previous successful
                 // configuration with 'hostHealthUnspecifiedOptions' options.
                 assertEquals(
                         hostHealthUnspecifiedOptions.getConsumerPriority(),
-                        parameters.consumerPriority());
+                        info.consumerPriority());
                 // 'maxUnconfirmedBytes' should be taken from 'insensitiveOptions'
                 // options used to open the queue
                 assertEquals(
-                        insensitiveOptions.getMaxUnconfirmedBytes(),
-                        parameters.maxUnconfirmedBytes());
+                        insensitiveOptions.getMaxUnconfirmedBytes(), info.maxUnconfirmedBytes());
             }
             assertNull(server.nextClientRequest());
 
@@ -4673,21 +4672,18 @@ public class SessionIT {
                 ControlMessageChoice msg = server.nextClientRequest();
                 verifyConfigureRequest(msg);
 
-                QueueStreamParameters parameters = msg.configureQueueStream().streamParameters();
+                ConsumerInfo info =
+                        TestTools.getDefaultConsumerInfo(msg.configureStream().streamParameters());
                 // 'maxUnconfirmedMessages' should be taken from 'newOptions'.
-                assertEquals(
-                        newOptions.getMaxUnconfirmedMessages(),
-                        parameters.maxUnconfirmedMessages());
+                assertEquals(newOptions.getMaxUnconfirmedMessages(), info.maxUnconfirmedMessages());
                 // 'consumerPriority' should be taken from previous successful
                 // configuration with 'hostHealthUnspecifiedOptions' options.
                 assertEquals(
                         hostHealthUnspecifiedOptions.getConsumerPriority(),
-                        parameters.consumerPriority());
+                        info.consumerPriority());
                 // 'maxUnconfirmedBytes' should be taken from 'sensitiveOptions'
                 // options used to open the queue
-                assertEquals(
-                        sensitiveOptions.getMaxUnconfirmedBytes(),
-                        parameters.maxUnconfirmedBytes());
+                assertEquals(sensitiveOptions.getMaxUnconfirmedBytes(), info.maxUnconfirmedBytes());
             }
 
             session.checkNoEvent();

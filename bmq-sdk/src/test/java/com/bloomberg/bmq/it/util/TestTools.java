@@ -25,8 +25,9 @@ import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.ResultCodes;
 import com.bloomberg.bmq.impl.CorrelationIdImpl;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
+import com.bloomberg.bmq.impl.infr.msg.ConsumerInfo;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
 import com.bloomberg.bmq.impl.infr.proto.AckEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.AckMessageImpl;
@@ -127,6 +128,12 @@ public class TestTools {
 
     public static boolean equalContent(ByteBuffer buf, ByteBuffer[] bbuf) {
         Argument.expectNonNull(buf, "buf");
+
+        ByteBuffer bb = mergeBuffers(bbuf);
+        return bb.compareTo(buf) == 0;
+    }
+
+    public static ByteBuffer mergeBuffers(ByteBuffer[] bbuf) {
         Argument.expectNonNull(bbuf, "bbuf");
 
         int size = 0;
@@ -139,9 +146,10 @@ public class TestTools {
         for (ByteBuffer b : bbuf) {
             bb.put(b);
         }
-        bb.flip();
 
-        return bb.compareTo(buf) == 0;
+        // 'flip()' might return 'Buffer' interface objects in some JDKs,
+        // need to specify concrete class
+        return (ByteBuffer) bb.flip();
     }
 
     public static PutMessageImpl preparePutMessage(String payload, boolean isOldStyleProperties)
@@ -231,6 +239,7 @@ public class TestTools {
 
     public static void assertQueueHandleParamsAreEqual(
             QueueHandleParameters p1, QueueHandleParameters p2) {
+        // todo modify with respect to subscriptions or remove if not used
         assertNotNull(p1);
         assertNotNull(p2);
         assertEquals(p1.getAdminCount(), p2.getAdminCount());
@@ -252,12 +261,22 @@ public class TestTools {
         }
     }
 
-    public static void assertCloseConfigurationStreamParameters(QueueStreamParameters params) {
+    public static ConsumerInfo getDefaultConsumerInfo(StreamParameters parameters) {
+        // todo is the name of the method good? default might mean default initialize
+        assertEquals(1, parameters.subscriptions().length);
+        assertEquals(1, parameters.subscriptions()[0].consumers().length);
+        return parameters.subscriptions()[0].consumers()[0];
+    }
+
+    public static void assertCloseConfigurationStreamParameters(StreamParameters params) {
         assertNotNull(params);
-        assertEquals(QueueStreamParameters.CONSUMER_PRIORITY_INVALID, params.consumerPriority());
-        assertEquals(0, params.consumerPriorityCount());
-        assertEquals(0, params.maxUnconfirmedBytes());
-        assertEquals(0, params.maxUnconfirmedMessages());
+
+        ConsumerInfo info = getDefaultConsumerInfo(params);
+
+        assertEquals(StreamParameters.CONSUMER_PRIORITY_INVALID, info.consumerPriority());
+        assertEquals(0, info.consumerPriorityCount());
+        assertEquals(0, info.maxUnconfirmedBytes());
+        assertEquals(0, info.maxUnconfirmedMessages());
     }
 
     public static ByteBuffer readFile(final String fileName) throws IOException {

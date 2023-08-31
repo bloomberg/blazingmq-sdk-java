@@ -52,12 +52,13 @@ import com.bloomberg.bmq.impl.events.Event;
 import com.bloomberg.bmq.impl.events.PushMessageEvent;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.events.QueueControlEventHandler;
-import com.bloomberg.bmq.impl.infr.msg.ConfigureQueueStream;
+import com.bloomberg.bmq.impl.infr.msg.ConfigureStream;
+import com.bloomberg.bmq.impl.infr.msg.ConsumerInfo;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.OpenQueue;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.net.NettyTcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
@@ -137,18 +138,19 @@ public class BrokerSessionIT {
 
         assertNotNull(request);
         assertEquals(id, request.id());
-        assertTrue(request.isConfigureQueueStreamValue());
+        assertTrue(request.isConfigureStreamValue());
 
         // Verify stream parameters
         if (options != null) {
-            QueueStreamParameters parameters = request.configureQueueStream().streamParameters();
+            ConsumerInfo info =
+                    TestTools.getDefaultConsumerInfo(request.configureStream().streamParameters());
 
             QueueOptions parametersOptions =
                     QueueOptions.builder()
                             .merge(options)
-                            .setMaxUnconfirmedMessages(parameters.maxUnconfirmedMessages())
-                            .setMaxUnconfirmedBytes(parameters.maxUnconfirmedBytes())
-                            .setConsumerPriority(parameters.consumerPriority())
+                            .setMaxUnconfirmedMessages(info.maxUnconfirmedMessages())
+                            .setMaxUnconfirmedBytes(info.maxUnconfirmedBytes())
+                            .setConsumerPriority(info.consumerPriority())
                             .build();
 
             assertEquals(options, parametersOptions);
@@ -2248,7 +2250,7 @@ public class BrokerSessionIT {
             for (int i = 1; i <= numberOfQueuesOpened * 2; i++) {
                 ControlMessageChoice clientRequest = server.nextClientRequest();
                 if (i % 2 == 0) {
-                    assertTrue(clientRequest.isConfigureQueueStreamValue());
+                    assertTrue(clientRequest.isConfigureStreamValue());
                 } else {
                     assertTrue(clientRequest.isOpenQueueValue());
                 }
@@ -2263,19 +2265,27 @@ public class BrokerSessionIT {
                         assertTrue(clientRequest.isOpenQueueValue());
                         break;
                     case 2: // configure queue request during open queue sequence
-                        assertTrue(clientRequest.isConfigureQueueStreamValue());
+                        assertTrue(clientRequest.isConfigureStreamValue());
                         break;
                     case 3:
                         { // configure queue request during close queue sequence
-                            assertTrue(clientRequest.isConfigureQueueStreamValue());
-                            ConfigureQueueStream configureCloseQueue =
-                                    clientRequest.configureQueueStream();
+                            assertTrue(clientRequest.isConfigureStreamValue());
+                            ConfigureStream configureCloseQueue = clientRequest.configureStream();
                             assertNotNull(configureCloseQueue);
-                            QueueStreamParameters streamParameters =
+                            StreamParameters streamParameters =
                                     configureCloseQueue.streamParameters();
                             assertNotNull(streamParameters);
-                            assertEquals(openClosedQueue.getQueueId(), streamParameters.qId());
-                            assertNull(streamParameters.subIdInfo());
+                            assertEquals(
+                                    openClosedQueue.getQueueId(),
+                                    configureCloseQueue
+                                            .id()); // todo qId moved to upper level structure
+                            assertEquals(
+                                    StreamParameters.DEFAULT_APP_ID,
+                                    streamParameters
+                                            .appId()); // todo no sub id info anymore, we have just
+                            // app id here and subscription ids in nested
+                            // subscriptions
+                            // todo maybe delete this /\ check because no nullable field anymore
                             TestTools.assertCloseConfigurationStreamParameters(streamParameters);
                             break;
                         }
@@ -2295,22 +2305,25 @@ public class BrokerSessionIT {
             for (int i = 1; i <= numberOfQueuesOpened * 2; i++) {
                 ControlMessageChoice clientRequest = server.nextClientRequest();
                 assertEquals(numberOfQueuesOpened * 2 + 4 + i, clientRequest.id());
-                ConfigureQueueStream configureQueueStream = clientRequest.configureQueueStream();
-                if (configureQueueStream != null) {
-                    QueueStreamParameters streamParameters =
-                            configureQueueStream.streamParameters();
+                ConfigureStream configureStream = clientRequest.configureStream();
+                if (configureStream != null) {
+                    StreamParameters streamParameters = configureStream.streamParameters();
                     assertNotNull(streamParameters);
-                    Integer queueId = configureQueueStream.streamParameters().qId();
+                    Integer queueId = configureStream.id(); // todo qId moved to upper level
                     Boolean isOpenRequestAlreadyParsed = expectedIds.get(queueId);
                     assertNotNull(isOpenRequestAlreadyParsed);
                     assertTrue(isOpenRequestAlreadyParsed);
                     expectedIds.remove(queueId);
 
+                    ConsumerInfo info = TestTools.getDefaultConsumerInfo(streamParameters);
+
+                    assertEquals(MAX_UNCONFIRMED_MESSAGES, info.maxUnconfirmedMessages());
+                    assertEquals(MAX_UNCONFIRMED_BYTES, info.maxUnconfirmedBytes());
+                    assertEquals(INITIAL_CUSTOMER_PRIORITY, info.consumerPriority());
                     assertEquals(
-                            MAX_UNCONFIRMED_MESSAGES, streamParameters.maxUnconfirmedMessages());
-                    assertEquals(MAX_UNCONFIRMED_BYTES, streamParameters.maxUnconfirmedBytes());
-                    assertEquals(INITIAL_CUSTOMER_PRIORITY, streamParameters.consumerPriority());
-                    assertNull(configureQueueStream.streamParameters().subIdInfo());
+                            StreamParameters.DEFAULT_APP_ID,
+                            streamParameters.appId()); // todo maybe remove this check? or check if
+                    // subscriptions are empty?
                 } else {
                     OpenQueue openQueue = clientRequest.openQueue();
                     assertNotNull(openQueue);
@@ -3310,21 +3323,19 @@ public class BrokerSessionIT {
                 ControlMessageChoice msg = server.nextClientRequest();
                 verifyConfigureRequest(++reqId, msg);
 
-                QueueStreamParameters parameters = msg.configureQueueStream().streamParameters();
+                ConsumerInfo info =
+                        TestTools.getDefaultConsumerInfo(msg.configureStream().streamParameters());
                 // 'maxUnconfirmedMessages' should be taken from 'newOptions'.
-                assertEquals(
-                        newOptions.getMaxUnconfirmedMessages(),
-                        parameters.maxUnconfirmedMessages());
+                assertEquals(newOptions.getMaxUnconfirmedMessages(), info.maxUnconfirmedMessages());
                 // 'consumerPriority' should be taken from previous successful
                 // configuration with 'hostHealthUnspecifiedOptions' options.
                 assertEquals(
                         hostHealthUnspecifiedOptions.getConsumerPriority(),
-                        parameters.consumerPriority());
+                        info.consumerPriority());
                 // 'maxUnconfirmedBytes' should be taken from 'insensitiveOptions'
                 // options used to open the queue
                 assertEquals(
-                        insensitiveOptions.getMaxUnconfirmedBytes(),
-                        parameters.maxUnconfirmedBytes());
+                        insensitiveOptions.getMaxUnconfirmedBytes(), info.maxUnconfirmedBytes());
             }
             assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
             assertEquals(
@@ -3418,21 +3429,18 @@ public class BrokerSessionIT {
                 ControlMessageChoice msg = server.nextClientRequest();
                 verifyConfigureRequest(++reqId, msg);
 
-                QueueStreamParameters parameters = msg.configureQueueStream().streamParameters();
+                ConsumerInfo info =
+                        TestTools.getDefaultConsumerInfo(msg.configureStream().streamParameters());
                 // 'maxUnconfirmedMessages' should be taken from 'newOptions'.
-                assertEquals(
-                        newOptions.getMaxUnconfirmedMessages(),
-                        parameters.maxUnconfirmedMessages());
+                assertEquals(newOptions.getMaxUnconfirmedMessages(), info.maxUnconfirmedMessages());
                 // 'consumerPriority' should be taken from previous successful
                 // configuration with 'hostHealthUnspecifiedOptions' options.
                 assertEquals(
                         hostHealthUnspecifiedOptions.getConsumerPriority(),
-                        parameters.consumerPriority());
+                        info.consumerPriority());
                 // 'maxUnconfirmedBytes' should be taken from 'sensitiveOptions'
                 // options used to open the queue
-                assertEquals(
-                        sensitiveOptions.getMaxUnconfirmedBytes(),
-                        parameters.maxUnconfirmedBytes());
+                assertEquals(sensitiveOptions.getMaxUnconfirmedBytes(), info.maxUnconfirmedBytes());
             }
 
             assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
@@ -3649,7 +3657,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedMessages(0)
                             .setMaxUnconfirmedBytes(0)
-                            .setConsumerPriority(QueueStreamParameters.CONSUMER_PRIORITY_INVALID)
+                            .setConsumerPriority(StreamParameters.CONSUMER_PRIORITY_INVALID)
                             .build();
 
             verifyConfigureRequest(++reqId, server.nextClientRequest(), deconfigureOptions);

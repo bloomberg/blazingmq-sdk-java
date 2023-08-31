@@ -43,11 +43,12 @@ import com.bloomberg.bmq.impl.events.Event;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
 import com.bloomberg.bmq.impl.infr.msg.ClientIdentity;
+import com.bloomberg.bmq.impl.infr.msg.ConsumerInfo;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.NegotiationMessageChoice;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.Status;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.net.intf.ChannelStatusHandler.ChannelStatus;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.WriteStatus;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnectionFactory;
@@ -295,19 +296,19 @@ public class BrokerSessionTest {
             return controlMessageChoice;
         }
 
-        public ControlMessageChoice verifyConfigureQueueRequest() {
+        public ControlMessageChoice verifyConfigureStreamRequest() {
             ByteBuffer[] data = connection.nextWriteRequest();
 
             assertNotNull(data);
 
             ControlEventImpl controlEvent = new ControlEventImpl(data);
 
-            logger.info("Verify configure queue request: {}", controlEvent);
+            logger.info("Verify configure stream request: {}", controlEvent);
 
             ControlMessageChoice controlMessageChoice = controlEvent.tryControlChoice();
 
             assertNotNull(controlMessageChoice);
-            assertTrue(controlMessageChoice.isConfigureQueueStreamValue());
+            assertTrue(controlMessageChoice.isConfigureStreamValue());
 
             // Reset the event so it will rewind the data to be used again
             try {
@@ -319,18 +320,16 @@ public class BrokerSessionTest {
             return controlMessageChoice;
         }
 
-        public void sendConfigureQueueResponse(ControlMessageChoice request) {
+        public void sendConfigureStreamResponse(ControlMessageChoice request) {
             Argument.expectNonNull(request, "request");
             Argument.expectCondition(
-                    request.isConfigureQueueStreamValue(),
-                    "Expected configure queue stream request");
+                    request.isConfigureStreamValue(), "Expected configure stream request");
 
             ControlMessageChoice response = new ControlMessageChoice();
             response.setId(request.id());
-            response.makeConfigureQueueStreamResponse();
+            response.makeConfigureStreamResponse();
 
-            response.configureQueueStreamResponse()
-                    .setOriginalRequest(request.configureQueueStream());
+            response.configureStreamResponse().setOriginalRequest(request.configureStream());
 
             sendBrokerResponse(response);
         }
@@ -368,7 +367,7 @@ public class BrokerSessionTest {
 
         public void reopenQueue(QueueImpl queue) {
             sendOpenQueueResponse(verifyOpenQueueRequest());
-            sendConfigureQueueResponse(verifyConfigureQueueRequest());
+            sendConfigureStreamResponse(verifyConfigureStreamRequest());
             verifyQueueControlEvent(
                     QueueControlEvent.Type.e_QUEUE_REOPEN_RESULT, OpenQueueResult.SUCCESS);
             assertEquals(QueueState.e_OPENED, queue.getState());
@@ -377,7 +376,7 @@ public class BrokerSessionTest {
         public void closeQueue(QueueImpl queue) {
             assertEquals(QueueState.e_OPENED, queue.getState());
             queue.closeAsync(SEQUENCE_TIMEOUT);
-            sendConfigureQueueResponse(verifyConfigureQueueRequest());
+            sendConfigureStreamResponse(verifyConfigureStreamRequest());
             sendCloseQueueResponse(verifyCloseQueueRequest(true));
             verifyQueueControlEvent(
                     QueueControlEvent.Type.e_QUEUE_CLOSE_RESULT, CloseQueueResult.SUCCESS);
@@ -469,7 +468,7 @@ public class BrokerSessionTest {
                             sendOpenQueueResponse(curRequest);
 
                             // check configure queue request is sent
-                            curRequest = verifyConfigureQueueRequest();
+                            curRequest = verifyConfigureStreamRequest();
 
                             // Check there are no events
                             assertNull(nextEvent(noEventTimeout));
@@ -483,7 +482,7 @@ public class BrokerSessionTest {
                             assert curRequest != null;
 
                             // Send back open configure queue response
-                            sendConfigureQueueResponse(curRequest);
+                            sendConfigureStreamResponse(curRequest);
 
                             assertEquals(OpenQueueResult.SUCCESS, openFuture.get(futureTimeout));
 
@@ -541,7 +540,7 @@ public class BrokerSessionTest {
                             assert curRequest != null;
 
                             // Send back open configure queue response
-                            sendConfigureQueueResponse(curRequest);
+                            sendConfigureStreamResponse(curRequest);
 
                             // Check reopen queue result event
                             verifyQueueControlEvent(
@@ -563,7 +562,7 @@ public class BrokerSessionTest {
                             configFuture = queue.configureAsync(queueOptions, futureTimeout);
 
                             // check configure queue request is sent
-                            curRequest = verifyConfigureQueueRequest();
+                            curRequest = verifyConfigureStreamRequest();
 
                             // Check there are no events
                             assertNull(nextEvent(noEventTimeout));
@@ -585,18 +584,22 @@ public class BrokerSessionTest {
                                     QueueControlEvent.Type.e_QUEUE_CONFIGURE_RESULT,
                                     ConfigureQueueResult.TIMEOUT);
 
-                            // Modify stream parameter to trigger reconfigure request
-                            QueueStreamParameters params =
+                            // Modify stream parameters to trigger reconfigure request
+                            StreamParameters params =
                                     Argument.expectNonNull(curRequest, "curRequest")
-                                            .configureQueueStream()
+                                            .configureStream()
                                             .streamParameters();
-                            params.setMaxUnconfirmedBytes(params.maxUnconfirmedBytes() - 1);
+                            assertEquals(params.subscriptions().length, 1);
+                            assertEquals(params.subscriptions()[0].consumers().length, 1);
+
+                            ConsumerInfo info = params.subscriptions()[0].consumers()[0];
+                            info.setMaxUnconfirmedBytes(info.maxUnconfirmedBytes() - 1);
 
                             // Send late configure queue response
-                            sendConfigureQueueResponse(curRequest);
+                            sendConfigureStreamResponse(curRequest);
 
                             // check reconfigure queue request is sent
-                            curRequest = verifyConfigureQueueRequest();
+                            curRequest = verifyConfigureStreamRequest();
 
                             // Check there are no events
                             assertNull(nextEvent(noEventTimeout));
@@ -610,7 +613,7 @@ public class BrokerSessionTest {
                             assert curRequest != null;
 
                             // Send configure queue response
-                            sendConfigureQueueResponse(curRequest);
+                            sendConfigureStreamResponse(curRequest);
 
                             // Check there are no events
                             assertNull(nextEvent(noEventTimeout));
@@ -624,7 +627,7 @@ public class BrokerSessionTest {
                             closeFuture = queue.closeAsync(futureTimeout);
 
                             // check close-configure queue request is sent
-                            curRequest = verifyConfigureQueueRequest();
+                            curRequest = verifyConfigureStreamRequest();
 
                             // Check there are no events
                             assertNull(nextEvent(noEventTimeout));
@@ -638,7 +641,7 @@ public class BrokerSessionTest {
                             assert curRequest != null;
 
                             // Send configure queue response
-                            sendConfigureQueueResponse(curRequest);
+                            sendConfigureStreamResponse(curRequest);
 
                             // Check close queue request is sent with isFinal=true
                             verifyCloseQueueRequest(true);
@@ -1076,7 +1079,7 @@ public class BrokerSessionTest {
             assertEquals(OpenQueueResult.NOT_CONNECTED, openFuture.get(FUTURE_TIMEOUT));
 
             // Check configure request
-            obj.verifyConfigureQueueRequest();
+            obj.verifyConfigureStreamRequest();
             // No more requests
             assertNull(obj.connection().nextWriteRequest(1));
 
@@ -1102,7 +1105,7 @@ public class BrokerSessionTest {
             obj.sendOpenQueueResponse(openRequest);
 
             // Check there was an attempt to send configure request
-            obj.verifyConfigureQueueRequest();
+            obj.verifyConfigureStreamRequest();
 
             // TcpBrokerConnection will be waiting until the channel
             // becomes writable
@@ -1112,7 +1115,7 @@ public class BrokerSessionTest {
             assertEquals(OpenQueueResult.TIMEOUT, openFuture.get(FUTURE_TIMEOUT));
 
             // Check open request has been sent
-            obj.verifyConfigureQueueRequest();
+            obj.verifyConfigureStreamRequest();
             // No more requests
             assertNull(obj.connection().nextWriteRequest(1));
 
@@ -1161,7 +1164,7 @@ public class BrokerSessionTest {
             assertEquals(CloseQueueResult.SUCCESS, closeFuture.get(FUTURE_TIMEOUT));
 
             // Check configure request
-            obj.verifyConfigureQueueRequest();
+            obj.verifyConfigureStreamRequest();
             // No more requests
             assertNull(obj.connection().nextWriteRequest(1));
 
@@ -1184,7 +1187,7 @@ public class BrokerSessionTest {
             closeFuture = queue.closeAsync(SEQUENCE_TIMEOUT);
 
             // Check there was an attempt to send configure request
-            obj.verifyConfigureQueueRequest();
+            obj.verifyConfigureStreamRequest();
 
             // TcpBrokerConnection will be waiting until the channel
             // becomes writable
@@ -1194,7 +1197,7 @@ public class BrokerSessionTest {
             assertEquals(CloseQueueResult.TIMEOUT, closeFuture.get(FUTURE_TIMEOUT));
 
             // Check configure request has been sent
-            obj.verifyConfigureQueueRequest();
+            obj.verifyConfigureStreamRequest();
             // No more requests
             assertNull(obj.connection().nextWriteRequest(1));
 
@@ -1243,11 +1246,11 @@ public class BrokerSessionTest {
             BmqFuture<CloseQueueCode> closeFuture = queue.closeAsync(SEQUENCE_TIMEOUT);
 
             // Send back configure response
-            ControlMessageChoice configureRequest = obj.verifyConfigureQueueRequest();
+            ControlMessageChoice configureRequest = obj.verifyConfigureStreamRequest();
 
             obj.connection().setWriteStatus(WriteStatus.CLOSED);
 
-            obj.sendConfigureQueueResponse(configureRequest);
+            obj.sendConfigureStreamResponse(configureRequest);
 
             assertEquals(CloseQueueResult.NOT_CONNECTED, closeFuture.get(FUTURE_TIMEOUT));
 
@@ -1284,11 +1287,11 @@ public class BrokerSessionTest {
             closeFuture = queue.closeAsync(SEQUENCE_TIMEOUT);
 
             // Send back configure response
-            configureRequest = obj.verifyConfigureQueueRequest();
+            configureRequest = obj.verifyConfigureStreamRequest();
 
             obj.connection().setWriteStatus(WriteStatus.WRITE_BUFFER_FULL);
 
-            obj.sendConfigureQueueResponse(configureRequest);
+            obj.sendConfigureStreamResponse(configureRequest);
 
             // Check there was an attempt to send close request
             obj.verifyCloseQueueRequest(true);
