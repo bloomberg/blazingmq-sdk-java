@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Uri;
-import com.bloomberg.bmq.impl.infr.net.ConnectionOptions;
 import com.bloomberg.bmq.impl.infr.util.PrintUtil;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.TestTools;
@@ -36,61 +35,6 @@ import org.slf4j.LoggerFactory;
 public class PayloadIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    // Disable this test because it uses plain sockets and read BMQ
-    // events unreliably
-    // @Test
-    public void testPayloadPlain() throws IOException, InterruptedException {
-        // This is a complex test where a test payload is sent via
-        // Producer and is received via Consumer.
-        // It is expected that the incoming payload should contain
-        // the initial message together with two message properties
-        // added by the Broker.
-        // If BMQ_BROKER_PATH environment variable is set then the
-        // Broker will be started form BmqBroker.java
-        // Otherwise the Broker should be started manually.
-        // Test steps:
-        // 1. Start the Broker, prepare a unique payload string.
-        // 2. Send the payload to the Broker using PlainProducerIT.sendMessage().
-        // 3. Receive a message from the Broker using PlainConsumerIT.getLastMessage().
-        // 4. Verify that incoming payload contains initial string and two expected
-        //    message properties.
-
-        logger.info("=========================================================================");
-        logger.info("BEGIN Testing PayloadIT transfer payload b/w raw producer and consumer.");
-        logger.info("=========================================================================");
-
-        final String TEST_MESSAGE = "Hello, World!" + System.currentTimeMillis();
-        final Uri QUEUE_URI = BmqBroker.Domains.Priority.generateQueueUri();
-
-        try (BmqBroker broker = BmqBroker.createStartedBroker()) {
-            final ConnectionOptions OPTS = new ConnectionOptions(broker.sessionOptions());
-            final int PORT = OPTS.brokerUri().getPort();
-
-            ByteBuffer unpaddedPayload =
-                    TestTools.prepareUnpaddedData(
-                            TEST_MESSAGE, broker.isOldStyleMessageProperties());
-
-            // ==================================
-            // Check plain producer and consumer
-            // ==================================
-
-            PlainProducerIT.sendMessage(
-                    TEST_MESSAGE, PORT, QUEUE_URI, broker.isOldStyleMessageProperties());
-
-            ByteBuffer[] res = PlainConsumerIT.getLastMessage(PORT, QUEUE_URI);
-            logger.info("Last message: \n{}", PrintUtil.hexDump(res));
-
-            assertNotNull(res);
-            assertTrue(TestTools.equalContent(unpaddedPayload, res));
-
-            broker.setDropTmpFolder();
-        }
-
-        logger.info("=======================================================================");
-        logger.info("END Testing PayloadIT transfer payload b/w raw producer and consumer.");
-        logger.info("=======================================================================");
-    }
 
     @Test
     public void testPayloadNetty() throws IOException {

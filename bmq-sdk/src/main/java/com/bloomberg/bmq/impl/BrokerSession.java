@@ -181,7 +181,7 @@ public final class BrokerSession
             EventHandler eventHandler) {
         CompletableFuture<Long> completableFuture = new CompletableFuture<>();
         scheduler.execute(() -> completableFuture.complete(Thread.currentThread().getId()));
-        long threadId = 0;
+        long threadId;
         try {
             threadId = BmqFuture.get(completableFuture, BmqFuture.s_DEFAULT_TIMEOUT);
         } catch (TimeoutException e) {
@@ -1068,7 +1068,7 @@ public final class BrokerSession
     public OpenQueueCode openQueue(QueueImpl queue, QueueOptions ops, Duration timeout) {
         final Duration timeOut = timeout == null ? sessionOptions.openQueueTimeout() : timeout;
         final CompletableFuture<OpenQueueCode> future = new CompletableFuture<>();
-        OpenQueueCode res = OpenQueueResult.UNKNOWN;
+        OpenQueueCode res;
         scheduler.execute(
                 () -> {
                     try {
@@ -1131,7 +1131,7 @@ public final class BrokerSession
     public ConfigureQueueCode configureQueue(QueueImpl queue, QueueOptions ops, Duration timeout) {
         final Duration timeOut = timeout == null ? sessionOptions.configureQueueTimeout() : timeout;
         final CompletableFuture<ConfigureQueueCode> future = new CompletableFuture<>();
-        ConfigureQueueCode res = ConfigureQueueResult.UNKNOWN;
+        ConfigureQueueCode res;
         scheduler.execute(
                 () -> {
                     try {
@@ -1186,7 +1186,7 @@ public final class BrokerSession
     public CloseQueueCode closeQueue(QueueImpl queue, Duration timeout) {
         final Duration timeOut = timeout == null ? sessionOptions.closeQueueTimeout() : timeout;
         final CompletableFuture<CloseQueueCode> future = new CompletableFuture<>();
-        CloseQueueCode res = CloseQueueResult.UNKNOWN;
+        CloseQueueCode res;
         scheduler.execute(
                 () -> {
                     try {

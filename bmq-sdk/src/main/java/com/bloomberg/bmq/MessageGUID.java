@@ -76,9 +76,9 @@ public class MessageGUID {
 
     /**
      * Returns true if the specified {@code buffer} is a valid hex representation of a {@code
-     * MessageGUID}. The the {@code buffer} should be equal to {@link #SIZE_HEX}.
+     * MessageGUID}. The {@code buffer} should be equal to {@link #SIZE_HEX}.
      *
-     * @param buffer Array of bytes that contrains hex representation the {@code MessageGUID}.
+     * @param buffer Array of bytes that contains hex representation the {@code MessageGUID}.
      * @return boolean true if the specified {@code buffer} is a valid hex representation, false
      *     otherwise.
      * @throws NullPointerException if the specified {@code buffer} is null

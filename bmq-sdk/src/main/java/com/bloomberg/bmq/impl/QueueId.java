@@ -21,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
  * Identifier of the {@link com.bloomberg.bmq.Queue}.
  *
  * <p>This class represents an immutable identifier which is assigned by the SDK to every created
- * {@code Queue}. It consits of two integer values, one is {@code QueueId} and another is {@code
+ * {@code Queue}. It consists of two integer values, one is {@code QueueId} and another is {@code
  * SubQueueId}. The combination of these two values uniquely identifies the {@code Queue} object.
  */
 @Immutable
