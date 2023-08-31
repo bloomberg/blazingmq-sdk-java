@@ -16,10 +16,18 @@
 package com.bloomberg.bmq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import java.lang.reflect.Type;
 import java.time.Duration;
 import org.junit.Test;
 
@@ -135,5 +143,41 @@ public class SessionOptionsTest {
         SessionOptions options = SessionOptions.builder().setHostHealthMonitor(monitor).build();
 
         assertEquals(monitor, options.hostHealthMonitor());
+    }
+
+    @Test
+    public void testBuilderWithOptions() {
+        // GSON cannot serialize Duration type, so add simple adapter to convert Duration to string
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(
+                Duration.class,
+                new JsonSerializer<Duration>() {
+                    @Override
+                    public JsonElement serialize(
+                            Duration src, Type typeOfSrc, JsonSerializationContext context) {
+                        return new JsonPrimitive(src.toString());
+                    }
+                });
+        Gson gson = gsonBuilder.create();
+
+        SessionOptions defaulOptions = SessionOptions.createDefault();
+        assertEquals(gson.toJson(defaulOptions), gson.toJson(SessionOptions.builder().build()));
+
+        assertEquals(
+                gson.toJson(defaulOptions),
+                gson.toJson(SessionOptions.builder(defaulOptions).build()));
+
+        Duration startTimeout = Duration.ofSeconds(1);
+        Duration stopTimeout = Duration.ofMinutes(1);
+
+        SessionOptions newOptions =
+                SessionOptions.builder()
+                        .setStartTimeout(startTimeout)
+                        .setStopTimeout(stopTimeout)
+                        .build();
+
+        assertNotEquals(gson.toJson(defaulOptions), gson.toJson(newOptions));
+        assertEquals(
+                gson.toJson(newOptions), gson.toJson(SessionOptions.builder(newOptions).build()));
     }
 }
