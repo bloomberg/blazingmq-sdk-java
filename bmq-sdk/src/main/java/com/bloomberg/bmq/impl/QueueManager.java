@@ -45,6 +45,7 @@ public class QueueManager {
     private Map<String, Integer> uriSubStreamCount;
     private Map<String, QueueInfo> uriMap;
     private Map<QueueId, QueueImpl> keyQueueIdMap;
+    private Map<Integer, QueueImpl> subscriptionIdMap;
     private Map<QueueId, QueueImpl> expiredQueueMap;
     private AtomicInteger nextQueueId;
 
@@ -52,6 +53,7 @@ public class QueueManager {
         uriSubStreamCount = new HashMap<>();
         uriMap = new TreeMap<>();
         keyQueueIdMap = new HashMap<>();
+        subscriptionIdMap = new HashMap<>();
         expiredQueueMap = new HashMap<>();
         lock = new Object();
         nextQueueId = new AtomicInteger(0);
@@ -63,6 +65,7 @@ public class QueueManager {
             uriSubStreamCount = new HashMap<>();
             uriMap = new TreeMap<>();
             keyQueueIdMap = new HashMap<>();
+            subscriptionIdMap = new HashMap<>();
             expiredQueueMap = new HashMap<>();
             nextQueueId = new AtomicInteger(0);
         }
@@ -97,12 +100,25 @@ public class QueueManager {
             QueueId queueId = queue.getFullQueueId();
             keyQueueIdMap.put(queueId, queue);
 
+            for (Integer sId : queue.getParameters().getSubscriptions().keySet()) {
+                subscriptionIdMap.put(sId, queue);
+            }
+
             Map<String, Integer> subQueueIdsMap = queueInfo.getSubQueueIdsMap();
             Integer subQueueId = subQueueIdsMap.get(uri.id());
             if (subQueueId != null) {
                 return false;
             }
             subQueueIdsMap.put(uri.id(), queue.getSubQueueId());
+        }
+        return true;
+    }
+
+    public boolean update(QueueImpl queue) {
+        synchronized (lock) {
+            for (Integer sId : queue.getParameters().getSubscriptions().keySet()) {
+                subscriptionIdMap.put(sId, queue);
+            }
         }
         return true;
     }
@@ -166,6 +182,10 @@ public class QueueManager {
                 throw new IllegalStateException("Queue not found by QueueId: " + queueKey);
             }
 
+            for (Integer sId : queue.getParameters().getSubscriptions().keySet()) {
+                subscriptionIdMap.remove(sId);
+            }
+
             if (qInfo.getQueueId() != qHandle.getQueueId()) {
                 throw new IllegalStateException(
                         String.format(
@@ -214,6 +234,12 @@ public class QueueManager {
     public QueueImpl findByQueueId(QueueId queueId) {
         synchronized (lock) {
             return keyQueueIdMap.get(queueId);
+        }
+    }
+
+    public QueueImpl findBySubscriptionId(int subscriptionId) {
+        synchronized (lock) {
+            return subscriptionIdMap.get(subscriptionId);
         }
     }
 
@@ -338,6 +364,7 @@ public class QueueManager {
      * @param uri non-null canonical queue uri
      */
     public void decrementSubStreamCount(String uri) {
+        // todo check increment for subscriptions
         Argument.expectNonNull(uri, "uri");
         synchronized (lock) {
             Integer currentValue = uriSubStreamCount.get(uri);

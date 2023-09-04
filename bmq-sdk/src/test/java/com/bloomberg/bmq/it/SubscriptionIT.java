@@ -17,27 +17,8 @@ package com.bloomberg.bmq.it;
 
 import static org.junit.Assert.*;
 
-import com.bloomberg.bmq.AbstractSession;
-import com.bloomberg.bmq.AckMessage;
-import com.bloomberg.bmq.AckMessageHandler;
-import com.bloomberg.bmq.BMQException;
-import com.bloomberg.bmq.CompressionAlgorithm;
-import com.bloomberg.bmq.CorrelationId;
-import com.bloomberg.bmq.MessageProperties;
-import com.bloomberg.bmq.PushMessage;
-import com.bloomberg.bmq.PushMessageHandler;
-import com.bloomberg.bmq.PutMessage;
+import com.bloomberg.bmq.*;
 import com.bloomberg.bmq.Queue;
-import com.bloomberg.bmq.QueueControlEvent;
-import com.bloomberg.bmq.QueueEventHandler;
-import com.bloomberg.bmq.QueueFlags;
-import com.bloomberg.bmq.QueueOptions;
-import com.bloomberg.bmq.Session;
-import com.bloomberg.bmq.SessionEvent;
-import com.bloomberg.bmq.SessionEventHandler;
-import com.bloomberg.bmq.SessionOptions;
-import com.bloomberg.bmq.Subscription;
-import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import com.bloomberg.bmq.it.util.TestTools;
@@ -105,6 +86,10 @@ public class SubscriptionIT {
         }
 
         public void expectMessage(String expectedPayload) {
+            expectMessage(expectedPayload, null);
+        }
+
+        public void expectMessage(String expectedPayload, String userData) {
             try {
                 PushMessage message = messages.poll(DEFAULT_TIMEOUT.getSeconds(), TimeUnit.SECONDS);
                 assertNotNull(message);
@@ -114,6 +99,12 @@ public class SubscriptionIT {
                 String payload = new String(bb.array(), StandardCharsets.UTF_8);
 
                 assertEquals(expectedPayload, payload);
+
+                if (userData != null) {
+                    assertNotNull(message.correlationId());
+                    assertNotNull(message.correlationId().userData());
+                    assertEquals(userData, message.correlationId().userData());
+                }
 
                 message.confirm();
             } catch (InterruptedException e) {
@@ -152,16 +143,35 @@ public class SubscriptionIT {
             logger.info("#CONSUMER queue [{}] opened", uri);
         }
 
+        public void closeQueue() {
+            assertNotNull("Expect 'queue' to be non-null", queue);
+
+            Uri uri = queue.uri();
+
+            logger.info("#CONSUMER closing the queue [{}]...", uri);
+            queue.close(DEFAULT_TIMEOUT);
+            logger.info("#CONSUMER queue [{}] closed", uri);
+
+            options = null;
+            queue = null;
+        }
+
+        public void configureQueue(QueueOptions options) {
+            assertNotNull("Expect 'queue' to be non-null", queue);
+
+            this.options = options;
+
+            logger.info("#CONSUMER configuring queue [{}]...", queue.uri());
+            queue.configure(options, DEFAULT_TIMEOUT);
+            logger.info("#CONSUMER queue [{}] configured", queue.uri());
+        }
+
         @Override
         public void close() {
             logger.info("#CONSUMER closing...");
 
             if (queue != null && queue.isOpen()) {
-                logger.info("#CONSUMER closing the queue [{}]...", queue.uri());
-                queue.close(DEFAULT_TIMEOUT);
-                logger.info("#CONSUMER queue successfully closed");
-
-                queue = null;
+                closeQueue();
             }
 
             if (session != null) {
@@ -188,6 +198,22 @@ public class SubscriptionIT {
         Queue queue;
 
         Set<CorrelationId> correlationIds = Collections.synchronizedSet(new HashSet<>());
+
+        static class PayloadForwarder {
+            // This helper class exists for better readability, compare:
+            // ArrayList<String> expected = new ArrayList<>();
+            // expected.add(producer.post("x", 123));      // post() -> String
+            // producer.post("x", 123).appendTo(expected); // post() -> PayloadForwarder
+            private final String payload;
+
+            public PayloadForwarder(String payload) {
+                this.payload = payload;
+            }
+
+            public void appendTo(List<String> container) {
+                container.add(payload);
+            }
+        }
 
         private Producer() {
             // Empty
@@ -247,7 +273,7 @@ public class SubscriptionIT {
             logger.info("#PRODUCER queue [{}] opened", uri);
         }
 
-        public String post(String propertyName, int propertyValue) {
+        public PayloadForwarder post(String propertyName, int propertyValue) {
             String payload = String.format("%s is %d", propertyName, propertyValue);
 
             byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
@@ -270,7 +296,7 @@ public class SubscriptionIT {
 
             queue.post(msg);
 
-            return payload;
+            return new PayloadForwarder(payload);
         }
 
         public void close() {
@@ -340,14 +366,14 @@ public class SubscriptionIT {
 
             ArrayList<String> expected = new ArrayList<>();
 
-            expected.add(producer.post("x", 15));
-            expected.add(producer.post("x", 27));
+            producer.post("x", 15).appendTo(expected);
+            producer.post("x", 27).appendTo(expected);
 
             producer.post("x", 6); // not expected
             producer.post("y", 29); // not expected
 
-            expected.add(producer.post("y", 30));
-            expected.add(producer.post("y", 901));
+            producer.post("y", 30).appendTo(expected);
+            producer.post("y", 901).appendTo(expected);
 
             logger.info("Step 4: Consume messages");
 
@@ -411,14 +437,14 @@ public class SubscriptionIT {
 
             ArrayList<String> expected = new ArrayList<>();
 
-            expected.add(producer.post("x", 15));
-            expected.add(producer.post("x", 27));
+            producer.post("x", 15).appendTo(expected);
+            producer.post("x", 27).appendTo(expected);
 
             producer.post("x", 6); // not expected
             producer.post("x", -4); // not expected
 
-            expected.add(producer.post("x", 31));
-            expected.add(producer.post("x", 56));
+            producer.post("x", 31).appendTo(expected);
+            producer.post("x", 56).appendTo(expected);
 
             logger.info("Step 4: Consume messages");
 
@@ -438,6 +464,169 @@ public class SubscriptionIT {
 
         logger.info("===========================================");
         logger.info("END Testing SubscriptionIT testFanout.");
+        logger.info("===========================================");
+    }
+
+    @Test
+    public void testUpdateSubscription() throws BMQException, IOException {
+        logger.info("=============================================");
+        logger.info("BEGIN Testing SubscriptionIT testUpdateSubscription.");
+        logger.info("=============================================");
+
+        final int TESTED_PORT = 30114; // SystemUtil.getEphemeralPort();
+        final String HANDLE_USER_DATA = "handle";
+
+        try (BmqBroker broker = BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)) {
+            logger.info("Step 1: Bring up the broker");
+
+            Assert.assertFalse(broker.isOldStyleMessageProperties());
+
+            broker.start();
+
+            logger.info("Step 2: Start producer/consumer");
+
+            Consumer consumer =
+                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Producer producer =
+                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+
+            logger.info("Step 3: Open consumer, queue with subscriptions");
+            Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
+
+            Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
+            Subscription s2 = Subscription.builder().setExpressionText("x >= -1000").build();
+            SubscriptionHandle h1 = new SubscriptionHandle(HANDLE_USER_DATA);
+
+            // Passing the same handle, expect only one final subscription 's1'
+            QueueOptions options =
+                    QueueOptions.builder()
+                            .addOrUpdateSubscription(h1, s2)
+                            .addOrUpdateSubscription(h1, s1)
+                            .build();
+
+            consumer.openQueue(uri, options);
+
+            logger.info("Step 4: Open producer, produce messages");
+
+            producer.openQueue(uri);
+
+            ArrayList<String> expected_step4 = new ArrayList<>();
+            ArrayList<String> expected_step5 = new ArrayList<>();
+
+            producer.post("x", 15).appendTo(expected_step4);
+            producer.post("x", 27).appendTo(expected_step4);
+
+            producer.post("x", 6).appendTo(expected_step5); // not expected here
+            producer.post("x", 4).appendTo(expected_step5); // not expected here
+
+            producer.post("x", 30).appendTo(expected_step4);
+            producer.post("x", 901).appendTo(expected_step4);
+
+            logger.info("Step 4: Consume messages");
+
+            for (String payload : expected_step4) {
+                consumer.expectMessage(payload, HANDLE_USER_DATA);
+            }
+
+            logger.info("Step 5: Reconfigure consumer and consume remaining messages");
+
+            // Use less strict subscription expression to receive the remaining messages
+            QueueOptions options_step5 =
+                    QueueOptions.builder().merge(options).addOrUpdateSubscription(h1, s2).build();
+
+            consumer.configureQueue(options_step5);
+            for (String payload : expected_step5) {
+                consumer.expectMessage(payload, HANDLE_USER_DATA);
+            }
+
+            logger.info("Step 6: Close producer/consumer");
+
+            producer.close();
+            consumer.close();
+        }
+
+        logger.info("===========================================");
+        logger.info("END Testing SubscriptionIT testBreathing.");
+        logger.info("===========================================");
+    }
+
+    @Test
+    public void testStress() throws BMQException, IOException {
+        logger.info("=============================================");
+        logger.info("BEGIN Testing SubscriptionIT testStress.");
+        logger.info("=============================================");
+
+        final int TESTED_PORT = 30114; // SystemUtil.getEphemeralPort();
+        final int EPOCH_NUM = 10;
+        final int SUBSCRIPTIONS_NUM = 256;
+        final int MESSAGES_PER_SUBSCRIPTION = 10;
+        final Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
+
+        try (BmqBroker broker = BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)) {
+            logger.info("Step 1: Bring up the broker");
+
+            Assert.assertFalse(broker.isOldStyleMessageProperties());
+
+            broker.start();
+
+            logger.info("Step 2: Start producer/consumer");
+
+            Consumer consumer =
+                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Producer producer =
+                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+
+            logger.info("Step 3: Open producer");
+            producer.openQueue(uri);
+
+            logger.info("Step 4: Run producer/consumer");
+
+            for (int epoch = 0; epoch < EPOCH_NUM; epoch++) {
+                logger.info("Epoch {}/{}", epoch + 1, EPOCH_NUM);
+
+                QueueOptions.Builder builder = QueueOptions.builder();
+                ArrayList<String> userDataList = new ArrayList<>();
+                for (int sIndex = 0; sIndex < SUBSCRIPTIONS_NUM; sIndex++) {
+                    Subscription subscription =
+                            Subscription.builder().setExpressionText("x == " + sIndex).build();
+
+                    String userData = "epoch" + epoch + "_s" + sIndex;
+                    userDataList.add(userData);
+                    SubscriptionHandle handle = new SubscriptionHandle(userData);
+
+                    builder.addOrUpdateSubscription(handle, subscription);
+                }
+
+                QueueOptions options = builder.build();
+                consumer.openQueue(uri, options);
+
+                for (int sIndex = 0; sIndex < SUBSCRIPTIONS_NUM; sIndex++) {
+                    ArrayList<String> expected = new ArrayList<>();
+                    for (int messageIndex = 0;
+                            messageIndex < MESSAGES_PER_SUBSCRIPTION;
+                            messageIndex++) {
+                        producer.post("x", sIndex).appendTo(expected);
+                    }
+
+                    for (int messageIndex = 0;
+                            messageIndex < MESSAGES_PER_SUBSCRIPTION;
+                            messageIndex++) {
+                        consumer.expectMessage(
+                                expected.get(messageIndex), userDataList.get(sIndex));
+                    }
+                }
+
+                consumer.closeQueue();
+            }
+
+            logger.info("Step 5: Close producer/consumer");
+
+            producer.close();
+            consumer.close();
+        }
+
+        logger.info("===========================================");
+        logger.info("END Testing SubscriptionIT testStress.");
         logger.info("===========================================");
     }
 }

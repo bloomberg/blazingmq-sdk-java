@@ -24,6 +24,7 @@ import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
+import com.bloomberg.bmq.impl.infr.msg.Subscription;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
 import com.bloomberg.bmq.impl.intf.BrokerConnection;
 import com.bloomberg.bmq.impl.intf.QueueState;
@@ -189,8 +190,14 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
         }
         // Consider stream params as applied on the broker side and store in queue instance
         storeOptionsToQueue();
+        storeSubscriptionsToQueue(r.request().configureStream().streamParameters().subscriptions());
         setQueueState(QueueState.e_OPENED);
+        getQueueStateManager().onConfigureStreamSent(getQueue());
         resultHook(OpenQueueResult.SUCCESS);
+    }
+
+    private void storeSubscriptionsToQueue(Subscription[] subscriptions) {
+        getQueue().setSubscriptions(subscriptions);
     }
 
     private void generateNextQueueIdForQueueIfNeeded() {

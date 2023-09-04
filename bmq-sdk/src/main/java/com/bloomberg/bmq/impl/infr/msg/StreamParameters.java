@@ -64,7 +64,7 @@ public class StreamParameters {
             params.setAppId(subQueueIdInfo.appId());
         }
 
-        // Empyty subscriptions for deconfigure
+        // Empty subscriptions for deconfigure
 
         return params;
     }
@@ -107,6 +107,8 @@ public class StreamParameters {
 
                 Subscription sn = new Subscription();
 
+                sn.setOrigin(snConfig);
+                sn.setHandle(entry.getValue().getKey());
                 sn.setId(entry.getKey());
 
                 ConsumerInfo consumer = new ConsumerInfo();

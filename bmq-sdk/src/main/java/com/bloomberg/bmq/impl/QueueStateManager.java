@@ -102,6 +102,21 @@ public class QueueStateManager {
     }
 
     /*
+     Scenario case:  (#1) configureStream request successfully sent upstream
+     Actions:        INSERT_ACTIVE
+     Precondition:   QUEUE IS OPENED
+     Post condition: QUEUE IS OPENED
+    */
+    public void onConfigureStreamSent(QueueImpl queue) {
+        Argument.expectNonNull(queue, "queue");
+        Argument.expectCondition(queue.getState() == QueueState.e_OPENED, "'queue' must be opened");
+
+        // Update subscriptions
+        boolean res = queueManager.update(queue);
+        assert res : "Queue insert failed" + queue;
+    }
+
+    /*
      Scenario case:  (#1) openQueue request successfully sent upstream
      Actions:        NO-OP
      Precondition:   QUEUE IS OPENED
@@ -212,6 +227,10 @@ public class QueueStateManager {
 
     public QueueImpl findByQueueId(QueueId queueId) {
         return queueManager.findByQueueId(queueId);
+    }
+
+    public QueueImpl findBySubscriptionId(int subscriptionId) {
+        return queueManager.findBySubscriptionId(subscriptionId);
     }
 
     public QueueImpl findByUri(Uri uri) {

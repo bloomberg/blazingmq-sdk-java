@@ -888,11 +888,11 @@ public final class Session implements AbstractSession {
             PushMessageImpl msg = ev.rawMessage();
             Integer[] subQueueIds = msg.subQueueIds();
             for (Integer subQId : subQueueIds) {
-                //                QueueId qid = QueueId.createInstance(msg.queueId(), subQId);
-                QueueId qid = QueueId.createInstance(msg.queueId(), 0);
-                QueueHandle queue = brokerSession.lookupQueue(qid);
+                QueueHandle queue = brokerSession.lookupQueue(subQId);
                 if (queue != null) {
                     queue.handlePushMessage(msg);
+                } else {
+                    logger.warn("Received PUSH message for unknown queue: {}", msg);
                 }
             }
         }
@@ -904,6 +904,8 @@ public final class Session implements AbstractSession {
             QueueHandle queue = brokerSession.lookupQueue(qid);
             if (queue != null) {
                 queue.handleAckMessage(msg);
+            } else {
+                logger.warn("Received ACK message for unknown queue: {}", msg);
             }
         }
 

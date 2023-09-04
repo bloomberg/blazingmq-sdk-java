@@ -1219,6 +1219,10 @@ public final class BrokerSession
         return queueStateManager.findByQueueId(queueId);
     }
 
+    public QueueHandle lookupQueue(int subscriptionId) {
+        return queueStateManager.findBySubscriptionId(subscriptionId);
+    }
+
     public void post(QueueHandle queueHandle, PutMessageImpl... msgs) throws BMQException {
         Argument.expectNonNull(queueHandle, "queueHandle");
         Argument.expectNonNull(msgs, "msgs");

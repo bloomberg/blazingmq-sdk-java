@@ -73,7 +73,6 @@ public class Subscription {
                 && getMaxUnconfirmedBytes() == subscription.getMaxUnconfirmedBytes()
                 && getMaxUnconfirmedMessages() == subscription.getMaxUnconfirmedMessages()
                 && getExpression().equals(subscription.getExpression());
-        // todo recheck when ready
     }
 
     /**

@@ -15,10 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
+import com.bloomberg.bmq.SubscriptionHandle;
+
 public class Subscription {
     private int sId;
     private Expression expression;
     private ConsumerInfo[] consumers;
+    private transient com.bloomberg.bmq.Subscription origin;
+    private transient SubscriptionHandle handle;
 
     public Subscription() {
         init();
@@ -32,6 +36,8 @@ public class Subscription {
         sId = 0;
         expression = new Expression();
         consumers = new ConsumerInfo[] {};
+        origin = null;
+        handle = null;
     }
 
     public int id() {
@@ -56,6 +62,22 @@ public class Subscription {
 
     public void setConsumers(ConsumerInfo[] val) {
         consumers = val;
+    }
+
+    public com.bloomberg.bmq.Subscription origin() {
+        return origin;
+    }
+
+    public void setOrigin(com.bloomberg.bmq.Subscription val) {
+        origin = val;
+    }
+
+    public SubscriptionHandle handle() {
+        return handle;
+    }
+
+    public void setHandle(SubscriptionHandle val) {
+        handle = val;
     }
 
     public Object createNewInstance() {
