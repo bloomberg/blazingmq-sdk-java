@@ -37,7 +37,6 @@ import com.bloomberg.bmq.SessionEvent;
 import com.bloomberg.bmq.SessionEventHandler;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Subscription;
-import com.bloomberg.bmq.SubscriptionExpression;
 import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
@@ -326,17 +325,9 @@ public class SubscriptionIT {
             logger.info("Step 3: Open consumer, queue with subscriptions");
             Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
 
-            Subscription s1 =
-                    Subscription.builder()
-                            .setExpressionText("x >= 10")
-                            .setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1)
-                            .build();
+            Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
 
-            Subscription s2 =
-                    Subscription.builder()
-                            .setExpressionText("y >= 30")
-                            .setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1)
-                            .build();
+            Subscription s2 = Subscription.builder().setExpressionText("y >= 30").build();
 
             QueueOptions options =
                     QueueOptions.builder().addSubscription(s1).addSubscription(s2).build();
@@ -401,11 +392,7 @@ public class SubscriptionIT {
             Consumer[] consumers = new Consumer[APP_IDS.length];
             for (int i = 0; i < APP_IDS.length; i++) {
                 // Is it okay to reuse QueueOptions?
-                Subscription s1 =
-                        Subscription.builder()
-                                .setExpressionText("x >= 10")
-                                .setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1)
-                                .build();
+                Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
 
                 QueueOptions options = QueueOptions.builder().addSubscription(s1).build();
 

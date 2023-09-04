@@ -312,7 +312,7 @@ public class QueueOptions {
          */
         public Builder addSubscription(Subscription subscription) {
             // todo do we need this or addOrUpdate is enough?
-            SubscriptionHandle handle = SubscriptionHandle.builder().build();
+            SubscriptionHandle handle = new SubscriptionHandle();
             this.subscriptions.put(
                     handle.getId(), new AbstractMap.SimpleImmutableEntry<>(handle, subscription));
             return this;

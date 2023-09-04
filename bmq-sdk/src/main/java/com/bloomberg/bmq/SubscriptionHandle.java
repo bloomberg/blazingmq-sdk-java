@@ -56,14 +56,18 @@ public class SubscriptionHandle {
         return correlationId;
     }
 
-    private SubscriptionHandle(Builder builder) {
+    public SubscriptionHandle() {
+        this(null);
+    }
+
+    public SubscriptionHandle(Object userData) {
         id = nextInt.incrementAndGet(); // todo check overflow, see also CorrelationIdImpl
 
-        if (builder.correlationId != null) {
-            correlationId = builder.correlationId;
+        if (userData instanceof CorrelationId) {
+            correlationId = (CorrelationId) userData;
         } else {
-            // It is fine if `correlationIdUserData` is null
-            correlationId = CorrelationIdImpl.nextId(builder.correlationIdUserData);
+            // It is fine if value for correlation id is null
+            correlationId = CorrelationIdImpl.nextId(userData);
         }
     }
 
@@ -77,75 +81,5 @@ public class SubscriptionHandle {
         // All SubscriptionHandle instances have different ids by design. This makes possible to
         // calculate hash just with this field.
         return Integer.hashCode(getId());
-    }
-
-    /**
-     * Returns a helper class object to create immutable {@code SubscriptionHandle} with custom
-     * settings.
-     *
-     * @return Builder a helper class object to create immutable {@code SubscriptionHandle}
-     */
-    public static SubscriptionHandle.Builder builder() {
-        return new SubscriptionHandle.Builder();
-    }
-
-    /** A helper class to create immutable {@code SubscriptionHandle} with custom settings. */
-    public static class Builder {
-        private Object correlationIdUserData;
-        private CorrelationId correlationId;
-
-        /**
-         * Returns subscription handle based on this object properties.
-         *
-         * @return SubscriptionHandle immutable subscription handle object
-         */
-        public SubscriptionHandle build() {
-            return new SubscriptionHandle(this);
-        }
-
-        /**
-         * Sets user data for correlationId associated with this subscription handle. Note: this
-         * setter invalidates conflicting correlationIdUserData if previously specified.
-         *
-         * @param userData user data object
-         * @return Builder this object
-         */
-        public SubscriptionHandle.Builder setCorrelationIdUserData(Object userData) {
-            this.correlationId = null;
-            this.correlationIdUserData = userData;
-            return this;
-        }
-
-        /**
-         * Sets correlationId associated with this subscription handle. Note: this setter
-         * invalidates conflicting correlationId if previously specified.
-         *
-         * @param correlationId correlation id object
-         * @return Builder this object
-         */
-        public SubscriptionHandle.Builder setCorrelationId(CorrelationId correlationId) {
-            this.correlationId = correlationId;
-            this.correlationIdUserData = null;
-            return this;
-        }
-
-        /**
-         * "Merges" another 'SubscriptionHandle' into this builder, by invoking setF(options.getF())
-         * for all fields 'F' for which 'handle.hasF()' is true.
-         *
-         * @param handle specifies subscription parameters which is merged into the builder
-         * @return Builder this object
-         */
-        public SubscriptionHandle.Builder merge(SubscriptionHandle handle) {
-            // todo check if we need this method
-            correlationId = handle.getCorrelationId();
-            correlationIdUserData = null;
-            return this;
-        }
-
-        private Builder() {
-            correlationIdUserData = null;
-            correlationId = null;
-        }
     }
 }

@@ -31,7 +31,6 @@ import com.bloomberg.bmq.SessionEvent;
 import com.bloomberg.bmq.SessionEventHandler;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Subscription;
-import com.bloomberg.bmq.SubscriptionExpression;
 import com.bloomberg.bmq.SubscriptionHandle;
 import com.bloomberg.bmq.Uri;
 import java.io.PrintWriter;
@@ -212,29 +211,18 @@ public class SubscriptionsConsumer
 
         logger.info("Opening queue [{}] with a timeout of 15 seconds", uri);
 
-        Subscription s1 =
-                Subscription.builder()
-                        .setExpressionText("firmId == \"FOO\"")
-                        .setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1)
-                        .build();
-        SubscriptionHandle h1 =
-                SubscriptionHandle.builder().setCorrelationIdUserData("foo").build();
+        Subscription s1 = Subscription.builder().setExpressionText("firmId == \"FOO\"").build();
+        SubscriptionHandle h1 = new SubscriptionHandle("foo");
 
         Subscription s2 =
-                Subscription.builder()
-                        .setExpressionText("firmId == \"BAR\" && price < 25")
-                        .setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1)
-                        .build();
-        SubscriptionHandle h2 =
-                SubscriptionHandle.builder().setCorrelationIdUserData("bar_low_price").build();
+                Subscription.builder().setExpressionText("firmId == \"BAR\" && price < 25").build();
+        SubscriptionHandle h2 = new SubscriptionHandle("bar_low_price");
 
         Subscription s3 =
                 Subscription.builder()
                         .setExpressionText("firmId == \"BAR\" && price >= 25")
-                        .setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1)
                         .build();
-        SubscriptionHandle h3 =
-                SubscriptionHandle.builder().setCorrelationIdUserData("bar_high_price").build();
+        SubscriptionHandle h3 = new SubscriptionHandle("bar_high_price");
 
         QueueOptions options =
                 QueueOptions.builder()

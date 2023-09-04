@@ -264,6 +264,9 @@ public class Subscription {
          */
         public Subscription.Builder setExpressionText(String expression) {
             this.expressionBuilder.setExpression(expression);
+            if (expression.length() > 0) {
+                setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1);
+            }
             return this;
         }
 
