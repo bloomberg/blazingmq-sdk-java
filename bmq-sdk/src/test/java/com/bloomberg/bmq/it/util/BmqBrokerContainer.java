@@ -47,8 +47,6 @@ public class BmqBrokerContainer implements BmqBroker {
 
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    private static final int BROKER_DEFAULT_PORT = 30114;
     private static final String CONTAINER_TMP_LOGS = "/tmp/logs";
     private static final String IMAGE_NAME = "bmq-broker-java-it";
     private static final String OUTPUT_FILENAME = "output.log";

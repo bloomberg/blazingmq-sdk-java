@@ -385,7 +385,7 @@ limitations under the License. -->
       <id>dockerized-brokers</id>
       <activation>
         <property>
-          <name>!bmqBroker.nonDockerized</name>
+          <name>it.dockerImage</name>
         </property>
       </activation>
       <build>
@@ -423,6 +423,27 @@ limitations under the License. -->
                   </configuration>
                 </execution>
               </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+
+    <profile>
+      <!-- This profile uses natively build broker to run ITs. -->
+      <id>native-brokers</id>
+      <activation>
+        <property>
+          <name>it.brokerDir</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>exec-maven-plugin</artifactId>
+              <executions />
             </plugin>
           </plugins>
         </pluginManagement>

@@ -36,6 +36,7 @@ import com.bloomberg.bmq.impl.infr.proto.PushEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.SchemaEventBuilder;
 import com.bloomberg.bmq.impl.infr.util.Argument;
+import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
@@ -317,6 +318,10 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
     private LinkedBlockingQueue<ControlMessageChoice> receivedRequests =
             new LinkedBlockingQueue<>();
 
+    public BmqBrokerSimulator(Mode serverMode) {
+        this(SystemUtil.getEphemeralPort(), serverMode);
+    }
+
     public BmqBrokerSimulator(int port, Mode serverMode) {
         this.port = Argument.expectPositive(port, "port");
         this.serverMode = serverMode;
@@ -495,6 +500,10 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
     @Override
     public String toString() {
         return "BmqBrokerSimulator [" + serverMode + " on port " + port + "]";
+    }
+
+    public int getPort() {
+        return port;
     }
 
     void writeResponse(Object rsp) {

@@ -23,10 +23,11 @@ import java.io.IOException;
 import java.util.UUID;
 
 public interface BmqBroker extends TestTcpServer {
+    int BROKER_DEFAULT_PORT = 30114;
 
     enum Domains {
-        Priority("bmq.test.mmap.priority"),
-        Fanout("bmq.test.mmap.fanout");
+        Priority("bmq.test.mem.priority"),
+        Fanout("bmq.test.mem.fanout");
 
         private final String domain;
 
@@ -84,31 +85,36 @@ public interface BmqBroker extends TestTcpServer {
     void setDumpBrokerOutput();
 
     static BmqBroker createStartedBroker() throws IOException {
-        int port = SystemUtil.getEphemeralPort();
-
+        // Don't have config script which automatically changes static config for broker.
+        // Workaround: launch ITs in 1 fork and use default port.
+        int port = dockerized() ? SystemUtil.getEphemeralPort() : BROKER_DEFAULT_PORT;
         return createStartedBroker(port);
     }
 
     static BmqBroker createStartedBroker(int port) throws IOException {
         BmqBroker bmqBroker = createStoppedBroker(port);
         bmqBroker.start();
-
         return bmqBroker;
     }
 
     static BmqBroker createStoppedBroker() throws IOException {
-        int port = SystemUtil.getEphemeralPort();
-
+        // Don't have config script which automatically changes static config for broker.
+        // Workaround: launch ITs in 1 fork and use default port.
+        int port = dockerized() ? SystemUtil.getEphemeralPort() : BROKER_DEFAULT_PORT;
         return createStoppedBroker(port);
     }
 
     static BmqBroker createStoppedBroker(int port) throws IOException {
-        return nonDockerized()
-                ? BmqBrokerTestServer.createStoppedBroker(port)
-                : BmqBrokerContainer.createContainer(port);
+        return dockerized()
+                ? BmqBrokerContainer.createContainer(port)
+                : BmqBrokerTestServer.createStoppedBroker(port);
     }
 
-    static boolean nonDockerized() {
-        return System.getProperty("bmqBroker.nonDockerized") != null;
+    static boolean dockerized() {
+        return brokerDir() == null;
+    }
+
+    static String brokerDir() {
+        return System.getProperty("it.brokerDir");
     }
 }

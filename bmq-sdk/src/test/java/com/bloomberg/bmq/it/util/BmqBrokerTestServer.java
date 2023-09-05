@@ -81,62 +81,6 @@ public class BmqBrokerTestServer implements BmqBroker {
     boolean dropTmpFolder = false;
     boolean dumpBrokerOutput = false;
 
-    private static boolean hasValidEnvPath() {
-        // At least one of the two env vars must be non-null and non-empty.
-
-        final boolean hasPath = PATH_TO_BMQ_BROKER != null && !PATH_TO_BMQ_BROKER.isEmpty();
-        final boolean hasIntegrationPath =
-                INTEGRATION_TEST_PATH_TO_BMQ_BROKER != null
-                        && !INTEGRATION_TEST_PATH_TO_BMQ_BROKER.isEmpty();
-
-        return hasPath || hasIntegrationPath;
-    }
-
-    private static String getEnvPath() {
-        if (!hasValidEnvPath()) {
-            throw new IllegalStateException(
-                    "Neither BMQ_BROKER_PATH nor "
-                            + "BMQ_BROKER_INTEGRATION_TEST_PATH "
-                            + "env variables are specified.");
-        }
-
-        // Always give preference to 'BMQ_BROKER_PATH', which user may have
-        // specified.  'BMQ_BROKER_INTEGRATION_TEST_PATH' is typically used in
-        // the Jenkins run.
-        if (PATH_TO_BMQ_BROKER != null) {
-            return PATH_TO_BMQ_BROKER;
-        } else {
-            if (INTEGRATION_TEST_PATH_TO_BMQ_BROKER == null) {
-                throw new IllegalStateException(
-                        "Both paths to BlazingMQ broker cannot be null at the same time");
-            }
-            return INTEGRATION_TEST_PATH_TO_BMQ_BROKER;
-        }
-    }
-
-    private static boolean isLocalRun() {
-        if (!hasValidEnvPath()) {
-            throw new IllegalStateException(
-                    "Neither BMQ_BROKER_PATH nor "
-                            + "BMQ_BROKER_INTEGRATION_TEST_PATH "
-                            + "env variables are specified.");
-        }
-
-        return PATH_TO_BMQ_BROKER != null && !PATH_TO_BMQ_BROKER.isEmpty();
-    }
-
-    private static boolean isJenkinsRun() {
-        if (!hasValidEnvPath()) {
-            throw new IllegalStateException(
-                    "Neither BMQ_BROKER_PATH nor "
-                            + "BMQ_BROKER_INTEGRATION_TEST_PATH "
-                            + "env variables are specified.");
-        }
-
-        return INTEGRATION_TEST_PATH_TO_BMQ_BROKER != null
-                && !INTEGRATION_TEST_PATH_TO_BMQ_BROKER.isEmpty();
-    }
-
     private static long getPidOfProcess(Process p) {
         try {
             if (p.getClass().getName().equals("java.lang.UNIXProcess")) {
@@ -180,7 +124,7 @@ public class BmqBrokerTestServer implements BmqBroker {
     }
 
     private void init(int waitTime) throws IOException, InterruptedException {
-        final String envPath = getEnvPath();
+        final String envPath = BmqBroker.brokerDir();
 
         // Cleanup from previous run. Delete named pipe if it's there
         File np = new File(envPath + "/bmqbrkr.ctl");
@@ -189,67 +133,23 @@ public class BmqBrokerTestServer implements BmqBroker {
             np.delete();
         }
 
-        ProcessBuilder pb = null;
-        if (isLocalRun()) {
-            // Since we run multiple tests at the same time starting instances
-            // of BlazingMQ broker in the same location (BMQ_PREFIX),
-            // we need to create a tmp folder for storage, log and stat files
-            tmpFolder = makeTempDir(envPath, "localBMQ_");
+        // Since we run multiple tests at the same time starting instances
+        // of BlazingMQ broker in the same location (BMQ_PREFIX),
+        // we need to create a tmp folder for storage, log and stat files
+        tmpFolder = makeTempDir(envPath, "localBMQ_");
 
-            pb =
-                    new ProcessBuilder(
-                            "./bmqbrkr.tsk",
-                            "./bmqbrkr.cfg",
-                            "development",
-                            "set:appConfig/binDir=" + envPath + "/python/bin",
-                            "set:appConfig/etcDir=" + envPath + "/etc",
-                            "set:taskConfig/logController/fileName=" + tmpFolder + "/logs.%T.%p",
-                            "set:appConfig/stats/printer/file=" + tmpFolder + "/stat.%T.%p",
-                            "set:appConfig/plugins/libraries=" + envPath + "/../../plugins",
-                            BMQ_BROKER_LOG_LEVEL.toString());
+        ProcessBuilder pb = new ProcessBuilder("./run");
 
-            final Path storagePath = tmpFolder.resolve("storage");
+        final Path storagePath = tmpFolder.resolve("storage");
 
-            Map<String, String> env = pb.environment();
-            env.put("BMQ_PREFIX", envPath);
-            env.put("BMQ_STORAGE", storagePath.toString());
-            logger.info("BlazingMQ Broker storage directory: {}", storagePath);
+        Map<String, String> env = pb.environment();
+        env.put("BMQ_PREFIX", envPath);
+        env.put("BMQ_STORAGE", storagePath.toString());
+        logger.info("BlazingMQ Broker storage directory: {}", storagePath);
 
-            outputFile = new File(tmpFolder.resolve("output").toString());
-        } else if (isJenkinsRun()) {
-            // Domains path location will be the one used on dev.
-            // Since we use temp folder here, there is no need to override
-            // log settings like we do for local run
-            pb =
-                    new ProcessBuilder(
-                            "./bmqbrkr.tsk",
-                            "./bmqbrkr.cfg",
-                            "development",
-                            "set:appConfig/binDir=" + envPath + "/python/bin",
-                            "set:appConfig/etcDir=" + envPath + "/etc",
-                            BMQ_BROKER_LOG_LEVEL.toString());
-
-            // For Jenkins run, we need to create a temporary directory which
-            // be used for BMQ_PREFIX env variable.  This unique temp directory
-            // is required mainly to ensure that 'bmqbrkr.ctl' named pipe is
-            // created in a unique location, and subsequent runs of bmqbrkr
-            // succeed without complaining about 'named pipe already exists'.
-
-            // Note that setting the BMQ_PREFIX env variable will also mean
-            // that a 'storage' sub-directory could also be created in that
-            // folder, but since in Jenkins run, bmqbrkr acts as just a proxy
-            // to dev cluster, it won't create storage folder.
-
-            tmpFolder = makeTempDir("/bb/data/tmp", "bmq");
-
-            Map<String, String> env = pb.environment();
-            env.put("BMQ_PREFIX", tmpFolder.toString());
-
-            outputFile = new File(tmpFolder.toFile(), "output");
-        }
+        outputFile = new File(tmpFolder.resolve("output").toString());
 
         // Common environment vars
-        Map<String, String> env = pb.environment();
         env.put("BMQ_PORT", String.valueOf(sessionOptions.brokerUri().getPort()));
         env.put("BMQ_HOSTTAGS_FILE", "/bb/bin/bbcpu.lst");
         env.put("PYTHONPATH", envPath + "/python");
@@ -279,6 +179,7 @@ public class BmqBrokerTestServer implements BmqBroker {
 
     @Override
     public void start() {
+        Argument.expectNonNull(BmqBroker.brokerDir(), "it.brokerDir");
 
         if (process != null) {
             logger.info("Broker already started.");
@@ -286,15 +187,11 @@ public class BmqBrokerTestServer implements BmqBroker {
             return;
         }
 
-        if (!hasValidEnvPath()) {
-            throw new RuntimeException("Doesn't have valid path for broker");
-        }
-
         try {
             logger.info(
                     "Starting broker on {}.  Env path: [{}].  Waiting time: [{}].",
                     sessionOptions.brokerUri(),
-                    getEnvPath(),
+                    BmqBroker.brokerDir(),
                     waitingTime);
 
             init(waitingTime);
