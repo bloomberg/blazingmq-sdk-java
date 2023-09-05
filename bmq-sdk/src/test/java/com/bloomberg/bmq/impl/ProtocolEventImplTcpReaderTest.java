@@ -32,6 +32,7 @@ import com.bloomberg.bmq.impl.infr.proto.PushEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.PushEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageIterator;
+import com.bloomberg.bmq.util.TestHelpers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -179,7 +180,7 @@ public class ProtocolEventImplTcpReaderTest {
 
         new Thread(task).start();
 
-        evSema.acquire();
+        TestHelpers.acquireSema(evSema, 15);
         assertEquals(NUM_PUSH_MESSAGES, pushMsgs.size());
         for (PushMessageImpl msg : pushMsgs) {
             String guid = msg.messageGUID().toString();

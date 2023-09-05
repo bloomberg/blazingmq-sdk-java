@@ -32,6 +32,7 @@ import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.DisconnectCallback;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.DisconnectStatus;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.ReadCallback;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.WriteStatus;
+import com.bloomberg.bmq.util.TestHelpers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -50,7 +51,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -147,19 +147,7 @@ public class NettyTcpConnectionTest {
     }
 
     private static void acquireSema(Semaphore sema) {
-        acquireSema(sema, DEFAULT_CB_TIMEOUT);
-    }
-
-    private static void acquireSema(Semaphore sema, int sec) {
-        try {
-            logger.info("Semaphore acquired {}", sema);
-            if (!sema.tryAcquire(sec, TimeUnit.SECONDS)) {
-                logger.info("Timeout");
-                fail();
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        TestHelpers.acquireSema(sema, DEFAULT_CB_TIMEOUT);
     }
 
     private static void sleepForMillies(int millies) {
@@ -436,7 +424,7 @@ public class NettyTcpConnectionTest {
                 opts.startAttemptTimeout()
                         .plus(opts.startRetryInterval().multipliedBy(NUM_RETRIES))
                         .getSeconds();
-        acquireSema(connectSema, (int) timeout + 1);
+        TestHelpers.acquireSema(connectSema, (int) timeout + 1);
 
         // 2) Ensure that 'connect' fails, and no channel up event is fired.
         assertFalse(obj.isConnected());
