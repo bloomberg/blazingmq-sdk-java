@@ -343,22 +343,6 @@ public class PutPosterTest {
                             0);
             poster.registerAck(ackMsg); // should be just logged and ignored
 
-            // Try to register valid ACK message without sending PUT
-            ackMsg =
-                    new AckMessageImpl(
-                            AckResult.UNKNOWN,
-                            CorrelationIdImpl.restoreId(1),
-                            MessageGUID.createEmptyGUID(),
-                            0);
-            try {
-                poster.registerAck(ackMsg);
-                fail(); // Should not get here
-            } catch (IllegalStateException e) {
-                assertEquals(
-                        "Correlation ID not found [ CorrelationId [ UniqueId : " + 1 + " ] ]",
-                        e.getMessage());
-            }
-
             // Post PUT message and then register ACK message
             Object userData = new Object();
             CorrelationIdImpl cId = CorrelationIdImpl.nextId(userData);
@@ -380,6 +364,15 @@ public class PutPosterTest {
 
             assertEquals(cId, ackMsg.correlationId());
             assertEquals(userData, ackMsg.correlationId().userData());
+
+            // Try to register the same ACK message again
+            ackMsg =
+                    new AckMessageImpl(
+                            AckResult.SUCCESS,
+                            CorrelationIdImpl.restoreId(cId.toInt()),
+                            ackMsg.messageGUID(),
+                            0);
+            poster.registerAck(ackMsg); // should be just logged and ignored
         }
     }
 }
