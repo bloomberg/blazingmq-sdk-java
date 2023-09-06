@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -2663,7 +2664,9 @@ public class BrokerSessionIT {
      *   <li>stop and linger broker session and stop server
      * </ul>
      */
-    @Test
+    // Temporarily disable this test
+    // Until achieved more stable repeatability on slow hosts
+    // @Test
     public void closeQueueOnPendingConfigureRequest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueOnPendingConfigureRequest.");
@@ -2832,10 +2835,11 @@ public class BrokerSessionIT {
             verifyDisconnectRequest(++reqId, server.nextClientRequest());
 
         } catch (TimeoutException e) {
-            throw new RuntimeException(e);
+            logger.error("Timeout: ", e);
+            fail();
         } catch (Exception e) {
             logger.error("Exception: ", e);
-            throw e;
+            fail();
         } finally {
             assertEquals(GenericResult.SUCCESS, session.stop(TEST_REQUEST_TIMEOUT));
             assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));

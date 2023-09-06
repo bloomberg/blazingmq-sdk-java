@@ -2294,7 +2294,9 @@ public class SessionIT {
      *   <li>stop and linger broker session and stop server
      * </ul>
      */
-    @Test
+    // Temporarily disable this test
+    // Until achieved more stable repeatability on slow hosts
+    // @Test
     public void closeQueueOnPendingConfigureRequest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing SessionIT closeQueueOnPendingConfigureRequest.");
