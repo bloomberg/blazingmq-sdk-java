@@ -70,7 +70,6 @@ import com.bloomberg.bmq.it.util.BmqBrokerSimulator.Mode;
 import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.net.URI;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -239,9 +238,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -371,9 +368,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
 
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -474,9 +469,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
 
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -552,9 +545,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -620,9 +611,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -682,9 +671,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -730,9 +717,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -828,9 +813,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -937,9 +920,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -1062,9 +1043,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1174,9 +1153,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1298,9 +1275,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1432,9 +1407,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1542,9 +1515,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -1711,9 +1682,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -1881,9 +1850,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -2027,9 +1994,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -2201,9 +2166,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -2472,9 +2435,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -2567,9 +2528,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -2727,7 +2686,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -2912,7 +2871,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -3024,9 +2983,7 @@ public class BrokerSessionIT {
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -3178,7 +3135,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -3536,7 +3493,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -3916,9 +3873,7 @@ public class BrokerSessionIT {
 
         logger.info("Step 2. create session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -4070,9 +4025,7 @@ public class BrokerSessionIT {
         // Create session
         logger.info("Create session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -4606,9 +4559,7 @@ public class BrokerSessionIT {
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -4810,7 +4761,7 @@ public class BrokerSessionIT {
         logger.info("Create the session");
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setStopTimeout(TIMEOUT)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -4891,9 +4842,7 @@ public class BrokerSessionIT {
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5083,7 +5032,7 @@ public class BrokerSessionIT {
         logger.info("Create the session");
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setStopTimeout(TIMEOUT)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -5166,9 +5115,7 @@ public class BrokerSessionIT {
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5253,9 +5200,7 @@ public class BrokerSessionIT {
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5351,9 +5296,7 @@ public class BrokerSessionIT {
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5444,9 +5387,7 @@ public class BrokerSessionIT {
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();

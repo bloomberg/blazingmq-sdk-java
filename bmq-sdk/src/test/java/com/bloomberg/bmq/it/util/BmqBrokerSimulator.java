@@ -53,6 +53,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -310,6 +311,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
     private Thread thread;
     private final int port;
+    private final URI uri;
     private Mode serverMode;
     private ChannelFuture channelFuture;
     private ConcurrentLinkedQueue<ResponseItem> userDefinedResponses;
@@ -324,6 +326,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
     public BmqBrokerSimulator(int port, Mode serverMode) {
         this.port = Argument.expectPositive(port, "port");
+        uri = URI.create("tcp://localhost:" + port);
         this.serverMode = serverMode;
         if (this.serverMode == Mode.BMQ_MANUAL_MODE) {
             userDefinedResponses = new ConcurrentLinkedQueue<>();
@@ -504,6 +507,11 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
     public int getPort() {
         return port;
+    }
+
+    public URI getURI() {
+        // Immutable according to documentation
+        return uri;
     }
 
     void writeResponse(Object rsp) {

@@ -70,6 +70,9 @@ limitations under the License. -->
     <!-- Rerun failed unit tests up to 3 times -->
     <surefire.rerunFailingTestsCount>3</surefire.rerunFailingTestsCount>
 
+    <!-- More than 1 fork is not supported until we have a way to dynamically
+     generate static broker configs with different ports.
+     See also: BmqBroker.java -->
     <failsafe.forkCount>1</failsafe.forkCount>
 
     <!-- Rerun failed integrations tests up to 3 times -->
@@ -493,7 +496,7 @@ limitations under the License. -->
          can run with JVM8 or newer)
        - JDK9-and-above
          This profile is activated with JDK9 and above (actually, only JDK11 and JDK17 are supported) and sets
-         set compiler "release" parameter to "8" (so all the code still can run with JVM8) -->
+         compiler "release" parameter to "8" (so all the code still can run with JVM8) -->
   <profiles>
     <profile>
       <id>JDK8</id>

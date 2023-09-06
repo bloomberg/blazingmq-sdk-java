@@ -15,14 +15,21 @@
  */
 package com.bloomberg.bmq.it.util;
 
+import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface BmqBroker extends TestTcpServer {
+
+    Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     int BROKER_DEFAULT_PORT = 30114;
 
     enum Domains {
@@ -105,16 +112,30 @@ public interface BmqBroker extends TestTcpServer {
     }
 
     static BmqBroker createStoppedBroker(int port) throws IOException {
-        return dockerized()
-                ? BmqBrokerContainer.createContainer(port)
-                : BmqBrokerTestServer.createStoppedBroker(port);
+        boolean hasNativeBrokerDir = (brokerDir() != null);
+        if (dockerized()) {
+            if (hasNativeBrokerDir) {
+                logger.warn(
+                        "Both 'it.brokerDir' and 'it.dockerImage' specified, creating dockerized broker");
+            }
+            return BmqBrokerContainer.createContainer(port);
+        }
+        if (hasNativeBrokerDir) {
+            return BmqBrokerTestServer.createStoppedBroker(port);
+        }
+        throw new BMQException(
+                "Failed to create stopped broker: 'it.brokerDir' or 'it.dockerImage' must be specified");
     }
 
     static boolean dockerized() {
-        return brokerDir() == null;
+        return dockerImage() != null;
     }
 
     static String brokerDir() {
         return System.getProperty("it.brokerDir");
+    }
+
+    static String dockerImage() {
+        return System.getProperty("it.dockerImage");
     }
 }

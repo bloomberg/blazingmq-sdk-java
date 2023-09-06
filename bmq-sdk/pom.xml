@@ -443,7 +443,23 @@ limitations under the License. -->
             <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>exec-maven-plugin</artifactId>
-              <executions />
+              <executions>
+                <execution>
+                  <!-- Clean up broker tmp folders -->
+                  <id>clean-up-broker-dirs</id>
+                  <goals>
+                    <goal>exec</goal>
+                  </goals>
+                  <phase>post-integration-test</phase>
+                  <configuration>
+                    <executable>${project.basedir}/src/test/bin/broker-cleanup.sh</executable>
+                    <skip>${maven.test.skip}</skip>
+                    <arguments>
+                      <argument>${it.brokerDir}</argument>
+                    </arguments>
+                  </configuration>
+                </execution>
+              </executions>
             </plugin>
           </plugins>
         </pluginManagement>

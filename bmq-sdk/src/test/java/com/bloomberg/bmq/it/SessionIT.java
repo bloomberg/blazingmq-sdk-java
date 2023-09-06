@@ -939,7 +939,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -2308,7 +2308,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -2505,7 +2505,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4151,7 +4151,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4391,7 +4391,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4559,7 +4559,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4744,7 +4744,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4979,7 +4979,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -5491,7 +5491,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .setConfigureQueueTimeout(Duration.ofSeconds(1))
                         .build();
@@ -5803,7 +5803,7 @@ public class SessionIT {
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + server.getPort()))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
