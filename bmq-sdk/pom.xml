@@ -385,7 +385,7 @@ limitations under the License. -->
       <id>dockerized-brokers</id>
       <activation>
         <property>
-          <name>!bmqBroker.nonDockerized</name>
+          <name>it.dockerImage</name>
         </property>
       </activation>
       <build>
@@ -420,6 +420,43 @@ limitations under the License. -->
                   <configuration>
                     <executable>${project.basedir}/src/test/bin/docker-cleanup.sh</executable>
                     <skip>${maven.test.skip}</skip>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+
+    <profile>
+      <!-- This profile uses natively build broker to run ITs. -->
+      <id>native-brokers</id>
+      <activation>
+        <property>
+          <name>it.brokerDir</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>exec-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <!-- Clean up broker tmp folders -->
+                  <id>clean-up-broker-dirs</id>
+                  <goals>
+                    <goal>exec</goal>
+                  </goals>
+                  <phase>post-integration-test</phase>
+                  <configuration>
+                    <executable>${project.basedir}/src/test/bin/broker-cleanup.sh</executable>
+                    <skip>${maven.test.skip}</skip>
+                    <arguments>
+                      <argument>${it.brokerDir}</argument>
+                    </arguments>
                   </configuration>
                 </execution>
               </executions>

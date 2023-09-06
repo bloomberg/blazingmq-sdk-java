@@ -59,9 +59,7 @@ import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
 import com.bloomberg.bmq.impl.infr.proto.Protocol;
 import com.bloomberg.bmq.impl.infr.util.Argument;
-import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import com.bloomberg.bmq.it.util.BmqBroker;
-import com.bloomberg.bmq.it.util.BmqBrokerContainer;
 import com.bloomberg.bmq.it.util.BmqBrokerSimulator;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -843,15 +841,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueAsyncTest.");
         logger.info("=================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
 
         try {
             logger.info("3. start session");
@@ -936,18 +931,15 @@ public class SessionIT {
                 isOpenDelayed,
                 isConfigureDelayed);
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -1299,15 +1291,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueAsyncNullHandlerTest.");
         logger.info("====================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
 
         try {
             logger.info("3. start session");
@@ -1417,15 +1406,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
 
         try {
             logger.info("3. start session");
@@ -1485,15 +1471,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueAsyncNullHandlerTest.");
         logger.info("====================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
 
         try {
             logger.info("3. start session");
@@ -1583,15 +1566,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT queueOpenErrorTest");
         logger.info("==========================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("Step 1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("Step 2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         server.pushItem(StatusCategory.E_SUCCESS); // Ok for nego request
 
         try {
@@ -1681,15 +1661,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT pushMessageTest.");
         logger.info("===============================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         try {
             logger.info("3. start session");
             session.start(DEFAULT_TIMEOUT);
@@ -1754,15 +1731,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT queueConfigureNotSupported.");
         logger.info("===========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         try {
             logger.info("3. start session");
             session.start(DEFAULT_TIMEOUT);
@@ -1815,15 +1789,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT queueOpenAlreadyInProgress.");
         logger.info("===========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         try {
             logger.info("3. start session");
             session.start(DEFAULT_TIMEOUT);
@@ -1871,15 +1842,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT startSessionTimeoutTest.");
         logger.info("========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in silent mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.SILENT_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.SILENT_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         try {
             logger.info("3. attempt to start session");
             session.start(SHORT_TIMEOUT);
@@ -1919,15 +1887,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openQueueTimeoutTest.");
         logger.info("=====================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         server.pushItem(StatusCategory.E_SUCCESS); // Ok for nego request
 
         try {
@@ -1989,15 +1954,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openWriteQueueAppIdTest.");
         logger.info("================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
 
         try {
             logger.info("3. start session");
@@ -2071,15 +2033,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openQueueConfigureTimeoutTest.");
         logger.info("======================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         server.pushItem(StatusCategory.E_SUCCESS); // Ok for nego request
 
         try {
@@ -2151,15 +2110,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT closeQueueConfigurationFailedTest.");
         logger.info("==================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         server.pushItem(StatusCategory.E_SUCCESS); // Ok for nego request
 
         try {
@@ -2236,15 +2192,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT closeQueueConfigurationTimeoutTest.");
         logger.info("===========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         server.pushItem(StatusCategory.E_SUCCESS); // Ok for nego request
 
         try {
@@ -2348,16 +2301,14 @@ public class SessionIT {
         logger.info("============================================================");
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -2547,16 +2498,14 @@ public class SessionIT {
         logger.info("==========================================================");
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -2642,15 +2591,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT sequenceTimeoutTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
         server.pushItem(StatusCategory.E_SUCCESS); // Ok for nego request
         try {
             logger.info("3. start session");
@@ -2910,9 +2856,7 @@ public class SessionIT {
         // 8) Verify PUSH message has properties
         // 9) Stop the session and the broker
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
-        try (BmqBroker broker = BmqBrokerContainer.createContainer(TESTED_PORT)) {
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
             assertFalse(broker.isOldStyleMessageProperties());
@@ -3146,9 +3090,7 @@ public class SessionIT {
         // 9) Close the queue
         // 10) Stop the session and the broker
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
-        try (BmqBroker broker = BmqBrokerContainer.createContainer(TESTED_PORT)) {
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
             assertFalse(broker.isOldStyleMessageProperties());
@@ -3526,19 +3468,17 @@ public class SessionIT {
         //   broker.kill();
         //   session.waitConnectionLostEvent(); // There will be no ACK messages sent
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         // Use simulator in the first part of test where PUTs are sent
         // and there should be no ACKs
         BmqBrokerSimulator simulator =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+                new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         simulator.start();
 
         // Use broker in the second part of test where PUTs are sent
         // and corresponding ACKs are expected
-        BmqBroker broker = BmqBroker.createStoppedBroker(TESTED_PORT);
+        BmqBroker broker = BmqBroker.createStoppedBroker();
 
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(broker.sessionOptions().brokerUri().getPort());
         simulator.pushSuccess(); // Ok for nego request
 
         final int NUM_MESSAGES = 500;
@@ -3815,15 +3755,12 @@ public class SessionIT {
         logger.info("BEGIN Testing SessionIT openCloseMultipleSubqueuesTest.");
         logger.info("=======================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         logger.info("1. start broker simulator in auto mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
-        TestSession session = new TestSession(TESTED_PORT);
+        TestSession session = new TestSession(server.getPort());
 
         try {
             logger.info("3. start session");
@@ -4207,16 +4144,14 @@ public class SessionIT {
         final Duration DELAY = Duration.ofSeconds(1);
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4449,16 +4384,14 @@ public class SessionIT {
         logger.info("=========================================================");
 
         logger.info("1. start test server in active mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4619,16 +4552,14 @@ public class SessionIT {
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
 
         logger.info("1. start test server in active mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_AUTO_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -4806,16 +4737,14 @@ public class SessionIT {
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(2);
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -5043,16 +4972,14 @@ public class SessionIT {
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(2);
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);
@@ -5557,16 +5484,14 @@ public class SessionIT {
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(2);
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .setConfigureQueueTimeout(Duration.ofSeconds(1))
                         .build();
@@ -5871,16 +5796,14 @@ public class SessionIT {
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(2);
 
         logger.info("1. start test server in manual mode");
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
         TestMonitor monitor = new TestMonitor();
         SessionOptions opts =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TestSession session = new TestSession(opts);

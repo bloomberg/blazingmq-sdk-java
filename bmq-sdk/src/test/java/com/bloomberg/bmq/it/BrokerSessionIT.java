@@ -61,7 +61,6 @@ import com.bloomberg.bmq.impl.infr.net.NettyTcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
-import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import com.bloomberg.bmq.impl.intf.EventHandler;
 import com.bloomberg.bmq.impl.intf.QueueHandle;
 import com.bloomberg.bmq.impl.intf.QueueState;
@@ -71,7 +70,6 @@ import com.bloomberg.bmq.it.util.BmqBrokerSimulator.Mode;
 import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.net.URI;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -235,15 +233,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueAsyncTest.");
         logger.info("=================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -369,14 +364,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
 
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -473,14 +465,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
 
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -552,14 +541,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT queueConfigureNotSupported.");
         logger.info("===========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -621,14 +607,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT queueOpenAlreadyInProgress.");
         logger.info("===========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -684,14 +667,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT startSessionTimeoutTest.");
         logger.info("========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.SILENT_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.SILENT_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -733,14 +713,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openQueueTimeoutTest.");
         logger.info("===================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -832,14 +809,11 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openQueueConfigureTimeoutTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -941,15 +915,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openQueueConfigureCanceledTest.");
         logger.info("=============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -1067,15 +1038,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationFailedTest.");
         logger.info("==================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1180,15 +1148,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationTimeoutTest.");
         logger.info("=================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1305,15 +1270,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationCanceledTest.");
         logger.info("==================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1440,15 +1402,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sequenceTimeoutTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -1551,15 +1510,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT lateOpenQueueResponseTest.");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore openQueueSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -1721,15 +1677,12 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT lateConfigureOpenQueueResponseTest.");
         logger.info("===================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore openQueueSema = new Semaphore(0);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -1887,20 +1840,17 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT lateStandaloneConfigureResponseTest.");
         logger.info("===================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore openQueueSema = new Semaphore(0);
         final Semaphore configureQueueSema = new Semaphore(0);
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
         final int FAILED_TO_APPLY_CUSTOMER_PRIORITY = 3;
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -2034,20 +1984,17 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT lateCloseQueueConfigureResponseTest.");
         logger.info("===================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore openQueueSema = new Semaphore(0);
         final Semaphore closeQueueSema = new Semaphore(0);
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
 
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -2211,18 +2158,15 @@ public class BrokerSessionIT {
      */
     private void reOpenQueueTest(int numberOfQueuesOpened) {
         logger.info("BrokerSessionIT reOpenQueueTest for {} queues.", numberOfQueuesOpened);
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -2483,18 +2427,15 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT closeQueueOnStoppedSession.");
         logger.info("===========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -2579,18 +2520,15 @@ public class BrokerSessionIT {
 
         final Semaphore closeQueueSema = new Semaphore(0);
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -2734,12 +2672,11 @@ public class BrokerSessionIT {
         int reqId = 0;
 
         // start test server in manual mode
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // create broker session
@@ -2749,7 +2686,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -2923,9 +2860,8 @@ public class BrokerSessionIT {
         int reqId = 0;
 
         // start test server in manual mode
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // create broker session
@@ -2935,7 +2871,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -3039,18 +2975,15 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT configureQueuePreconditionFailures.");
         logger.info("===================================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
         final int INITIAL_CUSTOMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -3185,7 +3118,6 @@ public class BrokerSessionIT {
         logger.info("======================================================");
 
         final Semaphore testSema = new Semaphore(0);
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 5000000;
         final int MAX_UNCONFIRMED_MESSAGES = 500;
         final int CONSUMER_PRIORITY = 100;
@@ -3193,7 +3125,7 @@ public class BrokerSessionIT {
 
         int reqId = 0;
         // start test server in active mode
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_AUTO_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
 
         // create broker session
@@ -3203,7 +3135,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -3544,7 +3476,6 @@ public class BrokerSessionIT {
         logger.info("======================================================");
 
         final Semaphore testSema = new Semaphore(0);
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final int MAX_UNCONFIRMED_BYTES = 5000000;
         final int MAX_UNCONFIRMED_MESSAGES = 500;
         final int CONSUMER_PRIORITY = 100;
@@ -3552,7 +3483,7 @@ public class BrokerSessionIT {
 
         int reqId = 0;
         logger.info("1. start test server in manual mode");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("2. create broker session");
@@ -3562,7 +3493,7 @@ public class BrokerSessionIT {
 
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setHostHealthMonitor(monitor)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -3934,19 +3865,15 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT queueOpenErrorTest");
         logger.info("================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Semaphore testSema = new Semaphore(0);
 
         logger.info("Step 1. start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         logger.info("Step 2. create session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -4090,20 +4017,15 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT openCloseMultipleSubqueuesTest");
         logger.info("============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
-
         // Start broker simulator
         logger.info("Start broker simulator in manual mode");
-        BmqBrokerSimulator server =
-                new BmqBrokerSimulator(TESTED_PORT, BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(BmqBrokerSimulator.Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create session
         logger.info("Create session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -4625,22 +4547,19 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopTest.");
         logger.info("==============================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(5);
         final Duration FUTURE_TIMEOUT = Duration.ofSeconds(6);
         final Duration REQUEST_DELAY = Duration.ofSeconds(2);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -4831,19 +4750,18 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopNullTimeoutTest.");
         logger.info("=========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration TIMEOUT = Duration.ofSeconds(5);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setStopTimeout(TIMEOUT)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -4912,22 +4830,19 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncTest.");
         logger.info("===================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(5);
         final Duration FUTURE_TIMEOUT = Duration.ofSeconds(6);
         final Duration REQUEST_DELAY = Duration.ofSeconds(2);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5105,20 +5020,19 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncNullTimeoutTest.");
         logger.info("==============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration TIMEOUT = Duration.ofSeconds(5);
         final Semaphore stopSema = new Semaphore(0);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
                 SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
+                        .setBrokerUri(server.getURI())
                         .setStopTimeout(TIMEOUT)
                         .build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
@@ -5190,21 +5104,18 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopTimeoutTest.");
         logger.info("=====================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         final Duration REQUEST_DELAY_FAILURE = Duration.ofSeconds(2);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5276,7 +5187,6 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncTimeoutTest.");
         logger.info("==========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         final Duration REQUEST_DELAY_FAILURE = Duration.ofSeconds(2);
 
@@ -5284,15 +5194,13 @@ public class BrokerSessionIT {
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5378,20 +5286,17 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopInProgressTest.");
         logger.info("========================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration REQUEST_DELAY = Duration.ofSeconds(1);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();
@@ -5470,22 +5375,19 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncInProgressTest.");
         logger.info("=============================================================");
 
-        final int TESTED_PORT = SystemUtil.getEphemeralPort();
         final Duration REQUEST_DELAY = Duration.ofSeconds(1);
 
         Semaphore closeSema = new Semaphore(0);
 
         // Start test server
         logger.info("Start test server");
-        BmqBrokerSimulator server = new BmqBrokerSimulator(TESTED_PORT, Mode.BMQ_MANUAL_MODE);
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
         // Create the session
         logger.info("Create the session");
         SessionOptions sessionOptions =
-                SessionOptions.builder()
-                        .setBrokerUri(URI.create("tcp://localhost:" + TESTED_PORT))
-                        .build();
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         LinkedList<Event> events = new LinkedList<>();

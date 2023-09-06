@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples.SampleFileMetadata;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.io.BufferedInputStream;
@@ -91,7 +92,7 @@ public class TestHelpers {
 
         try {
             if (!sema.tryAcquire(sec, TimeUnit.SECONDS)) {
-                logger.info("Semaphore timeout");
+                throw new BMQException("Semaphore timeout");
             }
         } catch (InterruptedException e) {
             logger.error("Interrupted: ", e);

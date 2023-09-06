@@ -31,6 +31,7 @@ import com.bloomberg.bmq.impl.intf.BrokerConnection.StopCallback;
 import com.bloomberg.bmq.impl.intf.BrokerConnection.StopStatus;
 import com.bloomberg.bmq.impl.intf.SessionEventHandler;
 import com.bloomberg.bmq.impl.intf.SessionStatusHandler;
+import com.bloomberg.bmq.util.TestHelpers;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -58,14 +59,6 @@ public class RequestManagerTest {
     AtomicBoolean serverEnabled = new AtomicBoolean(true);
     Consumer<RequestManager.Request> responseCallback = null;
     Consumer<RequestManager.Request> asyncNotifier = null;
-
-    private static void acquireSema(Semaphore sema) {
-        try {
-            sema.acquire();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
 
     void responseCb(RequestManager.Request request) {
         numResponses++;
@@ -212,7 +205,7 @@ public class RequestManagerTest {
         req.waitForResponse();
 
         logger.info("Waiting for response...");
-        acquireSema(responseSema);
+        TestHelpers.acquireSema(responseSema, 15);
     }
 
     @Test
@@ -327,16 +320,11 @@ public class RequestManagerTest {
                     request.asyncNotify();
                 };
         req.setRequest(msg).setOnResponseCb(responseCallback).setAsyncNotifier(asyncNotifier);
-        try {
-            logger.info("Sending request...");
-            manager.sendRequest(req, channel);
-            logger.info("Waiting for response...");
-            responseSema.acquire();
-            asyncNotifierSema.acquire();
-        } catch (InterruptedException e) {
-            logger.error("Interrupted: ", e);
-            Thread.currentThread().interrupt();
-            fail();
-        }
+
+        logger.info("Sending request...");
+        manager.sendRequest(req, channel);
+        logger.info("Waiting for response...");
+        TestHelpers.acquireSema(responseSema, 15);
+        TestHelpers.acquireSema(asyncNotifierSema, 15);
     }
 }

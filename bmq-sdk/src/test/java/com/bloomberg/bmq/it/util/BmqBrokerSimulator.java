@@ -36,6 +36,7 @@ import com.bloomberg.bmq.impl.infr.proto.PushEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.SchemaEventBuilder;
 import com.bloomberg.bmq.impl.infr.util.Argument;
+import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
@@ -52,6 +53,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -309,6 +311,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
     private Thread thread;
     private final int port;
+    private final URI uri;
     private Mode serverMode;
     private ChannelFuture channelFuture;
     private ConcurrentLinkedQueue<ResponseItem> userDefinedResponses;
@@ -317,8 +320,13 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
     private LinkedBlockingQueue<ControlMessageChoice> receivedRequests =
             new LinkedBlockingQueue<>();
 
+    public BmqBrokerSimulator(Mode serverMode) {
+        this(SystemUtil.getEphemeralPort(), serverMode);
+    }
+
     public BmqBrokerSimulator(int port, Mode serverMode) {
         this.port = Argument.expectPositive(port, "port");
+        uri = URI.create("tcp://localhost:" + port);
         this.serverMode = serverMode;
         if (this.serverMode == Mode.BMQ_MANUAL_MODE) {
             userDefinedResponses = new ConcurrentLinkedQueue<>();
@@ -495,6 +503,15 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
     @Override
     public String toString() {
         return "BmqBrokerSimulator [" + serverMode + " on port " + port + "]";
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public URI getURI() {
+        // Immutable according to documentation
+        return uri;
     }
 
     void writeResponse(Object rsp) {
