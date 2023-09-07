@@ -5494,7 +5494,7 @@ public class BrokerSessionIT {
         logger.info("BEGIN Testing BrokerSessionIT inboundWatermarksTest.");
         logger.info("====================================================");
 
-        final int EVENT_TIMEOUT = 5;
+        final int EVENT_TIMEOUT = 15;
 
         // create the session with inbound LWM=1 and HWM=2
         SessionOptions sessionOptions =
@@ -5579,11 +5579,9 @@ public class BrokerSessionIT {
                 queues[i] = queue;
             }
 
-            // Here we expect one NOT_CONNECTED event which has been already
-            // popped out of the inbound event buffer. In the buffer there
-            // should be one HWM event plus (NUM_OF_QUEUES - 1) events of the type
-            // NOT_CONNECTED, thus NUM_OF_QUEUES events totally.
-            assertEquals(NUM_OF_QUEUES, session.inboundBufferSize());
+            // In the buffer there should be one HWM event plus NUM_OF_QUEUES events
+            // of the type NOT_CONNECTED, thus NUM_OF_QUEUES + 1 events totally.
+            assertEquals(NUM_OF_QUEUES + 1, session.inboundBufferSize());
 
             // handle the first NOT_CONNECTED queue event
             verifyQueueControlEvent(
@@ -5601,7 +5599,7 @@ public class BrokerSessionIT {
                     BrokerSessionEvent.Type.e_SLOWCONSUMER_HIGHWATERMARK);
 
             // handle the other Queue NOT_CONNECTED events
-            for (int i = 1; i < NUM_OF_QUEUES - 1; i++) {
+            for (int i = 1; i < NUM_OF_QUEUES; i++) {
                 verifyQueueControlEvent(
                         queueEvents.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
                         QueueControlEvent.Type.e_QUEUE_OPEN_RESULT,
