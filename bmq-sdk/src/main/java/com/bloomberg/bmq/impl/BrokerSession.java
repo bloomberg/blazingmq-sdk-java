@@ -847,7 +847,7 @@ public final class BrokerSession
     private CompletableFuture<OpenQueueCode> createReopenFuture(QueueImpl queue) {
         assert isInSessionExecutor();
         QueueId queueId = queue.getFullQueueId();
-        logger.error("Queue id={} should be reopened", queueId);
+        logger.info("Queue id={} should be reopened", queueId);
         final CompletableFuture<OpenQueueCode> future = new CompletableFuture<>();
         QueueControlStrategy<OpenQueueCode> strategy =
                 strategyFactory.createReopenAsyncSequence(

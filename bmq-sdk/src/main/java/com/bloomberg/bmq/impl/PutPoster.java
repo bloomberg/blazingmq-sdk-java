@@ -178,8 +178,14 @@ public final class PutPoster {
 
         CorrelationIdImpl ackId = ackMsg.correlationId();
         PutMessageImpl putMsg = unacknowledgedPuts.remove(ackId);
+
+        // In some cases broker may send an ACK message with UNKNOWN correlation Id.  Most likely
+        // this means we receive the ACK message which has been already processed.  Since there is
+        // no unacknowledged PUT message with such correlation Id,  we just log such ACK message and
+        // return
         if (putMsg == null) {
-            throw new IllegalStateException("Correlation ID not found " + ackId);
+            logger.warn("Got ACK message with unknown correlation Id: {}", ackMsg);
+            return;
         }
 
         ackMsg.setCorrelationId((CorrelationIdImpl) putMsg.correlationId());
