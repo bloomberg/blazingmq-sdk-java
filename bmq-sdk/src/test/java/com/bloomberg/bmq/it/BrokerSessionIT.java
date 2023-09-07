@@ -5505,11 +5505,21 @@ public class BrokerSessionIT {
 
         TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        SynchronousQueue<Event> events = new SynchronousQueue<>();
+        SynchronousQueue<Event> queueEvents = new SynchronousQueue<>();
+        SynchronousQueue<Event> brokerEvents = new SynchronousQueue<>();
         EventHandler eventHandler =
                 event -> {
                     try {
-                        assertTrue(events.offer(event, EVENT_TIMEOUT, TimeUnit.SECONDS));
+                        // The order of incoming Broker/Queue events may change in this test,
+                        // so we have to sort these to different event queues to ensure ordering.
+                        if (event instanceof QueueControlEvent) {
+                            assertTrue(queueEvents.offer(event, EVENT_TIMEOUT, TimeUnit.SECONDS));
+                        } else if (event instanceof BrokerSessionEvent) {
+                            assertTrue(brokerEvents.offer(event, EVENT_TIMEOUT, TimeUnit.SECONDS));
+                        } else {
+                            throw new BMQException(
+                                    "Unexpected 'event' with type: " + event.getClass().getName());
+                        }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
@@ -5577,7 +5587,7 @@ public class BrokerSessionIT {
 
             // handle the first NOT_CONNECTED queue event
             verifyQueueControlEvent(
-                    events.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
+                    queueEvents.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
                     QueueControlEvent.Type.e_QUEUE_OPEN_RESULT,
                     OpenQueueResult.NOT_CONNECTED,
                     queues[0]);
@@ -5587,13 +5597,13 @@ public class BrokerSessionIT {
             // caused the inbound event buffer exceeded HWM value, and as a result
             // HWM event has been added into the head of the event queue.
             verifyBrokerSessionEvent(
-                    events.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
+                    brokerEvents.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
                     BrokerSessionEvent.Type.e_SLOWCONSUMER_HIGHWATERMARK);
 
             // handle the other Queue NOT_CONNECTED events
             for (int i = 1; i < NUM_OF_QUEUES - 1; i++) {
                 verifyQueueControlEvent(
-                        events.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
+                        queueEvents.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
                         QueueControlEvent.Type.e_QUEUE_OPEN_RESULT,
                         OpenQueueResult.NOT_CONNECTED,
                         queues[i]);
@@ -5604,18 +5614,19 @@ public class BrokerSessionIT {
             // that means we've reached LWM value, so LWM event should
             // be reported first.
             verifyBrokerSessionEvent(
-                    events.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
+                    brokerEvents.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
                     BrokerSessionEvent.Type.e_SLOWCONSUMER_NORMAL);
 
             // 8) Handle the last Queue NOT_CONNECTED event
             verifyQueueControlEvent(
-                    events.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
+                    queueEvents.poll(EVENT_TIMEOUT, TimeUnit.SECONDS),
                     QueueControlEvent.Type.e_QUEUE_OPEN_RESULT,
                     OpenQueueResult.NOT_CONNECTED,
                     queues[NUM_OF_QUEUES - 1]);
 
             // verify that there are no more inbound events
-            assertNull(events.poll());
+            assertNull(queueEvents.poll());
+            assertNull(brokerEvents.poll());
             assertEquals(0, session.inboundBufferSize());
 
         } finally {
