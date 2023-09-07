@@ -104,4 +104,19 @@ public class QueueControlEvent extends SessionEvent<QueueControlEvent.Type> {
             Type sessionEventType, GenericCode result, String errorDescription, QueueHandle queue) {
         return new QueueControlEvent(sessionEventType, result, errorDescription, queue);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("QueueControlEvent [type: ")
+                .append(getEventType())
+                .append(", status: ")
+                .append(getStatus())
+                .append(", error_desc: '")
+                .append(getErrorDescription())
+                .append("', queue: ")
+                .append(getQueue())
+                .append("]");
+        return builder.toString();
+    }
 }
