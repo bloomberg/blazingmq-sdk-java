@@ -78,4 +78,15 @@ public final class BrokerSessionEvent extends SessionEvent<BrokerSessionEvent.Ty
     public void dispatch(EventHandler handler) {
         handler.handleBrokerSessionEvent(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("BrokerSessionEvent [type: ")
+                .append(getEventType())
+                .append(", error_desc: '")
+                .append(getErrorDescription())
+                .append("']");
+        return builder.toString();
+    }
 }

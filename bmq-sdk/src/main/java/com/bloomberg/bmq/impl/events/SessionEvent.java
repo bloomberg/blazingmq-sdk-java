@@ -33,10 +33,11 @@ public abstract class SessionEvent<ENUM_TYPE> extends Event {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("SessionEvent Type: ")
+        builder.append("SessionEvent [type: ")
                 .append(sessionEventType)
-                .append("; Error Desc: ")
-                .append(errorDescription);
+                .append(", error_desc: ")
+                .append(errorDescription)
+                .append("]");
         return builder.toString();
     }
 
