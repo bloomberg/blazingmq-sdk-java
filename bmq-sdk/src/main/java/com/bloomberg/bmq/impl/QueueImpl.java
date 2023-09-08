@@ -37,6 +37,8 @@ import com.bloomberg.bmq.impl.intf.QueueState;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +50,7 @@ public class QueueImpl implements QueueHandle {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     static final int INVALID_QUEUE_ID = -1;
+    private static final int INITIAL_PUTMESSAGES_SIZE = 100;
 
     // Immutable fields
     private final BrokerSession brokerSession;
@@ -61,7 +64,8 @@ public class QueueImpl implements QueueHandle {
     // Fields exposed to user thread
     private final QueueHandleParameters parameters; // mutable object and final field
     private volatile QueueState state;
-    private final ArrayList<PutMessageImpl> putMessages = new ArrayList<>();
+    private final AtomicReference<Collection<PutMessageImpl>> putMessages =
+            new AtomicReference<>(new ArrayList<>(INITIAL_PUTMESSAGES_SIZE));
     private volatile boolean isSuspended = false;
     // Whether the queue is suspended.
     // While suspended, a queue receives no
@@ -262,19 +266,12 @@ public class QueueImpl implements QueueHandle {
 
     public void pack(PutMessageImpl message) throws BMQException {
         synchronized (lock) {
-            putMessages.add(message);
+            putMessages.get().add(message);
         }
     }
 
-    public PutMessageImpl[] flush() throws BMQException {
-        PutMessageImpl[] msgs;
-        synchronized (lock) {
-            msgs = new PutMessageImpl[putMessages.size()];
-            msgs = putMessages.toArray(msgs);
-            putMessages.clear();
-        }
-        brokerSession.post(this, msgs);
-        return msgs;
+    public void flush() throws BMQException {
+        brokerSession.post(this, putMessages.getAndSet(new ArrayList<>(INITIAL_PUTMESSAGES_SIZE)));
     }
 
     @Override

@@ -43,6 +43,7 @@ import com.bloomberg.bmq.impl.intf.BrokerConnection;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -92,7 +93,7 @@ public class PutPosterTest {
 
         // NULL array
         try {
-            PutMessageImpl[] m = null;
+            List<PutMessageImpl> m = null;
             poster.post(m);
             fail(); // Should not get here
         } catch (IllegalArgumentException e) {
@@ -196,7 +197,7 @@ public class PutPosterTest {
             compressedMsg.appData().setProperties(props);
             compressedMsg.setCompressionType(CompressionAlgorithmType.E_ZLIB);
 
-            poster.post(bigMsg1, smallMsg1, bigMsg2, smallMsg2, compressedMsg);
+            poster.post(Arrays.asList(bigMsg1, smallMsg1, bigMsg2, smallMsg2, compressedMsg));
 
             assertEquals(isOldStyleProperties, bigMsg1.appData().isOldStyleProperties());
             assertEquals(isOldStyleProperties, smallMsg1.appData().isOldStyleProperties());

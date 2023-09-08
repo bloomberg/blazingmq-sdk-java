@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,9 +70,9 @@ public final class PutPoster {
         maxEventSize = Argument.expectNotGreater(val, EventHeader.MAX_SIZE_SOFT, "max event size");
     }
 
-    public void pack(PutMessageImpl... msgs) {
+    public void pack(Collection<PutMessageImpl> msgs) {
         Argument.expectNonNull(msgs, "msgs");
-        Argument.expectPositive(msgs.length, "message array length");
+        Argument.expectPositive(msgs.size(), "message array length");
         for (PutMessageImpl m : msgs) {
             Argument.expectNonNull(m, "put message");
 
@@ -87,9 +89,17 @@ public final class PutPoster {
         }
     }
 
-    public void post(PutMessageImpl... msgs) {
+    public void post(Collection<PutMessageImpl> msgs) {
         pack(msgs);
         flush();
+    }
+
+    public void post(PutMessageImpl msg) {
+        post(Collections.singletonList(msg));
+    }
+
+    public void post(PutMessageImpl... msgs) {
+        post(Arrays.asList(msgs));
     }
 
     private void sendEvent() {

@@ -59,7 +59,9 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -1219,10 +1221,12 @@ public final class BrokerSession
         return queueStateManager.findByQueueId(queueId);
     }
 
-    public void post(QueueHandle queueHandle, PutMessageImpl... msgs) throws BMQException {
+    public void post(QueueHandle queueHandle, Collection<PutMessageImpl> msgs) throws BMQException {
         Argument.expectNonNull(queueHandle, "queueHandle");
         Argument.expectNonNull(msgs, "msgs");
-        Argument.expectPositive(msgs.length, "message array length");
+        if (msgs.isEmpty()) {
+            return;
+        }
 
         // Queue state guard
         QueueState state = queueHandle.getState();
@@ -1247,6 +1251,14 @@ public final class BrokerSession
 
             stats.queuesStats().onPutMessage(queueId, appDataSize, ratio);
         }
+    }
+
+    public void post(QueueHandle queueHandle, PutMessageImpl msg) throws BMQException {
+        post(queueHandle, Collections.singletonList(msg));
+    }
+
+    public void post(QueueHandle queueHandle, PutMessageImpl... msgs) throws BMQException {
+        post(queueHandle, Arrays.asList(msgs));
     }
 
     public GenericResult confirm(QueueHandle queueHandle, PushMessageImpl... messages) {
