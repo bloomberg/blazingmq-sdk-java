@@ -265,9 +265,7 @@ public class QueueImpl implements QueueHandle {
     }
 
     public void pack(PutMessageImpl message) throws BMQException {
-        synchronized (lock) {
-            putMessages.get().add(message);
-        }
+        putMessages.get().add(message);
     }
 
     public void flush() throws BMQException {
