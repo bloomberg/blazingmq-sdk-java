@@ -15,15 +15,12 @@
  */
 package com.bloomberg.bmq.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples.SampleFileMetadata;
 import com.bloomberg.bmq.impl.infr.util.Argument;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +40,7 @@ public class TestHelpers {
 
     public static ByteBuffer readFile(final String fileName) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try (InputStream ins = TestHelpers.class.getResourceAsStream(fileName); ) {
+        try (InputStream ins = TestHelpers.class.getResourceAsStream(fileName)) {
             int value;
             do {
                 value = ins.read();
@@ -58,6 +55,31 @@ public class TestHelpers {
         return res;
     }
 
+    public static byte[] buffersContents(ByteBuffer[] buffers) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        for (ByteBuffer buf : buffers) {
+            ByteBuffer dup = buf.duplicate();
+            if (dup.position() != 0 && dup.limit() == dup.capacity()) {
+                dup.flip();
+            }
+            os.write(dup.array(), 0, dup.limit());
+        }
+        return os.toByteArray();
+    }
+
+    public static byte[] resourceFileContents(String path, int size) throws IOException {
+        try (InputStream in = TestHelpers.class.getResourceAsStream(path)) {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            int pos = 0;
+            while (pos++ < size) {
+                int b = in.read();
+                if (b < 0) break;
+                os.write(b);
+            }
+            return os.toByteArray();
+        }
+    }
+
     public static void compareWithFileContent(
             ByteBuffer[] message, SampleFileMetadata messageSample) throws IOException {
 
@@ -66,25 +88,9 @@ public class TestHelpers {
 
         // Read 'contentLength' bytes from the file at 'filePath', and compare
         // those bytes with 'message'.
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        for (ByteBuffer b : message) {
-            baos.write(b.array(), 0, b.limit());
-        }
-
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-
-        try (InputStream in1 = new BufferedInputStream(bais);
-                InputStream in2 = TestHelpers.class.getResourceAsStream(filePath)) {
-            int v1, v2;
-            for (int i = 0; i < contentLength; i++) {
-                v1 = in1.read();
-                v2 = in2.read();
-                assertTrue(v1 >= 0);
-                assertEquals(v1, v2);
-            }
-        }
+        byte[] messageContent = buffersContents(message);
+        byte[] fileContent = resourceFileContents(filePath, contentLength);
+        assertArrayEquals(fileContent, messageContent);
     }
 
     public static void acquireSema(Semaphore sema, int sec) {

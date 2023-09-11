@@ -92,10 +92,27 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         }
     }
 
+    /**
+     * Make a readable view of the underlying data without copying it.
+     *
+     * <p>The bbos can continue to be written to.
+     */
+    public ByteBuffer[] peek() {
+        return bbArray.stream()
+                .map(bb -> (ByteBuffer) (bb.duplicate().flip()))
+                .toArray(ByteBuffer[]::new);
+    }
+
+    private ArrayList<ByteBuffer> buffers() {
+        return bbArray;
+    }
+
+    @Override
     public void writeBoolean(boolean v) throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void writeByte(int v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -104,26 +121,42 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.put((byte) v);
     }
 
+    @Override
     public void writeBytes(String s) throws IOException {
         throw new UnsupportedOperationException();
     }
 
-    public void writeBytes(ByteBuffer b) throws IOException {
+    private boolean bufferIsFresh(ByteBuffer b) {
+        // a buffer that has never been put() to nor flipped
+        return b.position() == 0 && b.limit() == b.capacity();
+    }
+
+    public void writeBuffer(ByteBuffer b) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
-        b.rewind();
-        while (b.hasRemaining()) {
-            if (currentBuffer.hasRemaining()) {
-                if (b.remaining() > currentBuffer.remaining()) {
-                    // Read one byte
-                    currentBuffer.put(b.get());
-                } else {
-                    // Read the whole buffer
-                    currentBuffer.put(b);
-                }
-                continue;
-            }
-            getNewBuffer();
+        if (bufferIsFresh(b)) return;
+
+        boolean currentIsFresh = bufferIsFresh(currentBuffer);
+        // remove the currentBuffer if it is fresh
+        // we'll put it back at the end after adding other's buffers
+        // to avoid allocating a new one in that case
+        if (currentIsFresh) {
+            bbArray.remove(currentBufferIndex);
         }
+        ByteBuffer buf = b.duplicate();
+        if (buf.limit() != buf.capacity()) {
+            // it has already been flipped - unflip it
+            int newPosition = buf.limit();
+            buf.limit(buf.capacity());
+            buf.position(newPosition);
+        }
+        prevBuffersNumBytes += buf.position();
+        bbArray.add(buf);
+        if (currentIsFresh) {
+            bbArray.add(currentBuffer);
+        } else {
+            addBuffer();
+        }
+        currentBufferIndex = bbArray.size() - 1;
     }
 
     /**
@@ -133,17 +166,14 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
      * @param bbos stream to write bytes to
      * @throws IOException if the stream is not open
      */
-    public void writeBytes(ByteBufferOutputStream bbos) throws IOException {
-
-        if (!isOpen || !bbos.isOpen) throw new IOException("Stream closed");
-
-        for (int i = 0; i < bbos.bbArray.size(); i++) {
-            ByteBuffer data = bbos.bbArray.get(i);
-            data.flip();
-            writeBytes(data);
+    public void writeBuffers(ByteBufferOutputStream other) throws IOException {
+        if (!isOpen || !other.isOpen) throw new IOException("Stream closed");
+        for (ByteBuffer b : other.buffers()) {
+            writeBuffer(b);
         }
     }
 
+    @Override
     public void writeChar(int v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -152,10 +182,12 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.putChar((char) v);
     }
 
+    @Override
     public void writeChars(String s) throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void writeDouble(double v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -164,6 +196,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.putDouble(v);
     }
 
+    @Override
     public void writeFloat(float v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -172,6 +205,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.putFloat(v);
     }
 
+    @Override
     public void writeInt(int v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -180,6 +214,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.putInt(v);
     }
 
+    @Override
     public void writeLong(long v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -188,6 +223,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.putLong(v);
     }
 
+    @Override
     public void writeShort(int v) throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
 
@@ -196,6 +232,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         currentBuffer.putShort((short) v);
     }
 
+    @Override
     public void writeUTF(String str) throws IOException {
         write(str.getBytes(StandardCharsets.UTF_8));
     }
@@ -210,12 +247,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
      * @return ByteBuffer[] previously allocated buffers flipped to the read mode.
      */
     public ByteBuffer[] reset() {
-        ByteBuffer[] bbArrayCopy = new ByteBuffer[currentBufferIndex + 1];
-
-        for (int i = 0; i <= currentBufferIndex; ++i) {
-            bbArrayCopy[i] = bbArray.get(i);
-            bbArrayCopy[i].flip();
-        }
+        ByteBuffer[] bbArrayCopy = peek();
 
         bbArray.clear();
         prevBuffersNumBytes = 0;
@@ -227,22 +259,6 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         return bbArrayCopy;
     }
 
-    /**
-     * Clears the Stream for reuse. Clears the previously stored data but leaves the stream in its
-     * previous state. If the stream is still open, then it can be reused to insert new data. Reuses
-     * previously allocated Buffers if possible.
-     */
-    public void clear() {
-        if (!isOpen) return;
-
-        for (int i = 0; i <= currentBufferIndex; i++) {
-            bbArray.get(i).clear();
-        }
-        prevBuffersNumBytes = 0;
-        currentBuffer = bbArray.get(0);
-        currentBufferIndex = 0;
-    }
-
     public int numByteBuffers() {
         return bbArray.size();
     }
@@ -252,13 +268,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     }
 
     private void getNewBuffer() {
-        // Try to reuse a previously allocated buffer before allocating new.
-        if (currentBufferIndex < bbArray.size() - 1) {
-            prevBuffersNumBytes += currentBuffer.position();
-            currentBuffer = bbArray.get(++currentBufferIndex);
-        } else {
-            addBuffer();
-        }
+        addBuffer();
     }
 
     private void addBuffer() {
@@ -272,6 +282,6 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         int allocationSize = Math.max(size, bufSize);
         currentBuffer = ByteBuffer.allocate(allocationSize);
         bbArray.add(currentBuffer);
-        currentBufferIndex++;
+        currentBufferIndex = bbArray.size() - 1;
     }
 }

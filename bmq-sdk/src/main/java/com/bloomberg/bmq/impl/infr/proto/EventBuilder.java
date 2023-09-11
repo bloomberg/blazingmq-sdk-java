@@ -46,7 +46,7 @@ public abstract class EventBuilder {
         }
 
         int payloadLen = bbos.size();
-        ByteBuffer[] payload = bbos.reset();
+        ByteBuffer[] payload = bbos.peek();
 
         eventHeader.setLength(EventHeader.HEADER_SIZE + payloadLen);
 
@@ -58,7 +58,7 @@ public abstract class EventBuilder {
             throw new IllegalStateException(ex);
         }
 
-        ByteBuffer[] headerBuffers = headerStream.reset();
+        ByteBuffer[] headerBuffers = headerStream.peek();
         int numBuffers = headerBuffers.length + payload.length;
 
         ByteBuffer[] outputBuffers = new ByteBuffer[numBuffers];

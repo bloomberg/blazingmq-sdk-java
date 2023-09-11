@@ -745,19 +745,13 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
 
             ByteBuf byteBuf = (ByteBuf) msg;
             try {
-                // Make a copy of bytes present in 'byteBuf'.  This is needed
-                // so that the lifetime of 'readBuffer' (and ByteBuffer[]
-                // obtained from it via 'readBuffer.reset()') can be
-                // decoupled with the associated 'byteBuf'.  As per netty docs,
-                // a ByteBuf object is refcounted, and user must invoke
-                // 'ByteBuf.release' to decrement the counter when done.  Since
-                // there is no place in the logic where we can confidentally
-                // invoke 'ByteBuf.release' (BlazingMQ user may keep a PUSH message
-                // for ever), we make a copy of bytes present in 'ByteBuf' and
-                // invoke 'ByteBuf.release' right away.  This copying is
-                // unfortunate, and we will investigate ways to avoid this
-                // copy later.
-                readBuffer.writeBytes(byteBuf.nioBuffer());
+                // This still makes a copy of the underlying bytes, but let netty do it
+                // instead of doing it ourselves.
+                //
+                // TODO - can this copy be eliminated?
+                ByteBuffer nioBuf = ByteBuffer.allocateDirect(byteBuf.readableBytes());
+                byteBuf.readBytes(nioBuf);
+                readBuffer.writeBuffer(nioBuf);
             } catch (IOException e) {
                 logger.error("Failed to write data: ", e);
             }

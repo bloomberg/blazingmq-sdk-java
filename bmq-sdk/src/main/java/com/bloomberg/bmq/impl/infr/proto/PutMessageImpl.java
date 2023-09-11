@@ -24,7 +24,6 @@ import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.proto.intf.Streamable;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,10 +114,7 @@ public class PutMessageImpl implements Streamable {
     }
 
     public void calculateAndSetCrc32c() throws IOException {
-        // Calculate CRC32c
-        ByteBuffer[] bb = appData.applicationData();
-        final long CRC32C = Crc32c.calculate(bb);
-        header.setCrc32c(CRC32C);
+        header.setCrc32c(appData.calculateCrc32c());
     }
 
     public long crc32c() {

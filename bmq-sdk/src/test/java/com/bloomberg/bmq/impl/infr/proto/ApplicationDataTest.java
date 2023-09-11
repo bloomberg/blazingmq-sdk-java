@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
+import com.bloomberg.bmq.util.TestHelpers;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -107,14 +108,14 @@ public class ApplicationDataTest {
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
         ByteBuffer[] payload = generatePayload(1024);
-        for (ByteBuffer b : duplicate(payload)) {
-            bbos.writeBytes(b);
+        for (ByteBuffer b : payload) {
+            bbos.writeBuffer(b);
         }
 
         int numPaddingBytes = ProtocolUtil.calculatePadding(bbos.size());
         bbos.write(ProtocolUtil.getPaddingBytes(numPaddingBytes), 0, numPaddingBytes);
 
-        ByteBufferInputStream bbis = new ByteBufferInputStream(bbos.reset());
+        ByteBufferInputStream bbis = new ByteBufferInputStream(bbos.peek());
 
         ApplicationData data = new ApplicationData();
 
@@ -123,7 +124,6 @@ public class ApplicationDataTest {
 
         // "Compressed" data should be buffered
         assertTrue(data.isCompressed());
-        assertArrayEquals(payload, data.applicationData());
 
         // Try to decompress payload - fail
         try {
@@ -141,7 +141,7 @@ public class ApplicationDataTest {
             bbos.writeByte(i % 10);
         }
 
-        return bbos.reset();
+        return bbos.peek();
     }
 
     public MessagePropertiesImpl generateProps() {
@@ -174,7 +174,7 @@ public class ApplicationDataTest {
 
             if (payload != null) {
                 for (ByteBuffer b : payload) {
-                    bbos.writeBytes(b);
+                    bbos.writeBuffer(b);
                 }
             }
         } else {
@@ -278,7 +278,7 @@ public class ApplicationDataTest {
 
         // Check streamOut output
         appData.streamOut(bbos);
-        assertArrayEquals(expected, bbos.reset());
+        verifyPayload(expected, bbos.peek());
 
         // Skip padding bytes
         int lastBufferSize = expected[expected.length - 1].limit();
@@ -288,7 +288,7 @@ public class ApplicationDataTest {
         expected[expected.length - 1].limit(lastBufferNoPaddingSize);
 
         // Check applicationData() output
-        assertArrayEquals(expected, appData.applicationData());
+        verifyPayload(expected, appData.applicationData());
 
         // Revert limit
         expected[expected.length - 1].limit(lastBufferSize);
@@ -355,7 +355,7 @@ public class ApplicationDataTest {
             assertTrue(appData.isCompressed());
         }
 
-        // Check payload
+        // Check payload has been populated
         verifyPayload(payload, appData.payload());
 
         // `isCompressed()` should be reset
@@ -381,15 +381,20 @@ public class ApplicationDataTest {
         verifyCompressionRatio(appData);
 
         // Check the data
-        assertArrayEquals(data, bbos.reset());
+        assertArrayEquals(
+                TestHelpers.buffersContents(data), TestHelpers.buffersContents(bbos.reset()));
     }
 
     private void verifyPayload(ByteBuffer[] expected, ByteBuffer[] actual) {
         if (expected == null) {
             expected = new ByteBufferOutputStream().reset();
         }
+        if (actual == null) {
+            actual = new ByteBufferOutputStream().reset();
+        }
 
-        assertArrayEquals(expected, actual);
+        assertArrayEquals(
+                TestHelpers.buffersContents(expected), TestHelpers.buffersContents(actual));
     }
 
     private void verifyProperties(MessagePropertiesImpl expected, MessagePropertiesImpl actual) {

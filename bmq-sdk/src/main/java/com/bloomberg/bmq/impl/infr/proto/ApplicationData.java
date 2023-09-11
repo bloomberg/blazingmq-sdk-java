@@ -45,6 +45,9 @@ public class ApplicationData {
     private boolean isOldStyleProperties = false;
     private boolean arePropertiesCompressed;
 
+    private ByteBufferOutputStream outputBuffer;
+    private long crc;
+
     private void resetCompressedData() {
         compressionType = CompressionAlgorithmType.E_NONE;
         compressedData = null;
@@ -86,12 +89,9 @@ public class ApplicationData {
     }
 
     public ByteBuffer[] applicationData() throws IOException {
-        // TODO: used only to calculate CRC32. Can we avoid creating a copy?
-
-        try (ByteBufferOutputStream bbos = new ByteBufferOutputStream()) {
-            streamOut(bbos, false);
-            return bbos.reset();
-        }
+        // used only in tests
+        serializeToBuffer();
+        return outputBuffer.peek();
     }
 
     public ByteBuffer[] payload() throws IOException {
@@ -101,7 +101,7 @@ public class ApplicationData {
             if (payload != null) {
                 bbos.write(payload);
             }
-            return bbos.reset();
+            return bbos.peek();
         }
     }
 
@@ -241,7 +241,7 @@ public class ApplicationData {
         }
 
         logger.debug("Decompressing application data with algorithm={}", compressionType);
-        ByteBuffer[] data = compressedData.reset();
+        ByteBuffer[] data = compressedData.peek();
         ByteBufferInputStream bbis = new ByteBufferInputStream(data);
 
         InputStream decompressedStream = compressionType.getCompression().decompress(bbis);
@@ -351,46 +351,44 @@ public class ApplicationData {
         arePropertiesCompressed = hasProperties() && isOldStyleProperties;
     }
 
-    public void streamOut(ByteBufferOutputStream bbos) throws IOException {
-        streamOut(bbos, true);
+    public long calculateCrc32c() throws IOException {
+        serializeToBuffer();
+        return crc;
     }
 
-    private void streamOut(ByteBufferOutputStream bbos, boolean addPadding) throws IOException {
-        int startPosition = bbos.size();
+    public void streamOut(ByteBufferOutputStream bbos) throws IOException {
+        streamOut(bbos, true /* addPadding */);
+    }
+
+    private void serializeToBuffer() throws IOException {
+        if (outputBuffer != null) {
+            return;
+        }
+        outputBuffer = new ByteBufferOutputStream();
 
         // Stream out properties if they are not compressed (no compression or
         // new style properties).
         if (hasProperties() && !arePropertiesCompressed) {
-            if (isOldStyleProperties) {
-                properties.streamOutOld(bbos);
-            } else {
-                properties.streamOut(bbos);
-            }
+            properties.streamOut(outputBuffer, isOldStyleProperties);
         }
 
         if (compressionType == CompressionAlgorithmType.E_NONE) {
             if (payload != null) {
-                bbos.write(payload);
+                outputBuffer.write(payload);
             }
         } else {
-            bbos.writeBytes(compressedData);
+            outputBuffer.writeBuffers(compressedData);
         }
+        // calculate crc32c without padding
+        crc = Crc32c.calculate(outputBuffer.peek());
+    }
 
-        int endPosition = bbos.size();
-
+    private void streamOut(ByteBufferOutputStream bbos, boolean addPadding) throws IOException {
+        serializeToBuffer();
+        bbos.writeBuffers(outputBuffer);
         if (addPadding) {
-            final int length = endPosition - startPosition;
-
-            if (length != unpackedSize()) {
-                throw new IOException(
-                        "Invalid output stream length: "
-                                + length
-                                + ", expected: "
-                                + unpackedSize());
-            }
-            final int numPaddingBytes = ProtocolUtil.calculatePadding(length);
-
-            bbos.write(ProtocolUtil.getPaddingBytes(numPaddingBytes), 0, numPaddingBytes);
+            final int paddingSize = ProtocolUtil.calculatePadding(outputBuffer.size());
+            bbos.write(ProtocolUtil.getPaddingBytes(paddingSize), 0, paddingSize);
         }
     }
 
