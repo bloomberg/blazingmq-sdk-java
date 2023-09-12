@@ -522,10 +522,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             options = null;
             connectCallback = null;
             readCallback = null;
-            if (readBuffer != null) {
-                readBuffer.reset();
-                readBuffer = null;
-            }
+            readBuffer = null;
             readBytesStatus = null;
             disconnectCallback = null;
             channelContext = null;
@@ -749,7 +746,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 // instead of doing it ourselves.
                 //
                 // TODO - can this copy be eliminated?
-                ByteBuffer nioBuf = ByteBuffer.allocateDirect(byteBuf.readableBytes());
+                ByteBuffer nioBuf = ByteBuffer.allocate(byteBuf.readableBytes());
                 byteBuf.readBytes(nioBuf);
                 readBuffer.writeBuffer(nioBuf);
             } catch (IOException e) {

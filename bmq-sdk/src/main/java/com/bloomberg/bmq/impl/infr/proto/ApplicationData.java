@@ -97,7 +97,7 @@ public class ApplicationData {
     public ByteBuffer[] payload() throws IOException {
         decompressData();
 
-        try (ByteBufferOutputStream bbos = new ByteBufferOutputStream()) {
+        try (ByteBufferOutputStream bbos = ByteBufferOutputStream.bigBlocks()) {
             if (payload != null) {
                 bbos.write(payload);
             }
@@ -320,7 +320,7 @@ public class ApplicationData {
 
         logger.debug("Compressing application data with algorithm={}", compressionType);
 
-        ByteBufferOutputStream bbos = new ByteBufferOutputStream();
+        ByteBufferOutputStream bbos = ByteBufferOutputStream.bigBlocks();
         Compression compression = compressionType.getCompression();
 
         // We need to close compressed stream in order to flush all compressed bytes
@@ -364,7 +364,7 @@ public class ApplicationData {
         if (outputBuffer != null) {
             return;
         }
-        outputBuffer = new ByteBufferOutputStream();
+        outputBuffer = ByteBufferOutputStream.bigBlocks();
 
         // Stream out properties if they are not compressed (no compression or
         // new style properties).

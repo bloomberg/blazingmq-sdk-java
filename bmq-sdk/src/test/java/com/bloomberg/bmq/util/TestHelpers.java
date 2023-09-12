@@ -62,7 +62,7 @@ public class TestHelpers {
             if (dup.position() != 0 && dup.limit() == dup.capacity()) {
                 dup.flip();
             }
-            os.write(dup.array(), 0, dup.limit());
+            os.write(dup.array(), dup.arrayOffset(), dup.limit());
         }
         return os.toByteArray();
     }

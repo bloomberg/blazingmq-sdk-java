@@ -33,7 +33,7 @@ public abstract class EventBuilder {
         eventHeader = new EventHeader();
         eventHeader.setType(type);
         msgCount = 0;
-        bbos = new ByteBufferOutputStream();
+        bbos = ByteBufferOutputStream.smallBlocks();
     }
 
     public EventHeader header() {
@@ -50,7 +50,7 @@ public abstract class EventBuilder {
 
         eventHeader.setLength(EventHeader.HEADER_SIZE + payloadLen);
 
-        ByteBufferOutputStream headerStream = new ByteBufferOutputStream();
+        ByteBufferOutputStream headerStream = ByteBufferOutputStream.bigBlocks();
         try {
             eventHeader.streamOut(headerStream);
         } catch (IOException ex) {

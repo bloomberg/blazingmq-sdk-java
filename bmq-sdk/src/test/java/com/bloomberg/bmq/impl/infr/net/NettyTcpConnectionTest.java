@@ -15,6 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.net;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -363,8 +364,8 @@ public class NettyTcpConnectionTest {
             logger.info("Copied  : {}", copiedStr);
             logger.info("Raw     : {}", rawStr);
 
-            assertEquals(expectedStr, copiedStr);
-            assertEquals(expectedStr, rawStr);
+            assertArrayEquals("copied is expected", expectedStr.getBytes(), copiedStr.getBytes());
+            assertArrayEquals("raw is expected", expectedStr.getBytes(), rawStr.getBytes());
         }
 
         // 4) Invoke 'disconnect' and ensure that it succeeds.
