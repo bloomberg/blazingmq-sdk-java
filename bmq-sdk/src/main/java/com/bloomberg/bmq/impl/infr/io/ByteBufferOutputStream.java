@@ -15,7 +15,6 @@
  */
 package com.bloomberg.bmq.impl.infr.io;
 
-import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,17 +57,21 @@ import org.slf4j.LoggerFactory;
 public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private ArrayList<ByteBuffer> bbArray;
-    private int bufSize;
+    private final ArrayList<ByteBuffer> bbArray;
+    private final int bufSize;
+    private final int minSliceSize;
     private int totalBytes;
+    private int currentBufferIndex;
     private boolean isOpen;
 
     private static final int KB = 1024;
     private static final int DEFAULT_BUF_SIZE = 4 * KB;
-    private static final int BIG_BUF_SIZE = DEFAULT_BUF_SIZE;
+    private static final int BIG_BUF_SIZE = 8 * KB;
 
     // small buffer size should be adequete for many event types.
-    private static final int SMALL_BUF_SIZE = 512;
+    private static final int SMALL_BUF_SIZE = 1 * KB;
+
+    private static final int DEFAULT_MIN_SLICE_SIZE = 256;
 
     public static ByteBufferOutputStream smallBlocks() {
         return new ByteBufferOutputStream(SMALL_BUF_SIZE);
@@ -79,31 +82,70 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     }
 
     public ByteBufferOutputStream() {
-        init(DEFAULT_BUF_SIZE);
+        this(DEFAULT_BUF_SIZE, DEFAULT_MIN_SLICE_SIZE);
     }
 
     public ByteBufferOutputStream(int bufSize) {
-        init(Argument.expectPositive(bufSize, "bufSize"));
+        this(bufSize, DEFAULT_MIN_SLICE_SIZE);
     }
 
-    private void init(int bufSize) {
+    public ByteBufferOutputStream(int bufSize, int minSliceSize) {
         bbArray = new ArrayList<>();
         this.bufSize = bufSize;
+        this.minSliceSize = minSliceSize;
         isOpen = true;
         totalBytes = 0;
+        currentBufferIndex = -1;
     }
 
     private int availableCapacity() {
-        if (bbArray.isEmpty()) {
+        if (bbArray.isEmpty() || currentBufferIndex >= bbArray.size()) {
             return 0;
         }
         return getCurrent().remaining();
     }
 
+    private void swapBuffers(int aIndex, int bIndex) {
+        if (aIndex == bIndex) return;
+        if (aIndex >= bbArray.size() || bIndex >= bbArray.size()) {
+            logger.error(
+                    "tried to swap indexes "
+                            + aIndex
+                            + " and "
+                            + bIndex
+                            + " in array of size "
+                            + bbArray.size());
+            return;
+        }
+        ByteBuffer a = bbArray.get(aIndex);
+        ByteBuffer b = bbArray.get(bIndex);
+        bbArray.set(aIndex, b);
+        bbArray.set(bIndex, a);
+    }
+
     private void ensureCapacity(int size) {
-        int capacity = availableCapacity();
-        if (size > capacity) {
-            addBuffer(Math.max(bufSize, size));
+        int currentBufferCapacity = availableCapacity();
+        if (size > currentBufferCapacity) {
+            // need more space, either find a slice with enough or allocate a new one
+            if (currentBufferCapacity >= minSliceSize) {
+                ByteBuffer remainder = maybeSliceCurrent();
+                if (remainder != null) {
+                    bbArray.add(remainder);
+                }
+            }
+            currentBufferIndex++;
+            int candidateIndex = currentBufferIndex;
+            while (bbArray.size() > candidateIndex
+                    && bbArray.get(candidateIndex).remaining() < size) {
+                candidateIndex++;
+            }
+
+            if (candidateIndex == bbArray.size()) {
+                // couldn't find a big enough existing slice - have to allocate a new buffer
+                addBuffer(Math.max(bufSize, size));
+            }
+            // put it in place
+            swapBuffers(currentBufferIndex, candidateIndex);
         }
     }
 
@@ -111,7 +153,9 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         if (remainder != null) {
             bbArray.add(remainder);
         } else {
-            addBuffer();
+            if (currentBufferIndex >= bbArray.size()) {
+                addBuffer();
+            }
         }
     }
 
@@ -136,11 +180,13 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         if (length <= 0 || (length > ba.length - offset)) return;
 
         // if its too big for a pre-defined buffer, just wrap it instead
-        if (length > bufSize) {
+        if (length > minSliceSize) {
             ByteBuffer remainder = maybeSliceCurrent();
             ByteBuffer buf = ByteBuffer.wrap(ba, offset, length);
             buf.position(buf.limit());
+            currentBufferIndex++;
             bbArray.add(buf);
+            swapBuffers(currentBufferIndex, bbArray.size() - 1);
             addRemainderOrNew(remainder);
         } else {
             ensureCapacity(length);
@@ -156,7 +202,10 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
      */
     public ByteBuffer[] peek() {
         ByteBuffer[] duplicates =
-                bbArray.stream().map(ByteBuffer::duplicate).toArray(ByteBuffer[]::new);
+                bbArray.stream()
+                        .limit(currentBufferIndex + 1)
+                        .map(ByteBuffer::duplicate)
+                        .toArray(ByteBuffer[]::new);
         for (ByteBuffer b : duplicates) {
             b.flip();
         }
@@ -192,23 +241,16 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     }
 
     private ByteBuffer getCurrent() {
-        if (bbArray.size() == 0) return null;
-        return bbArray.get(bbArray.size() - 1);
+        if (currentBufferIndex < 0 || currentBufferIndex >= bbArray.size()) return null;
+        return bbArray.get(currentBufferIndex);
     }
 
     private ByteBuffer maybeSliceCurrent() {
         ByteBuffer current = getCurrent();
         if (current != null) {
-            if (bufferIsFresh(current)) {
-                // current has never been written to,
-                // remove it from bbArray and return it
-                // whole as the remainder
-                bbArray.remove(bbArray.size() - 1);
-                return current;
-            }
             // a remainder slice should be meaningfully sized - at least as big as the ByteBuffer
             // overhead
-            if (current.remaining() >= 16) {
+            if (current.remaining() >= minSliceSize) {
                 ByteBuffer remainder = current.slice();
                 return remainder;
             }
@@ -234,7 +276,9 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
             if (dup.position() == 0) {
                 dup.position(dup.limit());
             }
+            currentBufferIndex++;
             bbArray.add(dup);
+            swapBuffers(currentBufferIndex, bbArray.size() - 1);
             totalBytes += dup.position();
         }
         addRemainderOrNew(remainder);
@@ -338,7 +382,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     }
 
     public int numByteBuffers() {
-        return bbArray.size();
+        return currentBufferIndex + 1;
     }
 
     public int size() {

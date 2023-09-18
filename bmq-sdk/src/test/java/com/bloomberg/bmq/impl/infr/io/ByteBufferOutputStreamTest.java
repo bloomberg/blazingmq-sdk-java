@@ -174,7 +174,7 @@ public class ByteBufferOutputStreamTest {
         String payload = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
 
         // make small buffers
-        ByteBufferOutputStream bbos = new ByteBufferOutputStream(32);
+        ByteBufferOutputStream bbos = new ByteBufferOutputStream(32, 8);
         bbos.write(42);
         bbos.writeShort(1000);
         bbos.writeInt(31337);
