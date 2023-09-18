@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -354,7 +355,7 @@ public class TestExpressionValidator {
             assertEquals(result, expectedResult);
             assertEquals(validator.getErrorMessage(), expectedErrorMessage);
         } catch (java.io.IOException e) {
-            assert (false);
+            fail();
         }
     }
 }

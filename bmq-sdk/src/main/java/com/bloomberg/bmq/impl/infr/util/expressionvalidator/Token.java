@@ -16,8 +16,7 @@
 package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 
 public class Token {
-    // This data class provides properties that are filled by 'ExpressionScanner' class and then
-    // used by 'ExpressionValidator' class.
+    // This data class holds token information from parsed expression.
 
     public enum Type {
         INVALID,
@@ -50,14 +49,42 @@ public class Token {
     }
 
     public Type getType() {
+        // Return token type.
         return this.type;
     }
 
     public String getValue() {
+        // Return token value.
         return this.value;
     }
 
     public long getPosition() {
+        // Return token position in expression.
         return this.pos;
+    }
+
+    public boolean isLiteralOrProperty() {
+        // Return 'true' if token is literal or property, 'false' otherwise.
+        switch (type) {
+            case BOOL:
+            case INTEGER:
+            case STRING:
+            case PROPERTY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isOperation() {
+        // Return 'true' if token is logical, comparison or math operation, 'false' otherwise.
+        switch (type) {
+            case LOGICAL_OP:
+            case COMPAR_OP:
+            case MATH_OP:
+                return true;
+            default:
+                return false;
+        }
     }
 }

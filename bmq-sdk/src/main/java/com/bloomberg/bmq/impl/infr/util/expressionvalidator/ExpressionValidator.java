@@ -33,6 +33,7 @@ public class ExpressionValidator {
         return errorMessage;
     }
 
+    @SuppressWarnings("fallthrough")
     public boolean validate(java.io.Reader expression) throws IOException {
         // This class validates given 'expression' and returns 'true' if successfull or 'false'
         // otherwise.
@@ -49,9 +50,16 @@ public class ExpressionValidator {
         do {
             // Get token
             Token token = scanner.yylex();
-            if (!isValid(token)) return false;
 
             switch (token.getType()) {
+                case INVALID:
+                    errorMessage =
+                            "syntax error, unexpected invalid character \""
+                                    + token.getValue()
+                                    + "\" at offset "
+                                    + token.getPosition();
+                    return false;
+
                 case LPAR:
                     paranthesisCounter++;
                     break;
@@ -64,31 +72,38 @@ public class ExpressionValidator {
                     }
                     paranthesisCounter--;
                     break;
+                case INTEGER:
+                    try {
+                        Long.parseLong(token.getValue());
+                    } catch (NumberFormatException e) {
+                        // Overflow occured, other format issues are checked by scanner
+                        errorMessage = "integer overflow at offset " + token.getPosition();
+                        return false;
+                    }
                 case PROPERTY:
                 case BOOL:
-                case INTEGER:
                 case STRING:
-                    if (prevToken != null && isLiteralOrProperty(prevToken)) {
+                    if (prevToken != null && prevToken.isLiteralOrProperty()) {
                         errorMessage =
                                 "syntax error, missed operation at offset " + token.getPosition();
                         return false;
                     }
                     if (token.getType() == Token.Type.PROPERTY) propertiesCounter++;
+
                     break;
                 case LOGICAL_OP:
                 case COMPAR_OP:
                 case MATH_OP:
-                case LOGICAL_NOT_OP:
-                    if (token.getType() != Token.Type.LOGICAL_NOT_OP
-                            && prevToken != null
-                            && isOperation(prevToken)) {
+                    if (prevToken != null && prevToken.isOperation()) {
+                        StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
                         errorMessage =
-                                "syntax error, unexpected \""
-                                        + token.getValue()
-                                        + "\" at offset "
-                                        + token.getPosition();
+                                sb.append(token.getValue())
+                                        .append("\" at offset ")
+                                        .append(token.getPosition())
+                                        .toString();
                         return false;
                     }
+                case LOGICAL_NOT_OP:
                     if (++operatorsCounter > MAX_OPERATORS) {
                         errorMessage = "too many operators";
                         return false;
@@ -122,52 +137,6 @@ public class ExpressionValidator {
             return false;
         }
 
-        return true;
-    }
-
-    private boolean isLiteralOrProperty(Token token) {
-        switch (token.getType()) {
-            case BOOL:
-            case INTEGER:
-            case STRING:
-            case PROPERTY:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private boolean isOperation(Token token) {
-        switch (token.getType()) {
-            case LOGICAL_OP:
-            case COMPAR_OP:
-            case MATH_OP:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private boolean isValid(Token token) {
-        // Check syntax error
-        if (token.getType() == Token.Type.INVALID) {
-            errorMessage =
-                    "syntax error, unexpected invalid character \""
-                            + token.getValue()
-                            + "\" at offset "
-                            + token.getPosition();
-            return false;
-        }
-        // Check integer overflow
-        if (token.getType() == Token.Type.INTEGER) {
-            try {
-                Long.parseLong(token.getValue());
-            } catch (NumberFormatException e) {
-                // Overflow occured, other format issues are checked by scanner
-                errorMessage = "integer overflow at offset " + token.getPosition();
-                return false;
-            }
-        }
         return true;
     }
 }

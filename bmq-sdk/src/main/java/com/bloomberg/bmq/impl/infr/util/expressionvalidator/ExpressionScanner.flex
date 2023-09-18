@@ -1,5 +1,5 @@
 /*
-   This is a lixical specification for expression scanner.
+   This is a lexical specification for expression scanner.
    Class 'ExpressionScanner' is generated at pre-compile phase and used then by 'ExpressionValidator' class.
 
    WARNING: Lexical rules part must be in synch with C++ flex specification file (bmqeval_simpleevaluatorscanner.l).
