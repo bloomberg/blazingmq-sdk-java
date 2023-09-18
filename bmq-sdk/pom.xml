@@ -263,6 +263,26 @@ limitations under the License. -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
       </plugin>
+
+      <!-- Jflex lexer code generation from lex specification file, used by ExpressionValidator -->
+      <plugin>
+        <groupId>de.jflex</groupId>
+        <artifactId>jflex-maven-plugin</artifactId>
+        <version>1.9.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <lexDefinitions>
+                <lexDefinition>src/main/java/com/bloomberg/bmq/impl/infr/util/expressionvalidator</lexDefinition>
+              </lexDefinitions>
+              <backup>false</backup>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
 
   </build>
