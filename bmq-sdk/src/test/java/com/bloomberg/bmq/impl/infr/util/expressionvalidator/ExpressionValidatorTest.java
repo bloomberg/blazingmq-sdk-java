@@ -16,7 +16,6 @@
 package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,12 +24,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-public class TestExpressionValidator {
+public class ExpressionValidatorTest {
     private String inputExpression;
     private Boolean expectedResult;
     private String expectedErrorMessage;
 
-    public TestExpressionValidator(
+    public ExpressionValidatorTest(
             String inputExpression, Boolean expectedResult, String expectedErrorMessage) {
         this.inputExpression = inputExpression;
         this.expectedResult = expectedResult;
@@ -347,14 +346,11 @@ public class TestExpressionValidator {
     }
 
     @Test
-    public void expressionValidatorTest() {
-        java.io.Reader reader = new java.io.StringReader(inputExpression);
-        try {
-            ValidationResult result = ExpressionValidator.validate(reader);
+    public void testExpressionValidator() throws java.io.IOException {
+        try (java.io.Reader expression = new java.io.StringReader(inputExpression)) {
+            ValidationResult result = ExpressionValidator.validate(expression);
             assertEquals(result.isSuccess(), expectedResult);
             assertEquals(result.getErrorMessage(), expectedErrorMessage);
-        } catch (java.io.IOException e) {
-            fail();
         }
     }
 }
