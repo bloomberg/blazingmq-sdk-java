@@ -27,6 +27,10 @@ public class ExpressionValidator {
     // NOTE: must be in sync with C++ implementation (SimpleEvaluator::k_MAX_PROPERTIES)
     public static final int MAX_PROPERTIES = 10;
 
+    private ExpressionValidator() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * @param expression
      * @return ValidationResult result of expression validation
@@ -50,22 +54,13 @@ public class ExpressionValidator {
 
             Token.Type tokenType = token.getType();
             if (tokenType == Token.Type.INVALID) { // Check syntax error detected by scanned
-                StringBuilder sb =
-                        new StringBuilder("syntax error, unexpected invalid character \"");
-                errorMessage =
-                        sb.append(token.getValue())
-                                .append("\" at offset ")
-                                .append(token.getPosition())
-                                .toString();
-                return new ValidationResult(false, errorMessage);
+                return ValidationResult.makeInvalidCharacter(token.getValue(), token.getPosition());
             } else if (tokenType == Token.Type.LPAR) { // Check open and close paranthesis
                 paranthesisCounter++;
             } else if (tokenType == Token.Type.RPAR) {
                 if (paranthesisCounter == 0
                         || (prevToken != null && prevToken.getType() == Token.Type.LPAR)) {
-                    errorMessage =
-                            "syntax error, unexpected \")\" at offset " + token.getPosition();
-                    return new ValidationResult(false, errorMessage);
+                    return ValidationResult.makeUnexpectedCharacter(")", token.getPosition());
                 }
                 paranthesisCounter--;
             } else if (token.isLiteralOrProperty()) { // Check literal or property
@@ -74,32 +69,23 @@ public class ExpressionValidator {
                         Long.parseLong(token.getValue());
                     } catch (NumberFormatException e) {
                         // Overflow occured, other format issues are checked by scanner
-                        errorMessage = "integer overflow at offset " + token.getPosition();
-                        return new ValidationResult(false, errorMessage);
+                        return ValidationResult.makeIntegerOverflow(token.getPosition());
                     }
                 } else if (tokenType == Token.Type.PROPERTY) {
                     if (++propertiesCounter > MAX_PROPERTIES) { // Check max number of properties
-                        errorMessage = "expression uses too many properties";
-                        return new ValidationResult(false, errorMessage);
+                        return ValidationResult.makeTooManyProperties();
                     }
                 }
                 if (prevToken != null
                         && prevToken.isLiteralOrProperty()) { // Check for two consequent literals
-                    errorMessage =
-                            "syntax error, missed operation at offset " + token.getPosition();
-                    return new ValidationResult(false, errorMessage);
+                    return ValidationResult.makeMissedOperation(token.getPosition());
                 }
             } else if (token.isOperation()) { // Check operation
                 // Check for consequent two arguments operations
                 if (tokenType != Token.Type.LOGICAL_NOT_OP
                         && (prevToken != null && prevToken.isOperation())) {
-                    StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
-                    errorMessage =
-                            sb.append(token.getValue())
-                                    .append("\" at offset ")
-                                    .append(token.getPosition())
-                                    .toString();
-                    return new ValidationResult(false, errorMessage);
+                    return ValidationResult.makeUnexpectedCharacter(
+                            token.getValue(), token.getPosition());
                 }
                 // Check for max operations
                 if (++operatorsCounter > MAX_OPERATORS) {
@@ -108,19 +94,11 @@ public class ExpressionValidator {
                 }
             } else if (tokenType == Token.Type.END) { // Check expression end
                 if (tokensCounter == 0) {
-                    errorMessage =
-                            "syntax error, unexpected end of expression at offset "
-                                    + token.getPosition();
-                    return new ValidationResult(false, errorMessage);
+                    return ValidationResult.makeUnexpectedEnd(token.getPosition());
                 }
             } else {
-                StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
-                errorMessage =
-                        sb.append(token.getValue())
-                                .append("\" at offset ")
-                                .append(token.getPosition())
-                                .toString();
-                return new ValidationResult(false, errorMessage);
+                return ValidationResult.makeUnexpectedCharacter(
+                        token.getValue(), token.getPosition());
             }
 
             prevToken = token;
@@ -128,14 +106,12 @@ public class ExpressionValidator {
         } while (!scanner.yyatEOF());
 
         if (propertiesCounter == 0) {
-            errorMessage = "expression does not use any properties";
-            return new ValidationResult(false, errorMessage);
+            return ValidationResult.makeNoProperties();
         }
         if (paranthesisCounter > 0) {
-            errorMessage = "syntax error, unmatched number of open and close paranthesis";
-            return new ValidationResult(false, errorMessage);
+            return ValidationResult.makeUnmatchedParanthesis();
         }
 
-        return new ValidationResult(true, null);
+        return ValidationResult.makeSuccess();
     }
 }
