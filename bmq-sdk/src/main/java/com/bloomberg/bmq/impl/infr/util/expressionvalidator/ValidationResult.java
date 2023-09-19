@@ -15,9 +15,12 @@
  */
 package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 
+import javax.annotation.concurrent.Immutable;
+
+@Immutable
 public class ValidationResult {
-    private String errorMessage;
-    private boolean success;
+    private final String errorMessage;
+    private final boolean success;
 
     public ValidationResult(boolean success, String errorMessage) {
         this.errorMessage = errorMessage;
