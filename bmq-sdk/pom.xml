@@ -272,6 +272,7 @@ limitations under the License. -->
         <executions>
           <execution>
             <goals>
+              <!-- Binds by default to the lifecycle phase: 'generate-sources' -->
               <goal>generate</goal>
             </goals>
             <configuration>
