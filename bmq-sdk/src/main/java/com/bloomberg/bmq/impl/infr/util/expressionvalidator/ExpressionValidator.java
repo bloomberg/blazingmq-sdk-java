@@ -33,9 +33,13 @@ public class ExpressionValidator {
         return errorMessage;
     }
 
-    @SuppressWarnings("fallthrough")
+    /**
+     * @param expression
+     * @return 'true' if successfull or 'false' otherwise
+     * @throws IOException
+     */
     public boolean validate(java.io.Reader expression) throws IOException {
-        // This class validates given 'expression' and returns 'true' if successfull or 'false'
+        // Validate given 'expression' and returns 'true' if successfull or 'false'
         // otherwise.
 
         errorMessage = null;
@@ -51,28 +55,28 @@ public class ExpressionValidator {
             // Get token
             Token token = scanner.yylex();
 
-            switch (token.getType()) {
-                case INVALID:
+            Token.Type tokenType = token.getType();
+            if (tokenType == Token.Type.INVALID) { // Check syntax error detected by scanned
+                StringBuilder sb =
+                        new StringBuilder("syntax error, unexpected invalid character \"");
+                errorMessage =
+                        sb.append(token.getValue())
+                                .append("\" at offset ")
+                                .append(token.getPosition())
+                                .toString();
+                return false;
+            } else if (tokenType == Token.Type.LPAR) { // Check open and close paranthesis
+                paranthesisCounter++;
+            } else if (tokenType == Token.Type.RPAR) {
+                if (paranthesisCounter == 0
+                        || (prevToken != null && prevToken.getType() == Token.Type.LPAR)) {
                     errorMessage =
-                            "syntax error, unexpected invalid character \""
-                                    + token.getValue()
-                                    + "\" at offset "
-                                    + token.getPosition();
+                            "syntax error, unexpected \")\" at offset " + token.getPosition();
                     return false;
-
-                case LPAR:
-                    paranthesisCounter++;
-                    break;
-                case RPAR:
-                    if (paranthesisCounter == 0
-                            || (prevToken != null && prevToken.getType() == Token.Type.LPAR)) {
-                        errorMessage =
-                                "syntax error, unexpected \")\" at offset " + token.getPosition();
-                        return false;
-                    }
-                    paranthesisCounter--;
-                    break;
-                case INTEGER:
+                }
+                paranthesisCounter--;
+            } else if (token.isLiteralOrProperty()) { // Check literal or property
+                if (tokenType == Token.Type.INTEGER) { // Check integer overflow
                     try {
                         Long.parseLong(token.getValue());
                     } catch (NumberFormatException e) {
@@ -80,60 +84,62 @@ public class ExpressionValidator {
                         errorMessage = "integer overflow at offset " + token.getPosition();
                         return false;
                     }
-                case PROPERTY:
-                case BOOL:
-                case STRING:
-                    if (prevToken != null && prevToken.isLiteralOrProperty()) {
-                        errorMessage =
-                                "syntax error, missed operation at offset " + token.getPosition();
+                } else if (tokenType == Token.Type.PROPERTY) {
+                    if (++propertiesCounter > MAX_PROPERTIES) { // Check max number of properties
+                        errorMessage = "expression uses too many properties";
                         return false;
                     }
-                    if (token.getType() == Token.Type.PROPERTY) propertiesCounter++;
-
-                    break;
-                case LOGICAL_OP:
-                case COMPAR_OP:
-                case MATH_OP:
-                    if (prevToken != null && prevToken.isOperation()) {
-                        StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
-                        errorMessage =
-                                sb.append(token.getValue())
-                                        .append("\" at offset ")
-                                        .append(token.getPosition())
-                                        .toString();
-                        return false;
-                    }
-                case LOGICAL_NOT_OP:
-                    if (++operatorsCounter > MAX_OPERATORS) {
-                        errorMessage = "too many operators";
-                        return false;
-                    }
-                    break;
-                default:
-                    break;
+                }
+                if (prevToken != null
+                        && prevToken.isLiteralOrProperty()) { // Check for two consequent literals
+                    errorMessage =
+                            "syntax error, missed operation at offset " + token.getPosition();
+                    return false;
+                }
+            } else if (token.isOperation()) { // Check operation
+                // Check for consequent two arguments operations
+                if (tokenType != Token.Type.LOGICAL_NOT_OP
+                        && (prevToken != null && prevToken.isOperation())) {
+                    StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
+                    errorMessage =
+                            sb.append(token.getValue())
+                                    .append("\" at offset ")
+                                    .append(token.getPosition())
+                                    .toString();
+                    return false;
+                }
+                // Check for max operations
+                if (++operatorsCounter > MAX_OPERATORS) {
+                    errorMessage = "too many operators";
+                    return false;
+                }
+            } else if (tokenType == Token.Type.END) { // Check expression end
+                if (tokensCounter == 0) {
+                    errorMessage =
+                            "syntax error, unexpected end of expression at offset "
+                                    + token.getPosition();
+                    return false;
+                }
+            } else {
+                StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
+                errorMessage =
+                        sb.append(token.getValue())
+                                .append("\" at offset ")
+                                .append(token.getPosition())
+                                .toString();
+                return false;
             }
 
             prevToken = token;
             tokensCounter++;
         } while (!scanner.yyatEOF());
 
-        // Validate counters
-        if (tokensCounter == 1 && prevToken.getType() == Token.Type.END) {
-            errorMessage =
-                    "syntax error, unexpected end of expression at offset "
-                            + prevToken.getPosition();
-            return false;
-        }
-        if (paranthesisCounter > 0) {
-            errorMessage = "syntax error, unmatched number of open and close paranthesis";
-            return false;
-        }
         if (propertiesCounter == 0) {
             errorMessage = "expression does not use any properties";
             return false;
         }
-        if (propertiesCounter > MAX_PROPERTIES) {
-            errorMessage = "expression uses too many properties";
+        if (paranthesisCounter > 0) {
+            errorMessage = "syntax error, unmatched number of open and close paranthesis";
             return false;
         }
 
