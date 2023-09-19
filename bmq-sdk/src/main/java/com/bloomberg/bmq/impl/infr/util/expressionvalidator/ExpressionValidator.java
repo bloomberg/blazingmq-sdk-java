@@ -20,8 +20,6 @@ import java.io.IOException;
 public class ExpressionValidator {
     // This class provides a simple validation of a logical expression used in BMQ subscription.
 
-    private String errorMessage;
-
     // The maximum number of operators allowed in expression.
     // NOTE: must be in sync with C++ implementation (SimpleEvaluator::k_MAX_OPERATORS)
     public static final int MAX_OPERATORS = 10;
@@ -29,20 +27,15 @@ public class ExpressionValidator {
     // NOTE: must be in sync with C++ implementation (SimpleEvaluator::k_MAX_PROPERTIES)
     public static final int MAX_PROPERTIES = 10;
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
     /**
      * @param expression
-     * @return 'true' if successfull or 'false' otherwise
+     * @return ValidationResult result of expression validation
      * @throws IOException
      */
-    public boolean validate(java.io.Reader expression) throws IOException {
-        // Validate given 'expression' and returns 'true' if successfull or 'false'
-        // otherwise.
+    public static ValidationResult validate(java.io.Reader expression) throws IOException {
+        // Validate given 'expression' and return ValidationResult object with result.
 
-        errorMessage = null;
+        String errorMessage = null;
         ExpressionScanner scanner = new ExpressionScanner(expression);
 
         // Loop through tokens from scanner
@@ -64,7 +57,7 @@ public class ExpressionValidator {
                                 .append("\" at offset ")
                                 .append(token.getPosition())
                                 .toString();
-                return false;
+                return new ValidationResult(false, errorMessage);
             } else if (tokenType == Token.Type.LPAR) { // Check open and close paranthesis
                 paranthesisCounter++;
             } else if (tokenType == Token.Type.RPAR) {
@@ -72,7 +65,7 @@ public class ExpressionValidator {
                         || (prevToken != null && prevToken.getType() == Token.Type.LPAR)) {
                     errorMessage =
                             "syntax error, unexpected \")\" at offset " + token.getPosition();
-                    return false;
+                    return new ValidationResult(false, errorMessage);
                 }
                 paranthesisCounter--;
             } else if (token.isLiteralOrProperty()) { // Check literal or property
@@ -82,19 +75,19 @@ public class ExpressionValidator {
                     } catch (NumberFormatException e) {
                         // Overflow occured, other format issues are checked by scanner
                         errorMessage = "integer overflow at offset " + token.getPosition();
-                        return false;
+                        return new ValidationResult(false, errorMessage);
                     }
                 } else if (tokenType == Token.Type.PROPERTY) {
                     if (++propertiesCounter > MAX_PROPERTIES) { // Check max number of properties
                         errorMessage = "expression uses too many properties";
-                        return false;
+                        return new ValidationResult(false, errorMessage);
                     }
                 }
                 if (prevToken != null
                         && prevToken.isLiteralOrProperty()) { // Check for two consequent literals
                     errorMessage =
                             "syntax error, missed operation at offset " + token.getPosition();
-                    return false;
+                    return new ValidationResult(false, errorMessage);
                 }
             } else if (token.isOperation()) { // Check operation
                 // Check for consequent two arguments operations
@@ -106,19 +99,19 @@ public class ExpressionValidator {
                                     .append("\" at offset ")
                                     .append(token.getPosition())
                                     .toString();
-                    return false;
+                    return new ValidationResult(false, errorMessage);
                 }
                 // Check for max operations
                 if (++operatorsCounter > MAX_OPERATORS) {
                     errorMessage = "too many operators";
-                    return false;
+                    return new ValidationResult(false, errorMessage);
                 }
             } else if (tokenType == Token.Type.END) { // Check expression end
                 if (tokensCounter == 0) {
                     errorMessage =
                             "syntax error, unexpected end of expression at offset "
                                     + token.getPosition();
-                    return false;
+                    return new ValidationResult(false, errorMessage);
                 }
             } else {
                 StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
@@ -127,7 +120,7 @@ public class ExpressionValidator {
                                 .append("\" at offset ")
                                 .append(token.getPosition())
                                 .toString();
-                return false;
+                return new ValidationResult(false, errorMessage);
             }
 
             prevToken = token;
@@ -136,13 +129,13 @@ public class ExpressionValidator {
 
         if (propertiesCounter == 0) {
             errorMessage = "expression does not use any properties";
-            return false;
+            return new ValidationResult(false, errorMessage);
         }
         if (paranthesisCounter > 0) {
             errorMessage = "syntax error, unmatched number of open and close paranthesis";
-            return false;
+            return new ValidationResult(false, errorMessage);
         }
 
-        return true;
+        return new ValidationResult(true, null);
     }
 }

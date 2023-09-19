@@ -349,11 +349,10 @@ public class TestExpressionValidator {
     @Test
     public void expressionValidatorTest() {
         java.io.Reader reader = new java.io.StringReader(inputExpression);
-        ExpressionValidator validator = new ExpressionValidator();
         try {
-            boolean result = validator.validate(reader);
-            assertEquals(result, expectedResult);
-            assertEquals(validator.getErrorMessage(), expectedErrorMessage);
+            ValidationResult result = ExpressionValidator.validate(reader);
+            assertEquals(result.isSuccess(), expectedResult);
+            assertEquals(result.getErrorMessage(), expectedErrorMessage);
         } catch (java.io.IOException e) {
             fail();
         }
