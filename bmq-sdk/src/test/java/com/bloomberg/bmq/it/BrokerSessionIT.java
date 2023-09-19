@@ -185,7 +185,10 @@ public class BrokerSessionIT {
             QueueHandle queue) {
         assertNotNull(event);
         assertTrue(
-                "Expected 'QueueControlEvent', received '" + event.getClass().getName() + "'",
+                "Expected 'QueueControlEvent', received '"
+                        + event.getClass().getName()
+                        + "': "
+                        + event,
                 event instanceof QueueControlEvent);
 
         QueueControlEvent queueControlEvent = (QueueControlEvent) event;
@@ -197,7 +200,10 @@ public class BrokerSessionIT {
     private static void verifyBrokerSessionEvent(Event event, BrokerSessionEvent.Type eventType) {
         assertNotNull(event);
         assertTrue(
-                "Expected 'BrokerSessionEvent', received '" + event.getClass().getName() + "'",
+                "Expected 'BrokerSessionEvent', received '"
+                        + event.getClass().getName()
+                        + "': "
+                        + event,
                 event instanceof BrokerSessionEvent);
 
         BrokerSessionEvent brokerSessionEvent = (BrokerSessionEvent) event;
