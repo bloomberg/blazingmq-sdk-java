@@ -59,18 +59,18 @@ public class QueueOptions {
     /** By default, queue is not sensitive to host-health changes. */
     public static final boolean k_SUSPENDS_ON_BAD_HOST_HEALTH_DEFAULT = false;
 
-    private final Subscription commonParameters;
+    private final Subscription defaultSubscription;
     private final HashMap<Integer, Map.Entry<SubscriptionHandle, Subscription>> subscriptions;
     private final Optional<Boolean> suspendsOnBadHostHealth;
 
     private QueueOptions(Builder builder) {
-        commonParameters = builder.commonParametersBuilder.build();
+        defaultSubscription = builder.defaultSubscriptionBuilder.build();
         subscriptions = builder.subscriptions;
         suspendsOnBadHostHealth = builder.suspendsOnBadHostHealth;
     }
 
     private QueueOptions() {
-        commonParameters = Subscription.createDefault();
+        defaultSubscription = Subscription.createDefault();
         subscriptions = new HashMap<>();
         suspendsOnBadHostHealth = Optional.empty();
     }
@@ -93,7 +93,7 @@ public class QueueOptions {
         if (!(obj instanceof QueueOptions)) return false;
         QueueOptions queueOptions = (QueueOptions) obj;
 
-        return commonParameters.equals(queueOptions.commonParameters)
+        return defaultSubscription.equals(queueOptions.defaultSubscription)
                 && subscriptions.equals(queueOptions.subscriptions)
                 && getSuspendsOnBadHostHealth() == queueOptions.getSuspendsOnBadHostHealth();
     }
@@ -106,7 +106,7 @@ public class QueueOptions {
     @Override
     public int hashCode() {
 
-        Long hash = (long) commonParameters.hashCode();
+        Long hash = (long) defaultSubscription.hashCode();
         hash <<= Integer.SIZE;
         hash |= (long) Boolean.hashCode(getSuspendsOnBadHostHealth());
 
@@ -124,7 +124,7 @@ public class QueueOptions {
      * @return long maximum number of outstanding messages
      */
     public long getMaxUnconfirmedMessages() {
-        return commonParameters.getMaxUnconfirmedMessages();
+        return defaultSubscription.getMaxUnconfirmedMessages();
     }
 
     /**
@@ -134,7 +134,7 @@ public class QueueOptions {
      * @return boolean true if {@code maxUnconfirmedMessages} has been set.
      */
     public boolean hasMaxUnconfirmedMessages() {
-        return commonParameters.hasMaxUnconfirmedMessages();
+        return defaultSubscription.hasMaxUnconfirmedMessages();
     }
 
     /**
@@ -144,7 +144,7 @@ public class QueueOptions {
      * @return long maximum accumulated bytes of all outstanding messages without being confirmed
      */
     public long getMaxUnconfirmedBytes() {
-        return commonParameters.getMaxUnconfirmedBytes();
+        return defaultSubscription.getMaxUnconfirmedBytes();
     }
 
     /**
@@ -154,7 +154,7 @@ public class QueueOptions {
      * @return boolean true if {@code maxUnconfirmedBytes} has been set.
      */
     public boolean hasMaxUnconfirmedBytes() {
-        return commonParameters.hasMaxUnconfirmedBytes();
+        return defaultSubscription.hasMaxUnconfirmedBytes();
     }
 
     /**
@@ -164,7 +164,7 @@ public class QueueOptions {
      * @return int priority of a consumer
      */
     public int getConsumerPriority() {
-        return commonParameters.getConsumerPriority();
+        return defaultSubscription.getConsumerPriority();
     }
 
     /**
@@ -174,7 +174,7 @@ public class QueueOptions {
      * @return boolean true if {@code consumerPriority} has been set.
      */
     public boolean hasConsumerPriority() {
-        return commonParameters.hasConsumerPriority();
+        return defaultSubscription.hasConsumerPriority();
     }
 
     /**
@@ -242,7 +242,7 @@ public class QueueOptions {
 
     /** A helper class to create immutable {@code QueueOptions} with custom settings. */
     public static class Builder {
-        private final Subscription.Builder commonParametersBuilder;
+        private final Subscription.Builder defaultSubscriptionBuilder;
         private final HashMap<Integer, Map.Entry<SubscriptionHandle, Subscription>> subscriptions;
         private Optional<Boolean> suspendsOnBadHostHealth;
 
@@ -263,7 +263,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder setMaxUnconfirmedMessages(long maxUnconfirmedMessages) {
-            this.commonParametersBuilder.setMaxUnconfirmedMessages(maxUnconfirmedMessages);
+            this.defaultSubscriptionBuilder.setMaxUnconfirmedMessages(maxUnconfirmedMessages);
             return this;
         }
 
@@ -276,7 +276,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder setMaxUnconfirmedBytes(long maxUnconfirmedBytes) {
-            this.commonParametersBuilder.setMaxUnconfirmedBytes(maxUnconfirmedBytes);
+            this.defaultSubscriptionBuilder.setMaxUnconfirmedBytes(maxUnconfirmedBytes);
             return this;
         }
 
@@ -287,7 +287,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder setConsumerPriority(int consumerPriority) {
-            this.commonParametersBuilder.setConsumerPriority(consumerPriority);
+            this.defaultSubscriptionBuilder.setConsumerPriority(consumerPriority);
             return this;
         }
 
@@ -385,7 +385,7 @@ public class QueueOptions {
         }
 
         private Builder() {
-            commonParametersBuilder = Subscription.builder();
+            defaultSubscriptionBuilder = Subscription.builder();
             subscriptions = new HashMap<>();
             suspendsOnBadHostHealth = Optional.empty();
         }

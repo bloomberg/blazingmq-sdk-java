@@ -44,14 +44,14 @@ public class Subscription {
         maxUnconfirmedMessages = builder.maxUnconfirmedMessages;
         maxUnconfirmedBytes = builder.maxUnconfirmedBytes;
         consumerPriority = builder.consumerPriority;
-        expression = builder.expressionBuilder.build();
+        expression = builder.expression.orElse(new SubscriptionExpression());
     }
 
     private Subscription() {
         maxUnconfirmedMessages = Optional.empty();
         maxUnconfirmedBytes = Optional.empty();
         consumerPriority = Optional.empty();
-        expression = SubscriptionExpression.createDefault();
+        expression = new SubscriptionExpression();
     }
 
     /**
@@ -154,24 +154,14 @@ public class Subscription {
     }
 
     /**
-     * Returns priority of a consumer with respect to delivery of messages. If not set, returns
-     * default value.
+     * Returns expression for this subscription.
      *
-     * @return int priority of a consumer
+     * @return SubscriptionExpression expression
      */
     public SubscriptionExpression getExpression() {
         return expression;
     }
 
-    /**
-     * Returns whether {@code consumerPriority} has been set for this object, or whether it
-     * implicitly holds {@code k_CONSUMER_PRIORITY_DEFAULT}.
-     *
-     * @return boolean true if {@code consumerPriority} has been set.
-     */
-    //    public boolean hasExpression() {
-    //        return consumerPriority.isPresent();
-    //    }
     /**
      * Returns a helper class object to create immutable {@code Subscription} with custom settings.
      *
@@ -208,7 +198,7 @@ public class Subscription {
         private Optional<Long> maxUnconfirmedMessages;
         private Optional<Long> maxUnconfirmedBytes;
         private Optional<Integer> consumerPriority;
-        private SubscriptionExpression.Builder expressionBuilder;
+        private Optional<SubscriptionExpression> expression;
 
         /**
          * Returns subscription parameters based on this object properties.
@@ -226,7 +216,7 @@ public class Subscription {
          * @param maxUnconfirmedMessages maximum number of outstanding messages
          * @return Builder this object
          */
-        public Subscription.Builder setMaxUnconfirmedMessages(long maxUnconfirmedMessages) {
+        public Builder setMaxUnconfirmedMessages(long maxUnconfirmedMessages) {
             this.maxUnconfirmedMessages = Optional.of(maxUnconfirmedMessages);
             return this;
         }
@@ -239,7 +229,7 @@ public class Subscription {
          *     being confirmed
          * @return Builder this object
          */
-        public Subscription.Builder setMaxUnconfirmedBytes(long maxUnconfirmedBytes) {
+        public Builder setMaxUnconfirmedBytes(long maxUnconfirmedBytes) {
             this.maxUnconfirmedBytes = Optional.of(maxUnconfirmedBytes);
             return this;
         }
@@ -250,7 +240,7 @@ public class Subscription {
          * @param consumerPriority priority of a consumer
          * @return Builder this object
          */
-        public Subscription.Builder setConsumerPriority(int consumerPriority) {
+        public Builder setConsumerPriority(int consumerPriority) {
             this.consumerPriority = Optional.of(consumerPriority);
             return this;
         }
@@ -261,22 +251,8 @@ public class Subscription {
          * @param expression expression text
          * @return Builder this object
          */
-        public Subscription.Builder setExpressionText(String expression) {
-            this.expressionBuilder.setExpression(expression);
-            if (expression.length() > 0) {
-                setExpressionVersion(SubscriptionExpression.Version.e_VERSION_1);
-            }
-            return this;
-        }
-
-        /**
-         * Sets expression version.
-         *
-         * @param version expression version
-         * @return Builder this object
-         */
-        public Subscription.Builder setExpressionVersion(SubscriptionExpression.Version version) {
-            this.expressionBuilder.setVersion(version);
+        public Builder setExpressionText(String expression) {
+            this.expression = Optional.of(new SubscriptionExpression(expression));
             return this;
         }
 
@@ -287,7 +263,7 @@ public class Subscription {
          * @param subscription specifies subscription parameters which is merged into the builder
          * @return Builder this object
          */
-        public Subscription.Builder merge(Subscription subscription) {
+        public Builder merge(Subscription subscription) {
             if (subscription.hasMaxUnconfirmedMessages()) {
                 setMaxUnconfirmedMessages(subscription.getMaxUnconfirmedMessages());
             }
@@ -297,7 +273,7 @@ public class Subscription {
             if (subscription.hasConsumerPriority()) {
                 setConsumerPriority(subscription.getConsumerPriority());
             }
-            expressionBuilder.merge(subscription.getExpression());
+            expression = Optional.of(subscription.getExpression());
             return this;
         }
 
@@ -305,7 +281,7 @@ public class Subscription {
             maxUnconfirmedMessages = Optional.empty();
             maxUnconfirmedBytes = Optional.empty();
             consumerPriority = Optional.empty();
-            expressionBuilder = SubscriptionExpression.builder();
+            expression = Optional.empty();
         }
     }
 }

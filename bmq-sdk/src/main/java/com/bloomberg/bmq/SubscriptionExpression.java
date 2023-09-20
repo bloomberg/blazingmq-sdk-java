@@ -15,6 +15,7 @@
  */
 package com.bloomberg.bmq;
 
+import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
@@ -37,12 +38,14 @@ public class SubscriptionExpression {
     private final Optional<String> expression;
     private final Optional<Version> version;
 
-    private SubscriptionExpression(Builder builder) {
-        expression = builder.expression;
-        version = builder.version;
+    public SubscriptionExpression(String expression) {
+        Argument.expectNonNull(expression, "expression");
+        this.expression = Optional.of(expression);
+        this.version =
+                Optional.of((expression.length() > 0) ? Version.e_VERSION_1 : Version.e_UNDEFINED);
     }
 
-    private SubscriptionExpression() {
+    public SubscriptionExpression() {
         expression = Optional.empty();
         version = Optional.empty();
     }
@@ -119,25 +122,6 @@ public class SubscriptionExpression {
         return version.isPresent();
     }
 
-    /**
-     * Returns a helper class object to create immutable {@code SubscriptionExpression} with custom
-     * settings.
-     *
-     * @return Builder a helper class object to create immutable {@code SubscriptionExpression}
-     */
-    public static SubscriptionExpression.Builder builder() {
-        return new SubscriptionExpression.Builder();
-    }
-
-    /**
-     * Returns subscription expression with default values.
-     *
-     * @return SubscriptionExpression subscription expression object with default values
-     */
-    public static SubscriptionExpression createDefault() {
-        return new SubscriptionExpression();
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -147,64 +131,5 @@ public class SubscriptionExpression {
                 .append(getVersion())
                 .append(" ]");
         return sb.toString();
-    }
-
-    /** A helper class to create immutable {@code SubscriptionExpression} with custom settings. */
-    public static class Builder {
-        private Optional<String> expression;
-        private Optional<Version> version;
-
-        /**
-         * Returns subscription expression based on this object properties.
-         *
-         * @return SubscriptionExpression immutable subscription expression object
-         */
-        public SubscriptionExpression build() {
-            return new SubscriptionExpression(this);
-        }
-
-        /**
-         * Sets expression text.
-         *
-         * @param expression expression text
-         * @return Builder this object
-         */
-        public SubscriptionExpression.Builder setExpression(String expression) {
-            this.expression = Optional.of(expression);
-            return this;
-        }
-
-        /**
-         * Sets expression version.
-         *
-         * @param version expression version
-         * @return Builder this object
-         */
-        public SubscriptionExpression.Builder setVersion(Version version) {
-            this.version = Optional.of(version);
-            return this;
-        }
-
-        /**
-         * "Merges" another 'SubscriptionExpression' into this builder, by invoking
-         * setF(options.getF()) for all fields 'F' for which 'expression.hasF()' is true.
-         *
-         * @param expression specifies subscription expression which is merged into the builder
-         * @return Builder this object
-         */
-        public SubscriptionExpression.Builder merge(SubscriptionExpression expression) {
-            if (expression.hasExpression()) {
-                setExpression(expression.getExpression());
-            }
-            if (expression.hasVersion()) {
-                setVersion(expression.getVersion());
-            }
-            return this;
-        }
-
-        private Builder() {
-            expression = Optional.empty();
-            version = Optional.empty();
-        }
     }
 }
