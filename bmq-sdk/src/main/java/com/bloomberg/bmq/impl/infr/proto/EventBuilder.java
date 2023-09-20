@@ -41,32 +41,30 @@ public abstract class EventBuilder {
     }
 
     public ByteBuffer[] build() {
-        if (0 == bbos.numByteBuffers()) {
+        if (0 == bbos.size()) {
             throw new IllegalStateException("Nothing to build.");
         }
 
         int payloadLen = bbos.size();
-        ByteBuffer[] payload = bbos.peek();
+        ByteBuffer[] payload = bbos.peekUnflipped();
 
         eventHeader.setLength(EventHeader.HEADER_SIZE + payloadLen);
 
-        ByteBufferOutputStream headerStream = ByteBufferOutputStream.bigBlocks();
+        ByteBufferOutputStream stream = ByteBufferOutputStream.smallBlocks();
         try {
-            eventHeader.streamOut(headerStream);
+            eventHeader.streamOut(stream);
         } catch (IOException ex) {
             // Should never happen
             throw new IllegalStateException(ex);
         }
+        try {
+            stream.writeBuffers(payload);
+        } catch (IOException e) {
+            // Should never happen
+            throw new RuntimeException(e);
+        }
 
-        ByteBuffer[] headerBuffers = headerStream.peek();
-        int numBuffers = headerBuffers.length + payload.length;
-
-        ByteBuffer[] outputBuffers = new ByteBuffer[numBuffers];
-        System.arraycopy(headerBuffers, 0, outputBuffers, 0, headerBuffers.length);
-
-        System.arraycopy(payload, 0, outputBuffers, headerBuffers.length, payload.length);
-
-        return outputBuffers;
+        return stream.peek();
     }
 
     public int messageCount() {

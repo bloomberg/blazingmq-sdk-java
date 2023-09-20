@@ -51,8 +51,8 @@ public class PutEventImplBuilderTest {
             assertEquals(EventBuilderResult.PAYLOAD_EMPTY, res);
 
             putMsg = new PutMessageImpl();
-            buffer = ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT + 1);
-            putMsg.appData().setPayload(buffer);
+            putMsg.appData()
+                    .setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT + 1));
 
             // set compression to none in order to get PAYLOAD_TOO_BIG result
             putMsg.setCompressionType(CompressionAlgorithmType.E_NONE);
@@ -60,30 +60,31 @@ public class PutEventImplBuilderTest {
             res = builder.packMessage(putMsg, isOldStyleProperties);
             assertEquals(EventBuilderResult.PAYLOAD_TOO_BIG, res);
 
-            putMsg = new PutMessageImpl();
-
             final int numMsgs = EventHeader.MAX_SIZE_SOFT / PutHeader.MAX_PAYLOAD_SIZE_SOFT;
             // Cannot pack more than 'numMsgs' having a unpackedSize of
             // 'PutHeader.MAX_PAYLOAD_SIZE_SOFT' in 1 bmqp event.
 
-            buffer = ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT);
-            putMsg.appData().setPayload(buffer);
-
             // set compression to none in order to get EVENT_TOO_BIG result
-            putMsg.setCompressionType(CompressionAlgorithmType.E_NONE);
 
             for (int i = 0; i < numMsgs; i++) {
+                putMsg = new PutMessageImpl();
+                putMsg.appData()
+                        .setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+                putMsg.setCompressionType(CompressionAlgorithmType.E_NONE);
                 res = builder.packMessage(putMsg, isOldStyleProperties);
                 assertEquals(EventBuilderResult.SUCCESS, res);
             }
 
             // Try to add one more message, which must fail with event_too_big.
+            putMsg = new PutMessageImpl();
+            putMsg.appData().setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+            putMsg.setCompressionType(CompressionAlgorithmType.E_NONE);
             res = builder.packMessage(putMsg, isOldStyleProperties);
             assertEquals(EventBuilderResult.EVENT_TOO_BIG, res);
 
             putMsg = new PutMessageImpl();
 
-            putMsg.appData().setPayload(buffer);
+            putMsg.appData().setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
             putMsg.setFlags(PutHeaderFlags.ACK_REQUESTED.toInt());
 
             CorrelationId corId = putMsg.correlationId();
@@ -103,7 +104,8 @@ public class PutEventImplBuilderTest {
             PutMessageImpl putMsg = new PutMessageImpl();
             PutEventBuilder builder = new PutEventBuilder();
 
-            ByteBuffer buffer = ByteBuffer.allocate(EventHeader.MAX_SIZE_SOFT + 1024);
+            ByteBuffer buffer = TestHelpers.filledBuffer(EventHeader.MAX_SIZE_SOFT + 1024);
+            buffer.position(PutHeader.MAX_PAYLOAD_SIZE_SOFT);
             buffer.limit(PutHeader.MAX_PAYLOAD_SIZE_SOFT);
 
             putMsg.appData().setPayload(buffer);
@@ -134,7 +136,8 @@ public class PutEventImplBuilderTest {
     @Test
     public void testBuildPutMessageWithProperties() throws IOException {
         final String k = "abcdefghijklmnopqrstuvwxyz";
-        final ByteBuffer b = ByteBuffer.wrap(k.getBytes());
+        final ByteBuffer b = ByteBuffer.allocate(k.getBytes().length);
+        b.put(k.getBytes());
 
         final MessagePropertiesImpl props = new MessagePropertiesImpl();
         props.setPropertyAsInt32("encoding", 3);
@@ -152,7 +155,7 @@ public class PutEventImplBuilderTest {
             PutMessageImpl putMsg = new PutMessageImpl();
             putMsg.setQueueId(9876);
             putMsg.setupCorrelationId(CorrelationIdImpl.restoreId(1234));
-            putMsg.appData().setPayload(b);
+            putMsg.appData().setPayload(b.duplicate());
             putMsg.setFlags(flags);
             putMsg.appData().setProperties(props);
 

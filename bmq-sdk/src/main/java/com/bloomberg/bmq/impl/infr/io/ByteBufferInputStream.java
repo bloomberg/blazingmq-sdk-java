@@ -91,6 +91,31 @@ public class ByteBufferInputStream extends InputStream implements DataInput {
         }
     }
 
+    public int read(ByteBufferOutputStream bbos, int len) throws IOException {
+        if (len == 0) {
+            return 0;
+        }
+        int needed = len;
+        while (needed > 0 && currentBuffer < byteBuffers.length) {
+            ByteBuffer buffer = getBuffer();
+            ByteBuffer readable = buffer.slice();
+            int remaining = readable.remaining();
+            if (needed > remaining) {
+                readable.position(remaining);
+                bbos.writeBuffer(false, readable);
+                buffer.position(buffer.limit());
+                needed -= remaining;
+            } else {
+                readable.limit(needed);
+                readable.position(needed);
+                bbos.writeBuffer(false, readable);
+                buffer.position(buffer.position() + needed);
+                needed = 0;
+            }
+        }
+        return len - needed;
+    }
+
     private ByteBuffer getBuffer(int length) throws IOException {
         if (length == 0) {
             return ByteBuffer.allocate(0);

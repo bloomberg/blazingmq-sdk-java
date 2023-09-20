@@ -38,6 +38,13 @@ public class TestHelpers {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    public static ByteBuffer filledBuffer(int size) {
+        byte[] buf = new byte[size];
+        ByteBuffer filled = ByteBuffer.allocate(size);
+        filled.put(buf);
+        return filled;
+    }
+
     public static ByteBuffer readFile(final String fileName) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (InputStream ins = TestHelpers.class.getResourceAsStream(fileName)) {
@@ -55,14 +62,16 @@ public class TestHelpers {
         return res;
     }
 
-    public static byte[] buffersContents(ByteBuffer[] buffers) {
+    public static byte[] buffersContents(ByteBuffer[] buffers) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         for (ByteBuffer buf : buffers) {
             ByteBuffer dup = buf.duplicate();
             if (dup.position() != 0 && dup.limit() == dup.capacity()) {
                 dup.flip();
             }
-            os.write(dup.array(), dup.arrayOffset(), dup.limit());
+            byte[] temp = new byte[dup.remaining()];
+            dup.get(temp, 0, temp.length);
+            os.write(temp);
         }
         return os.toByteArray();
     }

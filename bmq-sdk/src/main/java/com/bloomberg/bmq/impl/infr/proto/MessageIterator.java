@@ -60,7 +60,7 @@ public abstract class MessageIterator {
                 return null;
             }
         } catch (IOException e) {
-            logger.debug("Fails to decode Message: ", e);
+            logger.warn("Fails to decode Message: ", e);
             return null;
         }
     }

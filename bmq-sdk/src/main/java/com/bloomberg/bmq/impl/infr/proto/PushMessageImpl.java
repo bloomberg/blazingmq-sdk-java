@@ -126,7 +126,7 @@ public class PushMessageImpl implements Streamable {
         int dataSize = appDataSize - optionSize;
 
         logger.debug(
-                "Total: {}, header: {}, appData: {}, option: {}, data: {}",
+                "PushMessage Total: {}, header: {}, appData: {}, option: {}, data: {}",
                 totalSize,
                 headerSize,
                 appDataSize,

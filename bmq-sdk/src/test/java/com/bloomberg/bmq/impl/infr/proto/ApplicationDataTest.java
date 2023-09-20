@@ -135,13 +135,17 @@ public class ApplicationDataTest {
     }
 
     public ByteBuffer[] generatePayload(int size) throws IOException {
+        return generatePayload(size, true);
+    }
+
+    public ByteBuffer[] generatePayload(int size, boolean flipped) throws IOException {
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
         for (int i = 0; i < size; i++) {
             bbos.writeByte(i % 10);
         }
 
-        return bbos.peek();
+        return flipped ? bbos.peek() : bbos.peekUnflipped();
     }
 
     public MessagePropertiesImpl generateProps() {
@@ -174,7 +178,9 @@ public class ApplicationDataTest {
 
             if (payload != null) {
                 for (ByteBuffer b : payload) {
-                    bbos.writeBuffer(b);
+                    ByteBuffer dup = b.duplicate();
+                    dup.position(dup.limit());
+                    bbos.writeBuffer(dup);
                 }
             }
         } else {
@@ -246,8 +252,6 @@ public class ApplicationDataTest {
         if (payload != null) {
             appData.setPayload(duplicate(payload));
             verifyPayload(payload, appData.payload());
-
-            assertEquals(getSize(payload), appData.payloadSize());
         } else {
             try {
                 appData.setPayload(payload);
@@ -364,7 +368,7 @@ public class ApplicationDataTest {
         // Double check. Stream out data and compare to original input
         appData = new ApplicationData();
         if (payload != null) {
-            appData.setPayload(duplicate(payload));
+            appData.setPayload(payload);
         }
         if (props != null) {
             appData.setProperties(props);
@@ -385,7 +389,7 @@ public class ApplicationDataTest {
                 TestHelpers.buffersContents(data), TestHelpers.buffersContents(bbos.reset()));
     }
 
-    private void verifyPayload(ByteBuffer[] expected, ByteBuffer[] actual) {
+    private void verifyPayload(ByteBuffer[] expected, ByteBuffer[] actual) throws IOException {
         if (expected == null) {
             expected = new ByteBufferOutputStream().reset();
         }

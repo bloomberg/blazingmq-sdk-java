@@ -167,6 +167,13 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
 
         @Override
         public void write(ChannelHandlerContext ctx, ByteBuffer[] data) {
+            if (logger.isDebugEnabled()) {
+                int size = 0;
+                for (ByteBuffer b : data) {
+                    size += b.remaining();
+                }
+                logger.debug("Writing {} bytes from {} buffers", size, data.length);
+            }
             ctx.writeAndFlush(Unpooled.wrappedBuffer(data));
         }
     }
@@ -314,10 +321,10 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             blackBoxIndex.write(Integer.toString(byteBuffers.length));
             for (ByteBuffer b : byteBuffers) {
                 blackBoxIndex.write(" " + b.remaining());
-                while (b.hasRemaining()) {
-                    blackBox.write(b.get());
+                ByteBuffer dup = b.duplicate();
+                while (dup.hasRemaining()) {
+                    blackBox.write(dup.get());
                 }
-                b.rewind();
             }
             blackBoxIndex.write("\n");
         } catch (IOException e) {
@@ -601,7 +608,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 logger.error("Buffer is full");
                 return WriteStatus.WRITE_BUFFER_FULL;
             }
-
             clientChannelAdapter.write(this.channelContext, data);
             return WriteStatus.SUCCESS;
         }
@@ -742,10 +748,18 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
 
             ByteBuf byteBuf = (ByteBuf) msg;
             try {
-                // This still makes a copy of the underlying bytes, but let netty do it
-                // instead of doing it ourselves.
-                //
-                // TODO - can this copy be eliminated?
+                // Make a copy of bytes present in 'byteBuf'.  This is needed
+                // so that the lifetime of 'readBuffer' (and ByteBuffer[]
+                // obtained from it via 'readBuffer.peek()') can be
+                // decoupled with the associated 'byteBuf'.  As per netty docs,
+                // a ByteBuf object is refcounted, and user must invoke
+                // 'ByteBuf.release' to decrement the counter when done.  Since
+                // there is no place in the logic where we can confidentally
+                // invoke 'ByteBuf.release' (BlazingMQ user may keep a PUSH message
+                // for ever), we make a copy of bytes present in 'ByteBuf' and
+                // invoke 'ByteBuf.release' right away.  This copying is
+                // unfortunate, and we will investigate ways to avoid this
+                // copy later.
                 ByteBuffer nioBuf = ByteBuffer.allocate(byteBuf.readableBytes());
                 byteBuf.readBytes(nioBuf);
                 readBuffer.writeBuffer(nioBuf);
@@ -755,8 +769,9 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             byteBuf.release();
 
             // Check if there are enough bytes in 'readBuffer'.
-
             final int numNeeded = readBytesStatus.numNeeded();
+            logger.debug("Read {} bytes, need at least {}", readBuffer.size(), numNeeded);
+
             if (readBuffer.size() >= numNeeded) {
                 // There are enough bytes.  Notify client.
                 final ByteBuffer[] byteBuffers = readBuffer.reset();

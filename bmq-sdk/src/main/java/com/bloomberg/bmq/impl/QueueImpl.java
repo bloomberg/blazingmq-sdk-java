@@ -265,11 +265,17 @@ public class QueueImpl implements QueueHandle {
     }
 
     public void pack(PutMessageImpl message) throws BMQException {
-        putMessages.get().add(message);
+        synchronized (lock) {
+            putMessages.get().add(message);
+        }
     }
 
     public void flush() throws BMQException {
-        brokerSession.post(this, putMessages.getAndSet(new ArrayList<>(INITIAL_PUTMESSAGES_SIZE)));
+        Collection<PutMessageImpl> messages = null;
+        synchronized (lock) {
+            messages = putMessages.getAndSet(new ArrayList<>(INITIAL_PUTMESSAGES_SIZE));
+        }
+        brokerSession.post(this, messages);
     }
 
     @Override

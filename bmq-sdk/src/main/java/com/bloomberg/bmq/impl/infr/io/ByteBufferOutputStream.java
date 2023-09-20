@@ -66,12 +66,12 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
 
     private static final int KB = 1024;
     private static final int DEFAULT_BUF_SIZE = 4 * KB;
-    private static final int BIG_BUF_SIZE = 8 * KB;
+    private static final int BIG_BUF_SIZE = 4 * KB;
 
     // small buffer size should be adequete for many event types.
-    private static final int SMALL_BUF_SIZE = 1 * KB;
+    private static final int SMALL_BUF_SIZE = 512;
 
-    private static final int DEFAULT_MIN_SLICE_SIZE = 256;
+    private static final int DEFAULT_MIN_SLICE_SIZE = 128;
 
     public static ByteBufferOutputStream smallBlocks() {
         return new ByteBufferOutputStream(SMALL_BUF_SIZE);
@@ -125,7 +125,10 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
 
     private void ensureCapacity(int size) {
         int currentBufferCapacity = availableCapacity();
-        if (size > currentBufferCapacity) {
+        if (size > currentBufferCapacity - 1) {
+            // why -1 ? if we write all the way to to end of a
+            // ByteBuffer, then we cannot tell if is is cleared
+            // or flipped.
             // need more space, either find a slice with enough or allocate a new one
             if (currentBufferCapacity >= minSliceSize) {
                 ByteBuffer remainder = maybeSliceCurrent();
@@ -179,20 +182,16 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
 
         if (length <= 0 || (length > ba.length - offset)) return;
 
-        // if its too big for a pre-defined buffer, just wrap it instead
-        if (length > minSliceSize) {
-            ByteBuffer remainder = maybeSliceCurrent();
-            ByteBuffer buf = ByteBuffer.wrap(ba, offset, length);
-            buf.position(buf.limit());
-            currentBufferIndex++;
-            bbArray.add(buf);
-            swapBuffers(currentBufferIndex, bbArray.size() - 1);
-            addRemainderOrNew(remainder);
-        } else {
-            ensureCapacity(length);
-            getCurrent().put(ba, offset, length);
-        }
+        ensureCapacity(length);
+        getCurrent().put(ba, offset, length);
         totalBytes += length;
+    }
+
+    public ByteBuffer[] peekUnflipped() {
+        return bbArray.stream()
+                .limit(currentBufferIndex + 1)
+                .map(ByteBuffer::duplicate)
+                .toArray(ByteBuffer[]::new);
     }
 
     /**
@@ -201,11 +200,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
      * <p>The bbos can continue to be written to.
      */
     public ByteBuffer[] peek() {
-        ByteBuffer[] duplicates =
-                bbArray.stream()
-                        .limit(currentBufferIndex + 1)
-                        .map(ByteBuffer::duplicate)
-                        .toArray(ByteBuffer[]::new);
+        ByteBuffer[] duplicates = peekUnflipped();
         for (ByteBuffer b : duplicates) {
             b.flip();
         }
@@ -236,7 +231,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     }
 
     // a buffer that has never been put() to nor flipped
-    private boolean bufferIsFresh(ByteBuffer b) {
+    private boolean bufferIsClear(ByteBuffer b) {
         return b.position() == 0 && b.limit() == b.capacity();
     }
 
@@ -259,19 +254,32 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
     }
 
     public void writeBuffer(ByteBuffer buffer) throws IOException {
-        writeBuffers(Collections.singletonList(buffer));
+        writeBuffer(true, buffer);
+    }
+
+    public void writeBuffer(boolean skipCleared, ByteBuffer buffer) throws IOException {
+        writeBuffers(skipCleared, Collections.singletonList(buffer));
     }
 
     public void writeBuffers(ByteBuffer... buffers) throws IOException {
-        writeBuffers(Arrays.asList(buffers));
+        writeBuffers(true, Arrays.asList(buffers));
+    }
+
+    public void writeBuffers(boolean skipCleared, ByteBuffer... buffers) throws IOException {
+        writeBuffers(skipCleared, Arrays.asList(buffers));
     }
 
     public void writeBuffers(Collection<ByteBuffer> buffers) throws IOException {
+        writeBuffers(true, buffers);
+    }
+
+    public void writeBuffers(boolean skipCleared, Collection<ByteBuffer> buffers)
+            throws IOException {
         if (!isOpen) throw new IOException("Stream closed");
         ByteBuffer remainder = maybeSliceCurrent();
         bbArray.ensureCapacity(bbArray.size() + buffers.size() + 1 /* remainder or new buffer */);
         for (ByteBuffer b : buffers) {
-            if (bufferIsFresh(b)) continue;
+            if (skipCleared && bufferIsClear(b)) continue;
             ByteBuffer dup = b.duplicate();
             if (dup.position() == 0) {
                 dup.position(dup.limit());

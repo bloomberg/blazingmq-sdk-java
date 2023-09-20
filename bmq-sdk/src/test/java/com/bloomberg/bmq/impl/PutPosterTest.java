@@ -40,6 +40,7 @@ import com.bloomberg.bmq.impl.infr.proto.PutMessageImpl;
 import com.bloomberg.bmq.impl.infr.stat.EventsStats;
 import com.bloomberg.bmq.impl.infr.stat.EventsStatsTest;
 import com.bloomberg.bmq.impl.intf.BrokerConnection;
+import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
@@ -134,7 +135,7 @@ public class PutPosterTest {
 
         // Payload too big
         msg = new PutMessageImpl();
-        msg.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT + 1));
+        msg.appData().setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT + 1));
 
         // Set compression to none in order to get too big payload
         msg.setCompressionType(CompressionAlgorithmType.E_NONE);
@@ -148,7 +149,7 @@ public class PutPosterTest {
 
         // Missing correlation ID
         msg = new PutMessageImpl();
-        msg.appData().setPayload(ByteBuffer.allocate(10));
+        msg.appData().setPayload(TestHelpers.filledBuffer(10));
         msg.setFlags(PutHeaderFlags.setFlag(0, PutHeaderFlags.ACK_REQUESTED));
 
         try {
@@ -175,25 +176,25 @@ public class PutPosterTest {
             props.setPropertyAsBinary("data", new byte[] {1, 2, 3, 4, 5});
 
             PutMessageImpl bigMsg1 = new PutMessageImpl();
-            bigMsg1.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+            bigMsg1.appData().setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
             bigMsg1.setCompressionType(CompressionAlgorithmType.E_NONE);
 
             PutMessageImpl smallMsg1 = new PutMessageImpl();
-            smallMsg1.appData().setPayload(ByteBuffer.allocate(10000));
+            smallMsg1.appData().setPayload(TestHelpers.filledBuffer(10000));
             smallMsg1.appData().setProperties(props);
 
             PutMessageImpl bigMsg2 = new PutMessageImpl();
-            bigMsg2.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+            bigMsg2.appData().setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
             bigMsg2.setCompressionType(CompressionAlgorithmType.E_NONE);
 
             PutMessageImpl smallMsg2 = new PutMessageImpl();
             smallMsg2.appData().setProperties(props);
-            smallMsg2.appData().setPayload(ByteBuffer.allocate(10001));
+            smallMsg2.appData().setPayload(TestHelpers.filledBuffer(10001));
 
             PutMessageImpl compressedMsg = new PutMessageImpl();
             compressedMsg
                     .appData()
-                    .setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+                    .setPayload(TestHelpers.filledBuffer(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
             compressedMsg.appData().setProperties(props);
             compressedMsg.setCompressionType(CompressionAlgorithmType.E_ZLIB);
 
@@ -285,7 +286,7 @@ public class PutPosterTest {
 
             // Create a msg with payload = max event size
             PutMessageImpl msg1 = new PutMessageImpl();
-            msg1.appData().setPayload(ByteBuffer.allocate(MAX_EVENT_SIZE));
+            msg1.appData().setPayload(TestHelpers.filledBuffer(MAX_EVENT_SIZE));
 
             // Post async
             ExecutorService es = Executors.newSingleThreadExecutor();
@@ -306,7 +307,8 @@ public class PutPosterTest {
             // Post a msg with payload = max payload size
             PutMessageImpl msg2 = new PutMessageImpl();
             msg2.appData()
-                    .setPayload(ByteBuffer.allocate(MAX_EVENT_SIZE - PutHeader.HEADER_SIZE - 4));
+                    .setPayload(
+                            TestHelpers.filledBuffer(MAX_EVENT_SIZE - PutHeader.HEADER_SIZE - 4));
 
             poster.post(msg2);
         }
@@ -349,7 +351,7 @@ public class PutPosterTest {
             CorrelationIdImpl cId = CorrelationIdImpl.nextId(userData);
 
             PutMessageImpl msg = new PutMessageImpl();
-            msg.appData().setPayload(ByteBuffer.allocate(10));
+            msg.appData().setPayload(TestHelpers.filledBuffer(10));
             msg.setupCorrelationId(cId);
 
             poster.post(msg);

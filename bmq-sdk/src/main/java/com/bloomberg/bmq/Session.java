@@ -26,6 +26,7 @@ import com.bloomberg.bmq.impl.events.Event;
 import com.bloomberg.bmq.impl.events.PushMessageEvent;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.events.QueueControlEventHandler;
+import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.net.NettyTcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.proto.AckMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.BinaryMessageProperty;
@@ -1019,8 +1020,9 @@ public final class Session implements AbstractSession {
         public PutMessage createPutMessage(ByteBuffer... payload) {
             PutMessageImpl msg = new PutMessageImpl();
 
-            try {
-                msg.appData().setPayload(payload);
+            try (ByteBufferOutputStream bbos = new ByteBufferOutputStream()) {
+                bbos.writeBuffers(payload);
+                msg.appData().setPayload(bbos.peekUnflipped());
             } catch (IOException e) {
                 throw new BMQException("Failed to set payload", e);
             }
