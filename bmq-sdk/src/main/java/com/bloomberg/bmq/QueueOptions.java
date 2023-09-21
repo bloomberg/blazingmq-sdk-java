@@ -15,7 +15,6 @@
  */
 package com.bloomberg.bmq;
 
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -60,7 +59,7 @@ public class QueueOptions {
     public static final boolean k_SUSPENDS_ON_BAD_HOST_HEALTH_DEFAULT = false;
 
     private final Subscription defaultSubscription;
-    private final HashMap<Integer, Map.Entry<SubscriptionHandle, Subscription>> subscriptions;
+    private final HashMap<Integer, Subscription> subscriptions;
     private final Optional<Boolean> suspendsOnBadHostHealth;
 
     private QueueOptions(Builder builder) {
@@ -199,7 +198,7 @@ public class QueueOptions {
 
     // todo docs
     // todo immutable map and pair?
-    public HashMap<Integer, Map.Entry<SubscriptionHandle, Subscription>> getSubscriptions() {
+    public HashMap<Integer, Subscription> getSubscriptions() {
         return subscriptions;
     }
 
@@ -243,7 +242,7 @@ public class QueueOptions {
     /** A helper class to create immutable {@code QueueOptions} with custom settings. */
     public static class Builder {
         private final Subscription.Builder defaultSubscriptionBuilder;
-        private final HashMap<Integer, Map.Entry<SubscriptionHandle, Subscription>> subscriptions;
+        private final HashMap<Integer, Subscription> subscriptions;
         private Optional<Boolean> suspendsOnBadHostHealth;
 
         /**
@@ -304,45 +303,26 @@ public class QueueOptions {
         }
 
         /**
-         * Adds subscription parameters for a new subscription with a default constructed
-         * SubscriptionHandle.
+         * Adds subscription parameters for a specified subscription. Update subscription parameters
+         * if subscription with current 'subscription.getId()' previously added.
          *
          * @param subscription subscription parameters
          * @return Builder this object
          */
         public Builder addSubscription(Subscription subscription) {
-            // todo do we need this or addOrUpdate is enough?
-            SubscriptionHandle handle = new SubscriptionHandle();
-            this.subscriptions.put(
-                    handle.getId(), new AbstractMap.SimpleImmutableEntry<>(handle, subscription));
+            this.subscriptions.put(subscription.getId(), subscription);
             return this;
         }
 
         /**
-         * Adds subscription parameters for a new subscription if provided SubscriptionHandle is not
-         * present, or updates subscription parameters if SubscriptionHandle is found.
+         * Remove subscription parameters.
          *
-         * @param handle subscription handle
          * @param subscription subscription parameters
          * @return Builder this object
          */
-        public Builder addOrUpdateSubscription(
-                SubscriptionHandle handle, Subscription subscription) {
-            // todo check args order
-            this.subscriptions.put(
-                    handle.getId(), new AbstractMap.SimpleImmutableEntry<>(handle, subscription));
-            return this;
-        }
-
-        /**
-         * Remove subscription parameters if SubscriptionHandle is found.
-         *
-         * @param handle subscription handle
-         * @return Builder this object
-         */
-        public Builder removeSubscription(SubscriptionHandle handle) {
+        public Builder removeSubscription(Subscription subscription) {
             // todo check exception if not found
-            this.subscriptions.remove(handle.getId());
+            this.subscriptions.remove(subscription.getId());
             return this;
         }
 
@@ -367,18 +347,15 @@ public class QueueOptions {
                 setSuspendsOnBadHostHealth(options.getSuspendsOnBadHostHealth());
             }
 
-            for (Map.Entry<Integer, Map.Entry<SubscriptionHandle, Subscription>> entry :
-                    options.subscriptions.entrySet()) {
+            for (Map.Entry<Integer, Subscription> entry : options.subscriptions.entrySet()) {
                 subscriptions.merge(
                         entry.getKey(),
                         entry.getValue(),
                         (oldSubscription, newSubscription) ->
-                                new AbstractMap.SimpleImmutableEntry<>(
-                                        newSubscription.getKey(),
-                                        Subscription.builder()
-                                                .merge(oldSubscription.getValue())
-                                                .merge(newSubscription.getValue())
-                                                .build()));
+                                Subscription.builder()
+                                        .merge(oldSubscription)
+                                        .merge(newSubscription)
+                                        .build());
                 // TODO simplify?
             }
             return this;

@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import com.bloomberg.bmq.*;
 import com.bloomberg.bmq.Queue;
 import com.bloomberg.bmq.it.util.BmqBroker;
-import com.bloomberg.bmq.it.util.BmqBrokerTestServer;
 import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -332,9 +331,7 @@ public class SubscriptionIT {
         logger.info("BEGIN Testing SubscriptionIT testBreathing.");
         logger.info("=============================================");
 
-        final int TESTED_PORT = 30114; // SystemUtil.getEphemeralPort();
-
-        try (BmqBroker broker = BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)) {
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
             Assert.assertFalse(broker.isOldStyleMessageProperties());
@@ -398,10 +395,9 @@ public class SubscriptionIT {
         logger.info("BEGIN Testing SubscriptionIT testFanout.");
         logger.info("=============================================");
 
-        final int TESTED_PORT = 30114; // SystemUtil.getEphemeralPort();
         final String[] APP_IDS = {"foo", "bar", "baz"};
 
-        try (BmqBroker broker = BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)) {
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
             Assert.assertFalse(broker.isOldStyleMessageProperties());
@@ -473,10 +469,9 @@ public class SubscriptionIT {
         logger.info("BEGIN Testing SubscriptionIT testUpdateSubscription.");
         logger.info("=============================================");
 
-        final int TESTED_PORT = 30114; // SystemUtil.getEphemeralPort();
         final String HANDLE_USER_DATA = "handle";
 
-        try (BmqBroker broker = BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)) {
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
             Assert.assertFalse(broker.isOldStyleMessageProperties());
@@ -493,16 +488,20 @@ public class SubscriptionIT {
             logger.info("Step 3: Open consumer, queue with subscriptions");
             Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
 
-            Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
-            Subscription s2 = Subscription.builder().setExpressionText("x >= -1000").build();
-            SubscriptionHandle h1 = new SubscriptionHandle(HANDLE_USER_DATA);
+            Subscription s1 =
+                    Subscription.builder()
+                            .setExpressionText("x >= 10")
+                            .setUserData(HANDLE_USER_DATA)
+                            .build();
+            Subscription s2 =
+                    Subscription.builder()
+                            .setExpressionText("x >= -1000")
+                            .setUserData(HANDLE_USER_DATA)
+                            .build();
 
             // Passing the same handle, expect only one final subscription 's1'
             QueueOptions options =
-                    QueueOptions.builder()
-                            .addOrUpdateSubscription(h1, s2)
-                            .addOrUpdateSubscription(h1, s1)
-                            .build();
+                    QueueOptions.builder().addSubscription(s2).addSubscription(s1).build();
 
             consumer.openQueue(uri, options);
 
@@ -532,7 +531,7 @@ public class SubscriptionIT {
 
             // Use less strict subscription expression to receive the remaining messages
             QueueOptions options_step5 =
-                    QueueOptions.builder().merge(options).addOrUpdateSubscription(h1, s2).build();
+                    QueueOptions.builder().merge(options).addSubscription(s2).build();
 
             consumer.configureQueue(options_step5);
             for (String payload : expected_step5) {
@@ -556,13 +555,12 @@ public class SubscriptionIT {
         logger.info("BEGIN Testing SubscriptionIT testStress.");
         logger.info("=============================================");
 
-        final int TESTED_PORT = 30114; // SystemUtil.getEphemeralPort();
         final int EPOCH_NUM = 10;
         final int SUBSCRIPTIONS_NUM = 256;
         final int MESSAGES_PER_SUBSCRIPTION = 10;
         final Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
 
-        try (BmqBroker broker = BmqBrokerTestServer.createStoppedBroker(TESTED_PORT)) {
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
             Assert.assertFalse(broker.isOldStyleMessageProperties());
@@ -587,14 +585,14 @@ public class SubscriptionIT {
                 QueueOptions.Builder builder = QueueOptions.builder();
                 ArrayList<String> userDataList = new ArrayList<>();
                 for (int sIndex = 0; sIndex < SUBSCRIPTIONS_NUM; sIndex++) {
-                    Subscription subscription =
-                            Subscription.builder().setExpressionText("x == " + sIndex).build();
-
                     String userData = "epoch" + epoch + "_s" + sIndex;
+                    Subscription subscription =
+                            Subscription.builder()
+                                    .setExpressionText("x == " + sIndex)
+                                    .setUserData(userData)
+                                    .build();
                     userDataList.add(userData);
-                    SubscriptionHandle handle = new SubscriptionHandle(userData);
-
-                    builder.addOrUpdateSubscription(handle, subscription);
+                    builder.addSubscription(subscription);
                 }
 
                 QueueOptions options = builder.build();

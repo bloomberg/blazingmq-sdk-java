@@ -15,7 +15,9 @@
  */
 package com.bloomberg.bmq;
 
+import com.bloomberg.bmq.impl.CorrelationIdImpl;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -35,16 +37,29 @@ public class Subscription {
     /** Default priority of a consumer with respect to delivery of messages. */
     public static final int k_CONSUMER_PRIORITY_DEFAULT = 0;
 
+    private static final AtomicInteger nextInt = new AtomicInteger(0);
+
     private final Optional<Long> maxUnconfirmedMessages;
     private final Optional<Long> maxUnconfirmedBytes;
     private final Optional<Integer> consumerPriority;
     private final SubscriptionExpression expression;
+
+    private final int id;
+
+    private final CorrelationId correlationId;
 
     private Subscription(Builder builder) {
         maxUnconfirmedMessages = builder.maxUnconfirmedMessages;
         maxUnconfirmedBytes = builder.maxUnconfirmedBytes;
         consumerPriority = builder.consumerPriority;
         expression = builder.expression.orElse(new SubscriptionExpression());
+        id = builder.id.orElse(nextInt.incrementAndGet());
+
+        if (builder.correlationId.isPresent()) {
+            correlationId = builder.correlationId.get();
+        } else {
+            correlationId = CorrelationIdImpl.nextId(builder.userData.orElse(null));
+        }
     }
 
     private Subscription() {
@@ -52,6 +67,8 @@ public class Subscription {
         maxUnconfirmedBytes = Optional.empty();
         consumerPriority = Optional.empty();
         expression = new SubscriptionExpression();
+        id = nextInt.incrementAndGet();
+        correlationId = CorrelationIdImpl.nextId();
     }
 
     /**
@@ -163,6 +180,24 @@ public class Subscription {
     }
 
     /**
+     * Returns subscription id of this subscription.
+     *
+     * @return int subscription id
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Returns correlation id of this subscription.
+     *
+     * @return CorrelationId correlation id
+     */
+    public CorrelationId getCorrelationId() {
+        return correlationId;
+    }
+
+    /**
      * Returns a helper class object to create immutable {@code Subscription} with custom settings.
      *
      * @return Builder a helper class object to create immutable {@code Subscription}
@@ -195,10 +230,17 @@ public class Subscription {
 
     /** A helper class to create immutable {@code Subscription} with custom settings. */
     public static class Builder {
+
         private Optional<Long> maxUnconfirmedMessages;
         private Optional<Long> maxUnconfirmedBytes;
         private Optional<Integer> consumerPriority;
         private Optional<SubscriptionExpression> expression;
+
+        private Optional<Integer> id;
+
+        private Optional<CorrelationId> correlationId;
+
+        private Optional<Object> userData;
 
         /**
          * Returns subscription parameters based on this object properties.
@@ -257,8 +299,22 @@ public class Subscription {
         }
 
         /**
+         * Sets correlation id user data for this subscription. Overrides correlationId if it was
+         * already set for this builder.
+         *
+         * @param userData user data
+         * @return Builder this object
+         */
+        public Builder setUserData(Object userData) {
+            this.correlationId = Optional.empty();
+            this.userData = Optional.of(userData);
+            return this;
+        }
+
+        /**
          * "Merges" another 'Subscription' into this builder, by invoking setF(options.getF()) for
-         * all fields 'F' for which 'subscription.hasF()' is true.
+         * all fields 'F' for which 'subscription.hasF()' is true. Overrides correlation id user
+         * data if it was already set for this builder.
          *
          * @param subscription specifies subscription parameters which is merged into the builder
          * @return Builder this object
@@ -274,6 +330,9 @@ public class Subscription {
                 setConsumerPriority(subscription.getConsumerPriority());
             }
             expression = Optional.of(subscription.getExpression());
+            id = Optional.of(subscription.getId());
+            correlationId = Optional.of(subscription.getCorrelationId());
+            userData = Optional.empty();
             return this;
         }
 
@@ -282,6 +341,9 @@ public class Subscription {
             maxUnconfirmedBytes = Optional.empty();
             consumerPriority = Optional.empty();
             expression = Optional.empty();
+            id = Optional.empty();
+            correlationId = Optional.empty();
+            userData = Optional.empty();
         }
     }
 }

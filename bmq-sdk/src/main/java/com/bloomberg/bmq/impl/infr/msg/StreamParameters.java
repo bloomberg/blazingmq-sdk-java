@@ -17,7 +17,6 @@ package com.bloomberg.bmq.impl.infr.msg;
 
 import com.bloomberg.bmq.QueueOptions;
 import com.bloomberg.bmq.SubscriptionExpression;
-import com.bloomberg.bmq.SubscriptionHandle;
 import java.util.Map;
 
 public class StreamParameters {
@@ -101,14 +100,13 @@ public class StreamParameters {
             subscriptions = new Subscription[ops.getSubscriptions().size()];
             int index = 0;
 
-            for (Map.Entry<Integer, Map.Entry<SubscriptionHandle, com.bloomberg.bmq.Subscription>>
-                    entry : ops.getSubscriptions().entrySet()) {
-                com.bloomberg.bmq.Subscription snConfig = entry.getValue().getValue();
+            for (Map.Entry<Integer, com.bloomberg.bmq.Subscription> entry :
+                    ops.getSubscriptions().entrySet()) {
+                com.bloomberg.bmq.Subscription snConfig = entry.getValue();
 
                 Subscription sn = new Subscription();
 
                 sn.setOrigin(snConfig);
-                sn.setHandle(entry.getValue().getKey());
                 sn.setId(entry.getKey());
 
                 ConsumerInfo consumer = new ConsumerInfo();

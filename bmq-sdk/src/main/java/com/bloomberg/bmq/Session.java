@@ -1251,10 +1251,10 @@ public final class Session implements AbstractSession {
             @Override
             public CorrelationId correlationId() {
                 for (Integer sId : impl.subQueueIds()) {
-                    Map.Entry<SubscriptionHandle, Subscription> entry =
+                    Subscription subscription =
                             QueueAdapter.this.impl.getQueueOptions().getSubscriptions().get(sId);
-                    if (entry != null) {
-                        return entry.getKey().getCorrelationId();
+                    if (subscription != null) {
+                        return subscription.getCorrelationId();
                     }
                 }
                 throw new BMQException("Undefined correlationId for PushMessage");

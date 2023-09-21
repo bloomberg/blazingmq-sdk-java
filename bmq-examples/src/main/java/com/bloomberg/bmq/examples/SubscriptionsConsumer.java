@@ -31,7 +31,6 @@ import com.bloomberg.bmq.SessionEvent;
 import com.bloomberg.bmq.SessionEventHandler;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Subscription;
-import com.bloomberg.bmq.SubscriptionHandle;
 import com.bloomberg.bmq.Uri;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -211,24 +210,29 @@ public class SubscriptionsConsumer
 
         logger.info("Opening queue [{}] with a timeout of 15 seconds", uri);
 
-        Subscription s1 = Subscription.builder().setExpressionText("firmId == \"FOO\"").build();
-        SubscriptionHandle h1 = new SubscriptionHandle("foo");
+        Subscription s1 =
+                Subscription.builder()
+                        .setExpressionText("firmId == \"FOO\"")
+                        .setUserData("foo")
+                        .build();
 
         Subscription s2 =
-                Subscription.builder().setExpressionText("firmId == \"BAR\" && price < 25").build();
-        SubscriptionHandle h2 = new SubscriptionHandle("bar_low_price");
+                Subscription.builder()
+                        .setExpressionText("firmId == \"BAR\" && price < 25")
+                        .setUserData("bar_low_price")
+                        .build();
 
         Subscription s3 =
                 Subscription.builder()
                         .setExpressionText("firmId == \"BAR\" && price >= 25")
+                        .setUserData("bar_high_price")
                         .build();
-        SubscriptionHandle h3 = new SubscriptionHandle("bar_high_price");
 
         QueueOptions options =
                 QueueOptions.builder()
-                        .addOrUpdateSubscription(h1, s1)
-                        .addOrUpdateSubscription(h2, s2)
-                        .addOrUpdateSubscription(h3, s3)
+                        .addSubscription(s1)
+                        .addSubscription(s2)
+                        .addSubscription(s3)
                         .build();
 
         // Open a queue using default options

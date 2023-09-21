@@ -16,7 +16,6 @@
 package com.bloomberg.bmq.impl.infr.msg;
 
 import com.bloomberg.bmq.QueueFlags;
-import com.bloomberg.bmq.SubscriptionHandle;
 import com.bloomberg.bmq.Uri;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class QueueHandleParameters {
     private Integer readCount;
     private Integer writeCount;
     private Integer adminCount;
-    private transient Map<Integer, SubscriptionHandle> subscriptions;
+    private transient Map<Integer, Subscription> subscriptions;
 
     public QueueHandleParameters(QueueHandleParameters copied) {
         uri = copied.uri;
@@ -92,16 +91,14 @@ public class QueueHandleParameters {
         return this;
     }
 
-    public Map<Integer, SubscriptionHandle> getSubscriptions() {
+    public Map<Integer, Subscription> getSubscriptions() {
         return subscriptions;
     }
 
     public QueueHandleParameters setSubscriptions(Subscription[] values) {
         subscriptions = new HashMap<>();
         for (Subscription sb : values) {
-            if (sb.handle() != null) {
-                subscriptions.put(sb.handle().getId(), sb.handle());
-            }
+            subscriptions.put(sb.id(), sb);
         }
         return this;
     }
