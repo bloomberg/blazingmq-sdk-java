@@ -1,0 +1,11 @@
+{
+    "bmq.test.mem.fanout": {
+        "mode": "fanout",
+        "limit.messages": 100000,
+        "fanout.appids": ["foo", "bar", "baz"]
+    },
+    "bmq.test.mem.priority": {
+        "mode": "priority",
+        "limit.messages": 100000
+    }
+}

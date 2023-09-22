@@ -760,6 +760,12 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 // invoke 'ByteBuf.release' right away.  This copying is
                 // unfortunate, and we will investigate ways to avoid this
                 // copy later.
+                //
+                // The ByteBuffer allocated here will receive a copy of the bytes
+                // from the netty ByteBuf, and then transferred into readBuffer without copying.
+                // this ByteBuffer might get sliced and diced, but will remain as the message
+                // contents for the lifetime of the message, UNLESS it has a compressed payload
+                // in which case it will be decompressed into a new ByteBuffer.
                 ByteBuffer nioBuf = ByteBuffer.allocate(byteBuf.readableBytes());
                 byteBuf.readBytes(nioBuf);
                 readBuffer.writeBuffer(nioBuf);

@@ -207,10 +207,6 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
         return duplicates;
     }
 
-    private ArrayList<ByteBuffer> buffers() {
-        return bbArray;
-    }
-
     @Override
     public void writeBoolean(boolean v) throws IOException {
         throw new UnsupportedOperationException();
@@ -301,7 +297,7 @@ public class ByteBufferOutputStream extends OutputStream implements DataOutput {
      */
     public void writeBuffers(ByteBufferOutputStream other) throws IOException {
         if (!isOpen || !other.isOpen) throw new IOException("Stream closed");
-        writeBuffers(other.buffers());
+        writeBuffers(other.bbArray);
     }
 
     @Override
