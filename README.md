@@ -15,6 +15,7 @@
 [![Maven](https://img.shields.io/badge/Maven-blue)](#)
 [![MessageQueue](https://img.shields.io/badge/MessageQueue-blue)](#)
 [![Documentation](https://img.shields.io/badge/Documentation-blue)](https://bloomberg.github.io/blazingmq)
+[![Project Map](https://img.shields.io/badge/SourceSpy-Project_Map-blue.svg)](https://sourcespy.com/github/bloombergblazingmqsdkjava/)
 
 # BlazingMQ Java SDK
 
