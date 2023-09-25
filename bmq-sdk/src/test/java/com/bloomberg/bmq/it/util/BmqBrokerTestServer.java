@@ -214,11 +214,15 @@ public class BmqBrokerTestServer implements BmqBroker {
             if (process != null) {
                 logger.info("Stopping broker, pid [{}].", pid);
                 if (pid > 0) {
-                    Runtime.getRuntime().exec("kill -SIGINT " + pid);
+                    Runtime.getRuntime().exec("kill -SIGTERM " + pid);
                 } else {
+                    process.destroy();
+                }
+                if (!process.waitFor(15, TimeUnit.SECONDS)) {
+                    logger.error(
+                            "Broker graceful stop failed on timeout, forcibly destroying process...");
                     process.destroyForcibly();
                 }
-                process.waitFor();
                 assertFalse(process.isAlive());
                 logger.info("Broker stopped");
             }
