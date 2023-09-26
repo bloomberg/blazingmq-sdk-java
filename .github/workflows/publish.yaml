@@ -18,9 +18,16 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
+          java-package: jdk
+          check-latest: true
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_KEY }}
+          gpg-passphrase: GPG_KEY_PASSPHRASE
       - name: 'Publish snapshot to OSSRH'
-        if: github.event_name == 'push'
-        run: mvn -B -e -Possrh -DskipTests=true deploy
+        run: mvn -B -e -Possrh -DskipTests=true clean deploy
         env:
+          GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
