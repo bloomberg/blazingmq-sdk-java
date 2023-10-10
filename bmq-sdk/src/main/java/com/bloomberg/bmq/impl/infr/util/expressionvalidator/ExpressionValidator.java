@@ -39,12 +39,12 @@ public class ExpressionValidator {
     public static ValidationResult validate(java.io.Reader expression) throws IOException {
         // Validate given 'expression' and return ValidationResult object with result.
 
-        String errorMessage = null;
+        String errorMessage;
         ExpressionScanner scanner = new ExpressionScanner(expression);
 
         // Loop through tokens from scanner
         Token prevToken = null;
-        int paranthesisCounter = 0;
+        int parenthesisCounter = 0;
         int tokensCounter = 0;
         int operatorsCounter = 0;
         int propertiesCounter = 0;
@@ -55,20 +55,20 @@ public class ExpressionValidator {
             Token.Type tokenType = token.getType();
             if (tokenType == Token.Type.INVALID) { // Check syntax error detected by scanned
                 return ValidationResult.makeInvalidCharacter(token.getValue(), token.getPosition());
-            } else if (tokenType == Token.Type.LPAR) { // Check open and close paranthesis
-                paranthesisCounter++;
+            } else if (tokenType == Token.Type.LPAR) { // Check open and close parenthesis
+                parenthesisCounter++;
             } else if (tokenType == Token.Type.RPAR) {
-                if (paranthesisCounter == 0
-                        || (prevToken != null && prevToken.getType() == Token.Type.LPAR)) {
+                // prevToken != null when parenthesisCounter > 0
+                if (parenthesisCounter == 0 || prevToken.getType() == Token.Type.LPAR) {
                     return ValidationResult.makeUnexpectedCharacter(")", token.getPosition());
                 }
-                paranthesisCounter--;
+                parenthesisCounter--;
             } else if (token.isLiteralOrProperty()) { // Check literal or property
                 if (tokenType == Token.Type.INTEGER) { // Check integer overflow
                     try {
                         Long.parseLong(token.getValue());
                     } catch (NumberFormatException e) {
-                        // Overflow occured, other format issues are checked by scanner
+                        // Overflow occurred, other format issues are checked by scanner
                         return ValidationResult.makeIntegerOverflow(token.getPosition());
                     }
                 } else if (tokenType == Token.Type.PROPERTY) {
@@ -108,7 +108,7 @@ public class ExpressionValidator {
         if (propertiesCounter == 0) {
             return ValidationResult.makeNoProperties();
         }
-        if (paranthesisCounter > 0) {
+        if (parenthesisCounter > 0) {
             return ValidationResult.makeUnmatchedParanthesis();
         }
 
