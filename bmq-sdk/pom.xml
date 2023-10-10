@@ -279,6 +279,7 @@ limitations under the License. -->
               <lexDefinitions>
                 <lexDefinition>src/main/java/com/bloomberg/bmq/impl/infr/util/expressionvalidator</lexDefinition>
               </lexDefinitions>
+              <outputDirectory>src/main/java</outputDirectory>
               <backup>false</backup>
             </configuration>
           </execution>
