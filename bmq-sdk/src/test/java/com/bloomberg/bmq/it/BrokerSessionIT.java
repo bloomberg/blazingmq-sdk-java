@@ -5574,6 +5574,8 @@ public class BrokerSessionIT {
                         queue.openAsync(QueueOptions.createDefault(), SHORT_TIMEOUT)
                                 .get(SHORT_TIMEOUT));
                 queues[i] = queue;
+
+                TestTools.sleepForMilliSeconds(100);
             }
 
             // Here we expect one NOT_CONNECTED event which has been already
