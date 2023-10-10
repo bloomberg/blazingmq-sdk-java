@@ -18,7 +18,8 @@ package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 import java.io.IOException;
 
 public class ExpressionValidator {
-    // This class provides a simple validation of a logical expression used in BMQ subscription.
+    // This class provides a simple validation of a logical expression used in BlazingMQ
+    // subscription.
 
     // The maximum number of operators allowed in expression.
     // NOTE: must be in sync with C++ implementation (SimpleEvaluator::k_MAX_OPERATORS)
@@ -38,8 +39,6 @@ public class ExpressionValidator {
      */
     public static ValidationResult validate(java.io.Reader expression) throws IOException {
         // Validate given 'expression' and return ValidationResult object with result.
-
-        String errorMessage;
         ExpressionScanner scanner = new ExpressionScanner(expression);
 
         // Loop through tokens from scanner
@@ -89,8 +88,7 @@ public class ExpressionValidator {
                 }
                 // Check for max operations
                 if (++operatorsCounter > MAX_OPERATORS) {
-                    errorMessage = "too many operators";
-                    return new ValidationResult(false, errorMessage);
+                    return ValidationResult.makeTooManyOperators();
                 }
             } else if (tokenType == Token.Type.END) { // Check expression end
                 if (tokensCounter == 0) {

@@ -73,6 +73,11 @@ public class ValidationResult {
         return new ValidationResult(false, "syntax error, missed operation at offset " + position);
     }
 
+    /** @return ValidationResult for too many operators */
+    public static ValidationResult makeTooManyOperators() {
+        return new ValidationResult(false, "too many operators");
+    }
+
     /** @return ValidationResult for unexpected end of expression error */
     public static ValidationResult makeUnexpectedEnd(Long position) {
         return new ValidationResult(
