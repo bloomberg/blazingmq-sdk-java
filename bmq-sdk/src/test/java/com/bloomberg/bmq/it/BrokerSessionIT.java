@@ -5575,6 +5575,14 @@ public class BrokerSessionIT {
                                 .get(SHORT_TIMEOUT));
                 queues[i] = queue;
 
+                // We need to wait for a bit, so the `queueControlEventHandler` has time to poll
+                // the very first event from `InboundEventBuffer`. If we don't do it, there is a
+                // chance that HWM `BrokerSessionEvent` will be generated early and placed in
+                // the head of the buffer, resulting in this test's failure.
+                // We also need to wait for the second time on the third queue open, so the other
+                // thread has time to enqueue HWM `BrokerSessionEvent` to `InboundEventBuffer`.
+                // So this sleep is a workaround for a race condition existing here by test's
+                // design.
                 TestTools.sleepForMilliSeconds(100);
             }
 
