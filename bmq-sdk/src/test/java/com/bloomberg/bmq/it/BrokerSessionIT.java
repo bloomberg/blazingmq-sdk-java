@@ -185,7 +185,10 @@ public class BrokerSessionIT {
             QueueHandle queue) {
         assertNotNull(event);
         assertTrue(
-                "Expected 'QueueControlEvent', received '" + event.getClass().getName() + "'",
+                "Expected 'QueueControlEvent', received '"
+                        + event.getClass().getName()
+                        + "': "
+                        + event,
                 event instanceof QueueControlEvent);
 
         QueueControlEvent queueControlEvent = (QueueControlEvent) event;
@@ -197,7 +200,10 @@ public class BrokerSessionIT {
     private static void verifyBrokerSessionEvent(Event event, BrokerSessionEvent.Type eventType) {
         assertNotNull(event);
         assertTrue(
-                "Expected 'BrokerSessionEvent', received '" + event.getClass().getName() + "'",
+                "Expected 'BrokerSessionEvent', received '"
+                        + event.getClass().getName()
+                        + "': "
+                        + event,
                 event instanceof BrokerSessionEvent);
 
         BrokerSessionEvent brokerSessionEvent = (BrokerSessionEvent) event;
@@ -5568,6 +5574,16 @@ public class BrokerSessionIT {
                         queue.openAsync(QueueOptions.createDefault(), SHORT_TIMEOUT)
                                 .get(SHORT_TIMEOUT));
                 queues[i] = queue;
+
+                // We need to wait for a bit, so the `queueControlEventHandler` has time to poll
+                // the very first event from `InboundEventBuffer`. If we don't do it, there is a
+                // chance that HWM `BrokerSessionEvent` will be generated early and placed in
+                // the head of the buffer, resulting in this test's failure.
+                // We also need to wait for the second time on the third queue open, so the other
+                // thread has time to enqueue HWM `BrokerSessionEvent` to `InboundEventBuffer`.
+                // So this sleep is a workaround for a race condition existing here by test's
+                // design.
+                TestTools.sleepForMilliSeconds(100);
             }
 
             // Here we expect one NOT_CONNECTED event which has been already
