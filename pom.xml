@@ -22,9 +22,28 @@ limitations under the License. -->
 
   <name>BlazingMQ Java SDK Bundle</name>
   <description>BlazingMQ Java SDK Bundle</description>
+  <url>https://github.com/bloomberg/blazingmq-sdk-java</url>
   <organization>
     <name>Bloomberg L.P.</name>
+    <url>https://www.bloomberg.com</url>
   </organization>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>bloomberg-oss</id>
+      <name>BlazingMQ Contributors</name>
+      <email>opensource@bloomberg.net</email>
+      <organization>Bloomberg L.P.</organization>
+      <organizationUrl>https://github.com/bloomberg</organizationUrl>
+    </developer>
+  </developers>
 
   <modules>
     <module>bmq-sdk</module>
@@ -32,22 +51,22 @@ limitations under the License. -->
   </modules>
 
   <scm>
-    <developerConnection>scm:git:ssh://${git.url}</developerConnection>
+    <connection>git@github.com:bloomberg/blazingmq-sdk-java.git</connection>
+    <developerConnection>git@github.com:bloomberg/blazingmq-sdk-java.git</developerConnection>
     <tag>HEAD</tag>
+    <url>https://github.com/bloomberg/blazingmq-sdk-java</url>
   </scm>
 
   <distributionManagement>
 
     <repository>
-      <id>central</id>
-      <name>Artifactory (Deployable) Central Artifacts Repository</name>
-      <url>${artifactory.central.url}</url>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
 
     <snapshotRepository>
-      <id>snapshots</id>
-      <name>Artifactory Snapshot Artifacts Repository</name>
-      <url>${artifactory.snapshot.url}</url>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
 
   </distributionManagement>
@@ -530,6 +549,60 @@ limitations under the License. -->
              and generate bytecode compatible with JVM17 and newer -->
         <maven.compiler.release>8</maven.compiler.release>
       </properties>
+    </profile>
+
+    <profile>
+      <id>ossrh</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>verify</phase>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
