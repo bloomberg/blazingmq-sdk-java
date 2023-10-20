@@ -495,6 +495,7 @@ public class SubscriptionIT {
                             .build();
             Subscription s2 =
                     Subscription.builder()
+                            .merge(s1)
                             .setExpressionText("x >= -1000")
                             .setUserData(HANDLE_USER_DATA)
                             .build();

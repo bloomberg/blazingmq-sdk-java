@@ -48,6 +48,10 @@ public class Subscription {
 
     private final CorrelationId correlationId;
 
+    public static int nextId() {
+        return nextInt.incrementAndGet();
+    }
+
     private Subscription(Builder builder) {
         maxUnconfirmedMessages = builder.maxUnconfirmedMessages;
         maxUnconfirmedBytes = builder.maxUnconfirmedBytes;

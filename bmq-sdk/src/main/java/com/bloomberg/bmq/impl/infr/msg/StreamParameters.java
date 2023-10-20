@@ -83,6 +83,8 @@ public class StreamParameters {
         if (ops.getSubscriptions().size() == 0) {
             Subscription sn = new Subscription();
 
+            sn.setId(com.bloomberg.bmq.Subscription.nextId());
+
             ConsumerInfo consumer = new ConsumerInfo();
             consumer.setConsumerPriority(ops.getConsumerPriority());
             consumer.setConsumerPriorityCount(consumerPriorityCount);
