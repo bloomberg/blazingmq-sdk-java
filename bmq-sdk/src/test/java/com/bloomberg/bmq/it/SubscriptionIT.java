@@ -41,43 +41,47 @@ public class SubscriptionIT {
 
     static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(20);
 
-    static class Consumer
-            implements AutoCloseable, SessionEventHandler, QueueEventHandler, PushMessageHandler {
-
-        AbstractSession session;
-
+    static class QueueTester {
         Queue queue;
 
         QueueOptions options;
 
         LinkedBlockingQueue<PushMessage> messages;
 
-        private Consumer() {
+        private QueueTester(Queue queue, QueueOptions options) {
+            this.queue = queue;
+            this.options = options;
+
             messages = new LinkedBlockingQueue<>();
         }
 
-        public static Consumer createStarted(String brokerUri) {
-            Consumer consumer = new Consumer();
-            consumer.start(brokerUri);
-            return consumer;
+        public void open() {
+            if (!queue.isOpen()) {
+                queue.open(options, DEFAULT_TIMEOUT);
+            }
         }
 
-        @Override
-        public void handleSessionEvent(SessionEvent event) {
-            logger.info("#CONSUMER handleSessionEvent: {}", event);
+        public void close() {
+            if (queue.isOpen()) {
+                logger.info("#QUEUE closing the queue [{}]...", queue.uri());
+                queue.close(DEFAULT_TIMEOUT);
+                logger.info("#QUEUE queue [{}] closed", queue.uri());
+            }
         }
 
-        @Override
-        public void handleQueueEvent(QueueControlEvent event) {
-            logger.info("#CONSUMER handleQueueEvent: {}", event);
+        public void configure(QueueOptions options) {
+            assertTrue("Trying to configure not-opened queue", queue.isOpen());
+
+            this.options = options;
+
+            logger.info("#QUEUE configuring queue [{}]...", queue.uri());
+            queue.configure(options, DEFAULT_TIMEOUT);
+            logger.info("#QUEUE queue [{}] configured", queue.uri());
         }
 
-        @Override
-        public void handlePushMessage(PushMessage msg) {
-            logger.info("#CONSUMER PUSH message received: {}", msg);
-
+        public void enqueueMessage(PushMessage message) {
             try {
-                messages.put(msg);
+                messages.put(message);
             } catch (InterruptedException e) {
                 logger.error("Interrupted: ", e);
                 Thread.currentThread().interrupt();
@@ -111,6 +115,42 @@ public class SubscriptionIT {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    static class Consumer
+            implements AutoCloseable, SessionEventHandler, QueueEventHandler, PushMessageHandler {
+
+        AbstractSession session;
+
+        HashMap<Uri, QueueTester> openedQueues;
+
+        private Consumer() {
+            openedQueues = new HashMap<>();
+        }
+
+        public static Consumer createStarted(String brokerUri) {
+            Consumer consumer = new Consumer();
+            consumer.start(brokerUri);
+            return consumer;
+        }
+
+        @Override
+        public void handleSessionEvent(SessionEvent event) {
+            logger.info("#CONSUMER handleSessionEvent: {}", event);
+        }
+
+        @Override
+        public void handleQueueEvent(QueueControlEvent event) {
+            logger.info("#CONSUMER handleQueueEvent: {}", event);
+        }
+
+        @Override
+        public void handlePushMessage(PushMessage msg) {
+            logger.debug("#CONSUMER PUSH message received: {}", msg);
+
+            assertTrue(openedQueues.containsKey(msg.queue().uri()));
+            openedQueues.get(msg.queue().uri()).enqueueMessage(msg);
+        }
 
         private void start(String brokerUri) {
             logger.info("#CONSUMER starting session...");
@@ -124,12 +164,13 @@ public class SubscriptionIT {
             logger.info("#CONSUMER session started");
         }
 
-        public void openQueue(Uri uri, QueueOptions options) {
-            assertNull("Expect 'queue' to be null", queue);
+        public QueueTester openQueue(Uri uri, QueueOptions options) {
+            if (openedQueues.containsKey(uri)) {
+                openedQueues.get(uri).close();
+                openedQueues.remove(uri);
+            }
 
-            this.options = options;
-
-            queue =
+            Queue queue =
                     session.getQueue(
                             uri, // Queue uri
                             QueueFlags.setReader(0), // Queue mode (=READ)
@@ -137,40 +178,22 @@ public class SubscriptionIT {
                             null, // AckMessageHandler
                             this); // PushMessageHandler
 
+            QueueTester tester = new QueueTester(queue, options);
+
             logger.info("#CONSUMER opening queue [{}]...", uri);
-            queue.open(options, DEFAULT_TIMEOUT);
+            tester.open();
             logger.info("#CONSUMER queue [{}] opened", uri);
-        }
 
-        public void closeQueue() {
-            assertNotNull("Expect 'queue' to be non-null", queue);
-
-            Uri uri = queue.uri();
-
-            logger.info("#CONSUMER closing the queue [{}]...", uri);
-            queue.close(DEFAULT_TIMEOUT);
-            logger.info("#CONSUMER queue [{}] closed", uri);
-
-            options = null;
-            queue = null;
-        }
-
-        public void configureQueue(QueueOptions options) {
-            assertNotNull("Expect 'queue' to be non-null", queue);
-
-            this.options = options;
-
-            logger.info("#CONSUMER configuring queue [{}]...", queue.uri());
-            queue.configure(options, DEFAULT_TIMEOUT);
-            logger.info("#CONSUMER queue [{}] configured", queue.uri());
+            openedQueues.put(uri, tester);
+            return tester;
         }
 
         @Override
         public void close() {
             logger.info("#CONSUMER closing...");
 
-            if (queue != null && queue.isOpen()) {
-                closeQueue();
+            for (QueueTester tester : openedQueues.values()) {
+                tester.close();
             }
 
             if (session != null) {
@@ -236,7 +259,7 @@ public class SubscriptionIT {
 
         @Override
         public void handleAckMessage(AckMessage msg) {
-            logger.info("#PRODUCER ACK message received: {}", msg);
+            logger.debug("#PRODUCER ACK message received: {}", msg);
 
             CorrelationId corrId = msg.correlationId();
 
@@ -355,7 +378,7 @@ public class SubscriptionIT {
             QueueOptions options =
                     QueueOptions.builder().addSubscription(s1).addSubscription(s2).build();
 
-            consumer.openQueue(uri, options);
+            QueueTester q = consumer.openQueue(uri, options);
 
             logger.info("Step 4: Open producer, produce messages");
 
@@ -375,7 +398,7 @@ public class SubscriptionIT {
             logger.info("Step 4: Consume messages");
 
             for (String payload : expected) {
-                consumer.expectMessage(payload);
+                q.expectMessage(payload);
             }
 
             logger.info("Step 5: Close producer/consumer");
@@ -408,10 +431,12 @@ public class SubscriptionIT {
             Uri producerUri = BmqBroker.Domains.Fanout.generateQueueUri();
             Producer producer =
                     Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Consumer consumer =
+                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
 
             logger.info("Step 3: Start and open fanout consumers");
 
-            Consumer[] consumers = new Consumer[APP_IDS.length];
+            QueueTester[] queues = new QueueTester[APP_IDS.length];
             for (int i = 0; i < APP_IDS.length; i++) {
                 // Is it okay to reuse QueueOptions?
                 Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
@@ -421,11 +446,7 @@ public class SubscriptionIT {
                 final Uri consumerUri =
                         BmqBroker.Domains.Fanout.generateQueueUri(producerUri, APP_IDS[i]);
 
-                Consumer consumer =
-                        Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
-                consumer.openQueue(consumerUri, options);
-
-                consumers[i] = consumer;
+                queues[i] = consumer.openQueue(consumerUri, options);
             }
 
             logger.info("Step 4: Open producer, produce messages");
@@ -444,18 +465,16 @@ public class SubscriptionIT {
 
             logger.info("Step 4: Consume messages");
 
-            for (Consumer consumer : consumers) {
+            for (QueueTester queue : queues) {
                 for (String payload : expected) {
-                    consumer.expectMessage(payload);
+                    queue.expectMessage(payload);
                 }
             }
 
             logger.info("Step 5: Close producer/consumer");
 
             producer.close();
-            for (Consumer consumer : consumers) {
-                consumer.close();
-            }
+            consumer.close();
         }
 
         logger.info("===========================================");
@@ -504,7 +523,7 @@ public class SubscriptionIT {
             QueueOptions options =
                     QueueOptions.builder().addSubscription(s2).addSubscription(s1).build();
 
-            consumer.openQueue(uri, options);
+            QueueTester queue = consumer.openQueue(uri, options);
 
             logger.info("Step 4: Open producer, produce messages");
 
@@ -525,7 +544,7 @@ public class SubscriptionIT {
             logger.info("Step 4: Consume messages");
 
             for (String payload : expected_step4) {
-                consumer.expectMessage(payload, HANDLE_USER_DATA);
+                queue.expectMessage(payload, HANDLE_USER_DATA);
             }
 
             logger.info("Step 5: Reconfigure consumer and consume remaining messages");
@@ -534,9 +553,9 @@ public class SubscriptionIT {
             QueueOptions options_step5 =
                     QueueOptions.builder().merge(options).addSubscription(s2).build();
 
-            consumer.configureQueue(options_step5);
+            queue.configure(options_step5);
             for (String payload : expected_step5) {
-                consumer.expectMessage(payload, HANDLE_USER_DATA);
+                queue.expectMessage(payload, HANDLE_USER_DATA);
             }
 
             logger.info("Step 6: Close producer/consumer");
@@ -597,7 +616,7 @@ public class SubscriptionIT {
                 }
 
                 QueueOptions options = builder.build();
-                consumer.openQueue(uri, options);
+                QueueTester queue = consumer.openQueue(uri, options);
 
                 for (int sIndex = 0; sIndex < SUBSCRIPTIONS_NUM; sIndex++) {
                     ArrayList<String> expected = new ArrayList<>();
@@ -610,12 +629,11 @@ public class SubscriptionIT {
                     for (int messageIndex = 0;
                             messageIndex < MESSAGES_PER_SUBSCRIPTION;
                             messageIndex++) {
-                        consumer.expectMessage(
-                                expected.get(messageIndex), userDataList.get(sIndex));
+                        queue.expectMessage(expected.get(messageIndex), userDataList.get(sIndex));
                     }
                 }
 
-                consumer.closeQueue();
+                queue.close();
             }
 
             logger.info("Step 5: Close producer/consumer");
