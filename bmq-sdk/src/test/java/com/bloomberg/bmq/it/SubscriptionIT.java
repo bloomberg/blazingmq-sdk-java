@@ -438,7 +438,6 @@ public class SubscriptionIT {
 
             QueueTester[] queues = new QueueTester[APP_IDS.length];
             for (int i = 0; i < APP_IDS.length; i++) {
-                // Is it okay to reuse QueueOptions?
                 Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
 
                 QueueOptions options = QueueOptions.builder().addSubscription(s1).build();
@@ -472,6 +471,78 @@ public class SubscriptionIT {
             }
 
             logger.info("Step 5: Close producer/consumer");
+
+            producer.close();
+            consumer.close();
+        }
+
+        logger.info("===========================================");
+        logger.info("END Testing SubscriptionIT testFanout.");
+        logger.info("===========================================");
+    }
+
+
+    @Test
+    public void testReuseQueueOptions() throws BMQException, IOException {
+        logger.info("=============================================");
+        logger.info("BEGIN Testing SubscriptionIT testReuseQueueOptions.");
+        logger.info("=============================================");
+
+        final String[] APP_IDS = {"foo", "bar", "baz"};
+
+        try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
+            logger.info("Step 1: Bring up the broker");
+
+            Assert.assertFalse(broker.isOldStyleMessageProperties());
+
+            broker.start();
+
+            logger.info("Step 2: Start producer");
+            Uri producerUri = BmqBroker.Domains.Fanout.generateQueueUri();
+            Producer producer =
+                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Consumer consumer =
+                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
+
+            logger.info("Step 3: Build the common QueueOptions");
+
+
+            // Is it okay to reuse QueueOptions?
+            Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
+            QueueOptions options = QueueOptions.builder().addSubscription(s1).build();
+
+            logger.info("Step 4: Start and open fanout consumers");
+
+            QueueTester[] queues = new QueueTester[APP_IDS.length];
+            for (int i = 0; i < APP_IDS.length; i++) {
+                final Uri consumerUri =
+                        BmqBroker.Domains.Fanout.generateQueueUri(producerUri, APP_IDS[i]);
+                queues[i] = consumer.openQueue(consumerUri, options);
+            }
+
+            logger.info("Step 5: Open producer, produce messages");
+            producer.openQueue(producerUri);
+
+            ArrayList<String> expected = new ArrayList<>();
+
+            producer.post("x", 15).appendTo(expected);
+            producer.post("x", 27).appendTo(expected);
+
+            producer.post("x", 6); // not expected
+            producer.post("x", -4); // not expected
+
+            producer.post("x", 31).appendTo(expected);
+            producer.post("x", 56).appendTo(expected);
+
+            logger.info("Step 6: Consume messages");
+
+            for (QueueTester queue : queues) {
+                for (String payload : expected) {
+                    queue.expectMessage(payload);
+                }
+            }
+
+            logger.info("Step 7: Close producer/consumer");
 
             producer.close();
             consumer.close();
