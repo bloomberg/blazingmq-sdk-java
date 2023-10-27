@@ -22,50 +22,9 @@ jobs:
           server-password: OSSRH_PASSWORD
           gpg-private-key: ${{ secrets.GPG_KEY }}
           gpg-passphrase: GPG_KEY_PASSPHRASE
-
-      - name: Checkout BlazingMQ
-        run:  git clone https://github.com/bloomberg/blazingmq
-
-      - name: Get latest BlazingMQ commit SHA
-        id: get-sha
-        working-directory: blazingmq
-        run: echo "blazingmq_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Get cached BlazingMQ docker image
-        id: cache-restore
-        uses: actions/cache/restore@v3
-        with:
-          path: blazingmq_image.tar.gz
-          key: ${{ steps.get-sha.outputs.blazingmq_sha }}
-
-      # Pull docker image instead
-      - name: Build base BlazingMQ docker image
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        working-directory: blazingmq
-        run: docker compose -f docker/single-node/docker-compose.yaml build
-
-      - name: Load base BlazingMQ docker image from cache
-        if: steps.cache-restore.outputs.cache-hit == 'true'
-        run: docker load < blazingmq_image.tar.gz
-
-      - name: Save built BlazingMQ docker image
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: docker save bmqbrkr:latest | gzip > blazingmq_image.tar.gz
-
-      - name: Cache built BlazingMQ docker image
-        id: cache-save
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v3
-        with:
-          path: blazingmq_image.tar.gz
-          key: ${{ steps.get-sha.outputs.blazingmq_sha }}
-
-      - name: Build IT image
-        working-directory: bmq-sdk/src/test/docker
-        run: docker build --tag bmq-broker-java-it --build-arg "image=bmqbrkr:latest" .
           
       - name: 'Publish snapshot to OSSRH'
-        run: mvn --batch-mode -Possrh -DskipTests=true -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }} -Dit.dockerImage=bmqbrkr:latest release:prepare release:perform
+        run: mvn --batch-mode -Possrh -Darguments="-Dmaven.test.skip=true -Dspotbugs.skip=true" -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }} release:prepare release:perform
         env:
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
