@@ -29,7 +29,7 @@ jobs:
           git config --global user.name "Bloomberg Open Source"
 
       - name: 'Publish snapshot to OSSRH'
-        run: mvn --batch-mode -Possrh -Darguments="-Dmaven.test.skip=true -Dspotbugs.skip=true -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }}" release:prepare release:perform
+        run: mvn --batch-mode -Possrh -Darguments="-Dmaven.test.skip=true -Dspotbugs.skip=true -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }} -Dusername=${{ secrets.GITHUB_TOKEN }}" release:prepare release:perform
         env:
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
