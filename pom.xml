@@ -51,8 +51,8 @@ limitations under the License. -->
   </modules>
 
   <scm>
-    <connection>scm:git:ssh://git@github.com:bloomberg/blazingmq-sdk-java.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com:bloomberg/blazingmq-sdk-java.git</developerConnection>
+    <connection>scm:git:git://git@github.com:bloomberg/blazingmq-sdk-java.git</connection>
+    <developerConnection>scm:git:git://git@github.com:bloomberg/blazingmq-sdk-java.git</developerConnection>
     <tag>HEAD</tag>
     <url>https://github.com/bloomberg/blazingmq-sdk-java</url>
   </scm>
