@@ -22,7 +22,7 @@ limitations under the License. -->
 
   <name>BlazingMQ Java SDK Bundle</name>
   <description>BlazingMQ Java SDK Bundle</description>
-  <url>https://github.com/bloomberg/blazingmq-sdk-java</url>
+  <url>https://github.com/bloomberg/blazingmq-sdk-java/tree/main/</url>
   <organization>
     <name>Bloomberg L.P.</name>
     <url>https://www.bloomberg.com</url>
@@ -54,7 +54,7 @@ limitations under the License. -->
     <connection>scm:git:https://git@github.com/bloomberg/blazingmq-sdk-java.git</connection>
     <developerConnection>scm:git:https://git@github.com/bloomberg/blazingmq-sdk-java.git</developerConnection>
     <tag>HEAD</tag>
-    <url>https://github.com/bloomberg/blazingmq-sdk-java</url>
+    <url>https://github.com/bloomberg/blazingmq-sdk-java/tree/main/</url>
   </scm>
 
   <distributionManagement>
