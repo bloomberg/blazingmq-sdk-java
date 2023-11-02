@@ -30,6 +30,7 @@ feature and/or API parity with the BlazingMQ C++ client library.
 
 ## Menu
 
+- [Using](#using)
 - [Building](#building)
 - [Contributions](#contributions)
 - [License](#license)
@@ -38,12 +39,14 @@ feature and/or API parity with the BlazingMQ C++ client library.
 
 ---
 
+## Using
+
+This repository contains two modules. The built packages for these modules are available in Maven Central:
+
+- [bmq-sdk](https://central.sonatype.com/artifact/com.bloomberg.bmq/bmq-sdk): contains BlazingMQ Java client library code
+- [bmq-examples](https://central.sonatype.com/artifact/com.bloomberg.bmq/bmq-examples): contains sample producer and consumer clients
+
 ## Building
-
-This repository contains two modules:
-
-- `bmq-sdk`: contains BlazingMQ Java client library code
-- `bmq-examples`: contains sample producer and consumer clients
 
 ### Build and Install the JARs
 
