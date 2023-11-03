@@ -12,7 +12,7 @@
 [![BlazingMQ](https://img.shields.io/badge/BlazingMQ-blue)](https://github.com/bloomberg/blazingmq)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-blue)](#)
-[![Maven](https://img.shields.io/badge/Maven-blue)](#)
+[![Maven](https://img.shields.io/maven-central/v/com.bloomberg.bmq/bmq-sdk)](https://mvnrepository.com/artifact/com.bloomberg.bmq/bmq-sdk)
 [![MessageQueue](https://img.shields.io/badge/MessageQueue-blue)](#)
 [![Documentation](https://img.shields.io/badge/Documentation-blue)](https://bloomberg.github.io/blazingmq)
 
