@@ -18,12 +18,12 @@ limitations under the License. -->
   <parent>
     <groupId>com.bloomberg.bmq</groupId>
     <artifactId>bmq-sdk-java</artifactId>
-    <version>0.0.14</version>
+    <version>0.0.15-SNAPSHOT</version>
   </parent>
 
   <groupId>com.bloomberg.bmq</groupId>
   <artifactId>bmq-examples</artifactId>
-  <version>0.0.14</version>
+  <version>0.0.15-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>BlazingMQ Java SDK Examples</name>
