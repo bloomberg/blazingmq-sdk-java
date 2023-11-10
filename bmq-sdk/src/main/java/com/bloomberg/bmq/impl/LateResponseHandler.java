@@ -142,8 +142,17 @@ public final class LateResponseHandler {
     private boolean areParametersInSync(
             QueueOptions currentQueueOptions, StreamParameters parameters) {
 
-        if (currentQueueOptions.getSubscriptions().size() != parameters.subscriptions().length) {
+        StreamParameters currentStreamParameters =
+                StreamParameters.createParameters(null, currentQueueOptions, null);
+
+        if (currentStreamParameters.subscriptions().length != parameters.subscriptions().length) {
             return false;
+        }
+
+        for (int i = 0; i < parameters.subscriptions().length; i++) {
+            if (!currentStreamParameters.subscriptions()[i].equals(parameters.subscriptions()[i])) {
+                return false;
+            }
         }
 
         return true;

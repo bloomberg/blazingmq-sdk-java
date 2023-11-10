@@ -28,7 +28,6 @@ import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.events.QueueControlEventHandler;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
-import com.bloomberg.bmq.impl.infr.msg.Subscription;
 import com.bloomberg.bmq.impl.infr.proto.AckMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.PutMessageImpl;
@@ -38,6 +37,8 @@ import com.bloomberg.bmq.impl.intf.QueueState;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,8 @@ public class QueueImpl implements QueueHandle {
     // updated immediately while 'isSuspended'
     // is updated only when corresponding user
     // event is being dispatching.
+
+    private final Map<Integer, com.bloomberg.bmq.Subscription> subscriptionIdMap = new HashMap<>();
 
     public QueueImpl(
             BrokerSession brokerSession,
@@ -134,12 +137,6 @@ public class QueueImpl implements QueueHandle {
         return this;
     }
 
-    public QueueImpl setSubscriptions(Subscription[] subscriptions) {
-        assert brokerSession.isInSessionExecutor();
-        this.parameters.setSubscriptions(subscriptions);
-        return this;
-    }
-
     public QueueImpl setState(QueueState state) {
         assert brokerSession.isInSessionExecutor();
         this.state = state;
@@ -154,6 +151,10 @@ public class QueueImpl implements QueueHandle {
     public void setIsSuspendedWithBroker(boolean value) {
         assert brokerSession.isInSessionExecutor();
         isSuspendedWithBroker = value;
+    }
+
+    public Map<Integer, com.bloomberg.bmq.Subscription> getSubscriptionIdMap() {
+        return subscriptionIdMap;
     }
 
     @Override

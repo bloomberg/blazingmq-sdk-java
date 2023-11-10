@@ -263,8 +263,12 @@ public class TestTools {
 
     public static ConsumerInfo getDefaultConsumerInfo(StreamParameters parameters) {
         // todo is the name of the method good? default might mean default initialize
-        assertEquals(1, parameters.subscriptions().length);
-        assertEquals(1, parameters.subscriptions()[0].consumers().length);
+        if (parameters.subscriptions().length != 1) {
+            return null;
+        }
+        if (parameters.subscriptions()[0].consumers().length != 1) {
+            return null;
+        }
         return parameters.subscriptions()[0].consumers()[0];
     }
 

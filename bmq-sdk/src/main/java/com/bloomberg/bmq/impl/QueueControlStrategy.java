@@ -22,7 +22,6 @@ import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
 import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
@@ -326,28 +325,14 @@ public abstract class QueueControlStrategy<RESULT extends GenericCode> {
         return req;
     }
 
-    protected QueueStreamParameters createParameters(SubQueueIdInfo subQueueIdInfo) {
-        // TODO: not used, consider removing
-        // This function was used for the old style ConfigureQueueStream request (without
-        // subscriptions)
-        QueueStreamParameters params;
-        Long flags = getQueue().getParameters().getFlags();
-        int qId = getQueue().getQueueId();
-        QueueOptions ops = getQueueOptions();
-        if (QueueFlags.isReader(flags)) {
-            params = QueueStreamParameters.createParameters(qId, subQueueIdInfo, ops);
-        } else {
-            params = QueueStreamParameters.createDeconfigureParameters(qId, subQueueIdInfo);
-        }
-        return params;
-    }
-
     protected StreamParameters createStreamParameters(SubQueueIdInfo subQueueIdInfo) {
         StreamParameters params;
         Long flags = getQueue().getParameters().getFlags();
         QueueOptions ops = getQueueOptions();
         if (QueueFlags.isReader(flags)) {
-            params = StreamParameters.createParameters(subQueueIdInfo, ops);
+            params =
+                    StreamParameters.createParameters(
+                            subQueueIdInfo, ops, getQueue().getSubscriptionIdMap());
         } else {
             params = StreamParameters.createDeconfigureParameters(subQueueIdInfo);
         }

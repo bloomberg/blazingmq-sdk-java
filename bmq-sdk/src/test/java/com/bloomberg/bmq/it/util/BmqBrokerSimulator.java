@@ -131,7 +131,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
         void processControlMessageChoice(ControlMessageChoice controlMessageChoice) {
             Argument.expectNonNull(controlMessageChoice, "controlMessageChoice");
-            logger.info("Process control message choice");
+            logger.info("Process control message choice: {}", controlMessageChoice);
             // Store received request.
             try {
                 receivedRequests.put(controlMessageChoice);

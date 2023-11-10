@@ -145,15 +145,17 @@ public class BrokerSessionIT {
             ConsumerInfo info =
                     TestTools.getDefaultConsumerInfo(request.configureStream().streamParameters());
 
-            QueueOptions parametersOptions =
-                    QueueOptions.builder()
-                            .merge(options)
-                            .setMaxUnconfirmedMessages(info.maxUnconfirmedMessages())
-                            .setMaxUnconfirmedBytes(info.maxUnconfirmedBytes())
-                            .setConsumerPriority(info.consumerPriority())
-                            .build();
+            QueueOptions.Builder builder = QueueOptions.builder().merge(options);
 
-            assertEquals(options, parametersOptions);
+            // Default ConsumerInfo might be missing for deconfigure request, when there are no
+            // subscriptions.
+            if (info != null) {
+                builder.setMaxUnconfirmedMessages(info.maxUnconfirmedMessages())
+                        .setMaxUnconfirmedBytes(info.maxUnconfirmedBytes())
+                        .setConsumerPriority(info.consumerPriority());
+            }
+
+            assertEquals(options, builder.build());
         }
     }
 
@@ -3503,7 +3505,7 @@ public class BrokerSessionIT {
     @Test
     public void configureOptionsAndParameters() throws ExecutionException, InterruptedException {
         logger.info("======================================================");
-        logger.info("BEGIN Testing BrokerSessionIT configureSuspendedQueue.");
+        logger.info("BEGIN Testing BrokerSessionIT configureOptionsAndParameters.");
         logger.info("======================================================");
 
         final Semaphore testSema = new Semaphore(0);
@@ -3857,6 +3859,9 @@ public class BrokerSessionIT {
             server.pushSuccess();
             assertEquals(GenericResult.SUCCESS, session.stop(TEST_REQUEST_TIMEOUT));
             verifyDisconnectRequest(++reqId, server.nextClientRequest());
+        } catch (AssertionError e) {
+            logger.error("Assertion: ", e);
+            throw e;
         } catch (Exception e) {
             logger.error("Exception: ", e);
             throw e;

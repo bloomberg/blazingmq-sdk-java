@@ -15,9 +15,7 @@
  */
 package com.bloomberg.bmq;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -59,18 +57,19 @@ public class QueueOptions {
     public static final boolean k_SUSPENDS_ON_BAD_HOST_HEALTH_DEFAULT = false;
 
     private final Subscription defaultSubscription;
-    private final HashMap<Integer, Subscription> subscriptions;
+    private final Subscription[] subscriptions;
     private final Optional<Boolean> suspendsOnBadHostHealth;
 
     private QueueOptions(Builder builder) {
         defaultSubscription = builder.defaultSubscriptionBuilder.build();
-        subscriptions = builder.subscriptions;
+        subscriptions = new Subscription[builder.subscriptions.size()];
+        builder.subscriptions.toArray(subscriptions);
         suspendsOnBadHostHealth = builder.suspendsOnBadHostHealth;
     }
 
     private QueueOptions() {
         defaultSubscription = Subscription.createDefault();
-        subscriptions = new HashMap<>();
+        subscriptions = new Subscription[0];
         suspendsOnBadHostHealth = Optional.empty();
     }
 
@@ -93,7 +92,7 @@ public class QueueOptions {
         QueueOptions queueOptions = (QueueOptions) obj;
 
         return defaultSubscription.equals(queueOptions.defaultSubscription)
-                && subscriptions.equals(queueOptions.subscriptions)
+                && Arrays.equals(subscriptions, queueOptions.subscriptions)
                 && getSuspendsOnBadHostHealth() == queueOptions.getSuspendsOnBadHostHealth();
     }
 
@@ -111,7 +110,7 @@ public class QueueOptions {
 
         hash = (long) hash.hashCode();
         hash <<= Integer.SIZE;
-        hash |= subscriptions.hashCode();
+        hash |= java.util.Arrays.hashCode(subscriptions);
 
         return hash.hashCode();
     }
@@ -197,13 +196,13 @@ public class QueueOptions {
     }
 
     // todo docs
-    // todo immutable map and pair?
-    public HashMap<Integer, Subscription> getSubscriptions() {
+    public Subscription[] getSubscriptions() {
         return subscriptions;
     }
 
+    // todo do we need it?
     public boolean hasSubscriptions() {
-        return !subscriptions.isEmpty();
+        return subscriptions.length > 0;
     }
 
     /**
@@ -242,7 +241,7 @@ public class QueueOptions {
     /** A helper class to create immutable {@code QueueOptions} with custom settings. */
     public static class Builder {
         private final Subscription.Builder defaultSubscriptionBuilder;
-        private final HashMap<Integer, Subscription> subscriptions;
+        private final List<Subscription> subscriptions;
         private Optional<Boolean> suspendsOnBadHostHealth;
 
         /**
@@ -310,7 +309,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder addSubscription(Subscription subscription) {
-            this.subscriptions.put(subscription.getId(), subscription);
+            this.subscriptions.add(subscription);
             return this;
         }
 
@@ -322,7 +321,7 @@ public class QueueOptions {
          */
         public Builder removeSubscription(Subscription subscription) {
             // todo check exception if not found
-            this.subscriptions.remove(subscription.getId());
+            this.subscriptions.remove(subscription);
             return this;
         }
 
@@ -347,23 +346,15 @@ public class QueueOptions {
                 setSuspendsOnBadHostHealth(options.getSuspendsOnBadHostHealth());
             }
 
-            for (Map.Entry<Integer, Subscription> entry : options.subscriptions.entrySet()) {
-                subscriptions.merge(
-                        entry.getKey(),
-                        entry.getValue(),
-                        (oldSubscription, newSubscription) ->
-                                Subscription.builder()
-                                        .merge(oldSubscription)
-                                        .merge(newSubscription)
-                                        .build());
-                // TODO simplify?
-            }
+            subscriptions.clear();
+            subscriptions.addAll(Arrays.asList(options.subscriptions));
+
             return this;
         }
 
         private Builder() {
             defaultSubscriptionBuilder = Subscription.builder();
-            subscriptions = new HashMap<>();
+            subscriptions = new ArrayList<>();
             suspendsOnBadHostHealth = Optional.empty();
         }
     }

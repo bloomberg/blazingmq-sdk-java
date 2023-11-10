@@ -100,7 +100,7 @@ public class QueueManager {
             QueueId queueId = queue.getFullQueueId();
             keyQueueIdMap.put(queueId, queue);
 
-            for (Integer sId : queue.getParameters().getSubscriptions().keySet()) {
+            for (Integer sId : queue.getSubscriptionIdMap().keySet()) {
                 subscriptionIdMap.put(sId, queue);
             }
 
@@ -116,7 +116,7 @@ public class QueueManager {
 
     public boolean update(QueueImpl queue) {
         synchronized (lock) {
-            for (Integer sId : queue.getParameters().getSubscriptions().keySet()) {
+            for (Integer sId : queue.getSubscriptionIdMap().keySet()) {
                 subscriptionIdMap.put(sId, queue);
             }
         }
@@ -182,7 +182,7 @@ public class QueueManager {
                 throw new IllegalStateException("Queue not found by QueueId: " + queueKey);
             }
 
-            for (Integer sId : queue.getParameters().getSubscriptions().keySet()) {
+            for (Integer sId : queue.getSubscriptionIdMap().keySet()) {
                 subscriptionIdMap.remove(sId);
             }
 

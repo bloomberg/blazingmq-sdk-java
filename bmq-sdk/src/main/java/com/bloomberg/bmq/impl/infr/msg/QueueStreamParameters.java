@@ -15,8 +15,6 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-import com.bloomberg.bmq.QueueOptions;
-
 public class QueueStreamParameters {
 
     public static final int CONSUMER_PRIORITY_INVALID = Integer.MIN_VALUE;
@@ -106,20 +104,6 @@ public class QueueStreamParameters {
         params.setConsumerPriorityCount(0);
         params.setMaxUnconfirmedBytes(0);
         params.setMaxUnconfirmedMessages(0);
-        return params;
-    }
-
-    public static QueueStreamParameters createParameters(
-            int qId, SubQueueIdInfo subQueueIdInfo, QueueOptions ops) {
-        int consumerPriority = ops.getConsumerPriority();
-        int consumerPriorityCount = 1;
-        QueueStreamParameters params = new QueueStreamParameters();
-        params.setMaxUnconfirmedMessages(ops.getMaxUnconfirmedMessages());
-        params.setMaxUnconfirmedBytes(ops.getMaxUnconfirmedBytes());
-        params.setQId(qId);
-        params.setSubIdInfo(subQueueIdInfo);
-        params.setConsumerPriority(consumerPriority);
-        params.setConsumerPriorityCount(consumerPriorityCount);
         return params;
     }
 }

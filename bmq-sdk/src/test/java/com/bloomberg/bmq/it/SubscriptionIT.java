@@ -481,7 +481,6 @@ public class SubscriptionIT {
         logger.info("===========================================");
     }
 
-
     @Test
     public void testReuseQueueOptions() throws BMQException, IOException {
         logger.info("=============================================");
@@ -505,7 +504,6 @@ public class SubscriptionIT {
                     Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
 
             logger.info("Step 3: Build the common QueueOptions");
-
 
             // Is it okay to reuse QueueOptions?
             Subscription s1 = Subscription.builder().setExpressionText("x >= 10").build();
@@ -585,14 +583,17 @@ public class SubscriptionIT {
                             .build();
             Subscription s2 =
                     Subscription.builder()
-                            .merge(s1)
                             .setExpressionText("x >= -1000")
                             .setUserData(HANDLE_USER_DATA)
                             .build();
 
             // Passing the same handle, expect only one final subscription 's1'
             QueueOptions options =
-                    QueueOptions.builder().addSubscription(s2).addSubscription(s1).build();
+                    QueueOptions.builder()
+                            .addSubscription(s2)
+                            .addSubscription(s1)
+                            .removeSubscription(s2)
+                            .build();
 
             QueueTester queue = consumer.openQueue(uri, options);
 
@@ -621,8 +622,7 @@ public class SubscriptionIT {
             logger.info("Step 5: Reconfigure consumer and consume remaining messages");
 
             // Use less strict subscription expression to receive the remaining messages
-            QueueOptions options_step5 =
-                    QueueOptions.builder().merge(options).addSubscription(s2).build();
+            QueueOptions options_step5 = QueueOptions.builder().addSubscription(s2).build();
 
             queue.configure(options_step5);
             for (String payload : expected_step5) {

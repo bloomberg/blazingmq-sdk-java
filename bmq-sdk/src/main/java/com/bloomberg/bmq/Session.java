@@ -1252,12 +1252,12 @@ public final class Session implements AbstractSession {
             public CorrelationId correlationId() {
                 for (Integer sId : impl.subQueueIds()) {
                     Subscription subscription =
-                            QueueAdapter.this.impl.getQueueOptions().getSubscriptions().get(sId);
+                            QueueAdapter.this.impl.getSubscriptionIdMap().get(sId);
                     if (subscription != null) {
                         return subscription.getCorrelationId();
                     }
                 }
-                throw new BMQException("Undefined correlationId for PushMessage");
+                return null;
             };
 
             @Override
