@@ -275,12 +275,7 @@ public class TestTools {
     public static void assertCloseConfigurationStreamParameters(StreamParameters params) {
         assertNotNull(params);
 
-        ConsumerInfo info = getDefaultConsumerInfo(params);
-
-        assertEquals(StreamParameters.CONSUMER_PRIORITY_INVALID, info.consumerPriority());
-        assertEquals(0, info.consumerPriorityCount());
-        assertEquals(0, info.maxUnconfirmedBytes());
-        assertEquals(0, info.maxUnconfirmedMessages());
+        assertEquals(0, params.subscriptions().length);
     }
 
     public static ByteBuffer readFile(final String fileName) throws IOException {

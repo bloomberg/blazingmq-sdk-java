@@ -2392,6 +2392,9 @@ public class BrokerSessionIT {
 
                 i += 2;
             }
+        } catch (AssertionError e) {
+            logger.error("Assertion: ", e);
+            throw e;
         } catch (Exception e) {
             logger.error("Exception: ", e);
             throw e;
@@ -4537,7 +4540,7 @@ public class BrokerSessionIT {
             // Check there are no opened queues
             assertEquals(0, numOpened);
 
-        } catch (Exception e) {
+        } catch (Exception | AssertionError e) {
             logger.error("Exception: ", e);
             throw e;
         } finally {

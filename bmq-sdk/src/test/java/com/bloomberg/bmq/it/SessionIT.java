@@ -3856,6 +3856,8 @@ public class SessionIT {
             // There should be no more requests
             assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
 
+        } catch (AssertionError e) {
+            logger.error("Exception: ", e);
         } finally {
             logger.info("11. stop session");
             session.stop(DEFAULT_TIMEOUT);

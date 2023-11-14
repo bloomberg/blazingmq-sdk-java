@@ -153,6 +153,7 @@ public class QueueImpl implements QueueHandle {
         isSuspendedWithBroker = value;
     }
 
+    @Override
     public Map<Integer, com.bloomberg.bmq.Subscription> getSubscriptionIdMap() {
         return subscriptionIdMap;
     }
