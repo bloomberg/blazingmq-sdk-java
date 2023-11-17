@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.intf.SessionEventHandler;
+import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
@@ -39,7 +40,7 @@ public class PushEventImplTest {
             final byte[] bytes = new byte[Protocol.COMPRESSION_MIN_APPDATA_SIZE + 1];
 
             bytes[0] = 1;
-            bytes[Protocol.COMPRESSION_MIN_APPDATA_SIZE - 1] = 1;
+            bytes[Protocol.COMPRESSION_MIN_APPDATA_SIZE] = 1;
 
             final int NUM = 4;
 
@@ -73,8 +74,9 @@ public class PushEventImplTest {
 
             for (int i = 0; i < NUM; i++) {
                 PushMessageImpl pushMsg = new PushMessageImpl();
-
-                pushMsg.appData().setPayload(ByteBuffer.wrap(bytes));
+                ByteBuffer payload = ByteBuffer.allocate(bytes.length);
+                payload.put(bytes);
+                pushMsg.appData().setPayload(payload);
 
                 pushMsg.appData().setProperties(props);
                 pushMsg.appData().setIsOldStyleProperties(isOldStyleProperties);
@@ -92,7 +94,7 @@ public class PushEventImplTest {
                 pushMsg.streamOut(bbos);
             }
 
-            PushEventImpl pushEvent = new PushEventImpl(bbos.reset());
+            PushEventImpl pushEvent = new PushEventImpl(bbos.peek());
 
             SessionEventHandler handler =
                     new SessionEventHandler() {
@@ -107,8 +109,8 @@ public class PushEventImplTest {
                         public void handlePushMessage(PushMessageImpl pushMsg) {
                             try {
                                 assertArrayEquals(
-                                        new ByteBuffer[] {ByteBuffer.wrap(bytes)},
-                                        pushMsg.appData().payload());
+                                        bytes,
+                                        TestHelpers.buffersContents(pushMsg.appData().payload()));
                                 return;
                             } catch (IOException e) {
                                 logger.error("IOException has been thrown", e);

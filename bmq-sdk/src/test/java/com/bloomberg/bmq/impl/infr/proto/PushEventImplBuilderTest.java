@@ -46,8 +46,8 @@ public class PushEventImplBuilderTest {
 
             pushMsg.reset();
 
-            ByteBuffer buffer = ByteBuffer.allocate(PushHeader.MAX_PAYLOAD_SIZE_SOFT + 1);
-            pushMsg.appData().setPayload(buffer);
+            pushMsg.appData()
+                    .setPayload(TestHelpers.filledBuffer(PushHeader.MAX_PAYLOAD_SIZE_SOFT + 1));
 
             res = builder.packMessage(pushMsg, isOldStyleProperties);
             assertEquals(EventBuilderResult.PAYLOAD_TOO_BIG, res);
@@ -56,17 +56,18 @@ public class PushEventImplBuilderTest {
             builder.reset();
 
             final int numMsgs = EventHeader.MAX_SIZE_SOFT / PushHeader.MAX_PAYLOAD_SIZE_SOFT;
-            // Cannot pack more than 'numMsgs' having a unpackedSize of
-            // 'PushHeader.MAX_PAYLOAD_SIZE_SOFT' in 1 bmqp event.
-
-            buffer = ByteBuffer.allocate(PushHeader.MAX_PAYLOAD_SIZE_SOFT);
-            pushMsg.appData().setPayload(buffer);
 
             for (int i = 0; i < numMsgs; i++) {
+                // Cannot pack more than 'numMsgs' having a unpackedSize of
+                // 'PushHeader.MAX_PAYLOAD_SIZE_SOFT' in 1 bmqp event.
+                pushMsg.appData()
+                        .setPayload(TestHelpers.filledBuffer(PushHeader.MAX_PAYLOAD_SIZE_SOFT));
                 res = builder.packMessage(pushMsg, isOldStyleProperties);
                 assertEquals(EventBuilderResult.SUCCESS, res);
             }
 
+            pushMsg.appData()
+                    .setPayload(TestHelpers.filledBuffer(PushHeader.MAX_PAYLOAD_SIZE_SOFT));
             // Try to add one more message, which must fail with event_too_big.
             res = builder.packMessage(pushMsg, isOldStyleProperties);
             assertEquals(EventBuilderResult.EVENT_TOO_BIG, res);
@@ -74,7 +75,8 @@ public class PushEventImplBuilderTest {
             pushMsg.reset();
             builder.reset();
 
-            pushMsg.appData().setPayload(buffer);
+            pushMsg.appData()
+                    .setPayload(TestHelpers.filledBuffer(PushHeader.MAX_PAYLOAD_SIZE_SOFT));
 
             res = builder.packMessage(pushMsg, isOldStyleProperties);
             assertEquals(EventBuilderResult.SUCCESS, res);
@@ -103,7 +105,9 @@ public class PushEventImplBuilderTest {
             PushMessageImpl pushMsg = new PushMessageImpl();
             pushMsg.setQueueId(9876);
             pushMsg.setMessageGUID(guid);
-            pushMsg.appData().setPayload(ByteBuffer.wrap(PAYLOAD.getBytes()));
+            ByteBuffer payload = ByteBuffer.allocate(PAYLOAD.getBytes().length);
+            payload.put(PAYLOAD.getBytes());
+            pushMsg.appData().setPayload(payload);
             pushMsg.appData().setProperties(props);
 
             // set compression to none in order to match file content

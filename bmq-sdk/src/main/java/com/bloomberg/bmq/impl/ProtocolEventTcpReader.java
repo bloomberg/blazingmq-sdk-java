@@ -74,10 +74,17 @@ public class ProtocolEventTcpReader {
     public void read(
             TcpConnection.ReadCallback.ReadCompletionStatus completionStatus, ByteBuffer[] data)
             throws IOException {
-        logger.debug(
-                "Read from buffers {}, completion status needed bytes {}",
-                data.length,
-                completionStatus.numNeeded());
+        if (logger.isDebugEnabled()) {
+            int totalRead = 0;
+            for (ByteBuffer b : data) {
+                totalRead += b.remaining();
+            }
+            logger.debug(
+                    "Read {} bytes from {} buffers, completion status needed bytes {}",
+                    totalRead,
+                    data.length,
+                    completionStatus.numNeeded());
+        }
         try {
             EventHeader eventHeader = null;
             for (ByteBuffer restData : data) {
@@ -134,12 +141,18 @@ public class ProtocolEventTcpReader {
                             if (expectedDataSize <= 0) {
                                 throw new IOException("Wrong event size: " + expectedDataSize);
                             }
-                            byte[] b = new byte[expectedDataSize];
-                            restData.get(b, 0, expectedDataSize);
-                            addPayload(ByteBuffer.wrap(b));
+                            ByteBuffer payload = restData.slice();
+                            payload.limit(expectedDataSize);
+                            addPayload(payload);
+                            restData.position(restData.position() + expectedDataSize);
                             restData = restData.slice();
-                            ByteBuffer[] bb = new ByteBuffer[receivedPayloads.size()];
+
+                            ByteBuffer[] bb = new ByteBuffer[0];
                             bb = receivedPayloads.toArray(bb);
+                            logger.debug(
+                                    "dispatching event handler for {} with {} buffers",
+                                    expectedEventType,
+                                    receivedPayloads.size());
                             eventHandler.handleEvent(expectedEventType, bb);
                             reset();
                             break;

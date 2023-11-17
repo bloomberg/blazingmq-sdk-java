@@ -396,7 +396,7 @@ public class MessagePropertiesImpl implements MessageProperties {
     }
 
     // TODO: remove boolean after 2nd rollout of "new style" brokers
-    private void streamOut(DataOutput output, boolean isOldStyleProperties) throws IOException {
+    void streamOut(DataOutput output, boolean isOldStyleProperties) throws IOException {
         final int numProps = propertyMap.size();
         if (numProps == 0) {
             logger.info("No message properties to stream out");

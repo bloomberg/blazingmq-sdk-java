@@ -167,6 +167,13 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
 
         @Override
         public void write(ChannelHandlerContext ctx, ByteBuffer[] data) {
+            if (logger.isDebugEnabled()) {
+                int size = 0;
+                for (ByteBuffer b : data) {
+                    size += b.remaining();
+                }
+                logger.debug("Writing {} bytes from {} buffers", size, data.length);
+            }
             ctx.writeAndFlush(Unpooled.wrappedBuffer(data));
         }
     }
@@ -314,10 +321,10 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             blackBoxIndex.write(Integer.toString(byteBuffers.length));
             for (ByteBuffer b : byteBuffers) {
                 blackBoxIndex.write(" " + b.remaining());
-                while (b.hasRemaining()) {
-                    blackBox.write(b.get());
+                ByteBuffer dup = b.duplicate();
+                while (dup.hasRemaining()) {
+                    blackBox.write(dup.get());
                 }
-                b.rewind();
             }
             blackBoxIndex.write("\n");
         } catch (IOException e) {
@@ -522,10 +529,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             options = null;
             connectCallback = null;
             readCallback = null;
-            if (readBuffer != null) {
-                readBuffer.reset();
-                readBuffer = null;
-            }
+            readBuffer = null;
             readBytesStatus = null;
             disconnectCallback = null;
             channelContext = null;
@@ -604,7 +608,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 logger.error("Buffer is full");
                 return WriteStatus.WRITE_BUFFER_FULL;
             }
-
             clientChannelAdapter.write(this.channelContext, data);
             return WriteStatus.SUCCESS;
         }
@@ -747,7 +750,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             try {
                 // Make a copy of bytes present in 'byteBuf'.  This is needed
                 // so that the lifetime of 'readBuffer' (and ByteBuffer[]
-                // obtained from it via 'readBuffer.reset()') can be
+                // obtained from it via 'readBuffer.peek()') can be
                 // decoupled with the associated 'byteBuf'.  As per netty docs,
                 // a ByteBuf object is refcounted, and user must invoke
                 // 'ByteBuf.release' to decrement the counter when done.  Since
@@ -757,15 +760,24 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 // invoke 'ByteBuf.release' right away.  This copying is
                 // unfortunate, and we will investigate ways to avoid this
                 // copy later.
-                readBuffer.writeBytes(byteBuf.nioBuffer());
+                //
+                // The ByteBuffer allocated here will receive a copy of the bytes
+                // from the netty ByteBuf, and then transferred into readBuffer without copying.
+                // this ByteBuffer might get sliced and diced, but will remain as the message
+                // contents for the lifetime of the message, UNLESS it has a compressed payload
+                // in which case it will be decompressed into a new ByteBuffer.
+                ByteBuffer nioBuf = ByteBuffer.allocate(byteBuf.readableBytes());
+                byteBuf.readBytes(nioBuf);
+                readBuffer.writeBuffer(nioBuf);
             } catch (IOException e) {
                 logger.error("Failed to write data: ", e);
             }
             byteBuf.release();
 
             // Check if there are enough bytes in 'readBuffer'.
-
             final int numNeeded = readBytesStatus.numNeeded();
+            logger.debug("Read {} bytes, need at least {}", readBuffer.size(), numNeeded);
+
             if (readBuffer.size() >= numNeeded) {
                 // There are enough bytes.  Notify client.
                 final ByteBuffer[] byteBuffers = readBuffer.reset();

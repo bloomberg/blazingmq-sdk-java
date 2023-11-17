@@ -68,7 +68,10 @@ public class TestTools {
     public static void acquireSema(Semaphore sema, int permits, int sec) {
         Argument.expectPositive(permits, "permits");
         Argument.expectPositive(sec, "sec");
-
+        logger.debug(
+                "Trying to acquire from sema with {} permits and {} other waiting threads",
+                sema.availablePermits(),
+                sema.getQueueLength());
         try {
             if (!sema.tryAcquire(permits, sec, TimeUnit.SECONDS)) {
                 logger.error("Semaphore timeout");

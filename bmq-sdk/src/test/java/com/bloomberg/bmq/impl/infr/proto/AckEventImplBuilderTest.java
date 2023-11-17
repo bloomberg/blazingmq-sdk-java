@@ -74,8 +74,7 @@ public class AckEventImplBuilderTest {
             builder.packMessage(m);
         }
 
-        ByteBuffer[] message;
-        message = builder.build();
+        ByteBuffer[] message = builder.build();
 
         TestHelpers.compareWithFileContent(message, MessagesTestSamples.ACK_MSG);
     }

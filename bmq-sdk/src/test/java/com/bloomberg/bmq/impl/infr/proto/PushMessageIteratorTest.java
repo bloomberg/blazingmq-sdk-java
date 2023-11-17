@@ -207,7 +207,7 @@ public class PushMessageIteratorTest {
             msg.setQueueId(i);
             msg.setMessageGUID(GUID);
             msg.appData().setProperties(props);
-            msg.appData().setPayload(payload);
+            msg.appData().setPayload(payload.duplicate());
 
             EventBuilderResult rc = builder.packMessage(msg, isOldStyleProperties);
             assertEquals(EventBuilderResult.SUCCESS, rc);
@@ -316,7 +316,9 @@ public class PushMessageIteratorTest {
 
             PushMessageImpl pushMsg = new PushMessageImpl();
 
-            pushMsg.appData().setPayload(ByteBuffer.wrap(bytes));
+            ByteBuffer payload = ByteBuffer.allocate(bytes.length);
+            payload.put(bytes);
+            pushMsg.appData().setPayload(payload);
 
             MessagePropertiesImpl props = new MessagePropertiesImpl();
             props.setPropertyAsInt32("routingId", 42);
@@ -336,8 +338,7 @@ public class PushMessageIteratorTest {
         while (pushIt.hasNext()) {
             PushMessageImpl pushMsg = pushIt.next();
 
-            assertArrayEquals(
-                    new ByteBuffer[] {ByteBuffer.wrap(bytes)}, pushMsg.appData().payload());
+            assertArrayEquals(bytes, TestHelpers.buffersContents(pushMsg.appData().payload()));
 
             final MessagePropertiesImpl props = pushMsg.appData().properties();
             assertEquals(2, props.numProperties());
@@ -403,7 +404,9 @@ public class PushMessageIteratorTest {
             for (int i = 0; i < NUM; i++) {
                 PushMessageImpl pushMsg = new PushMessageImpl();
 
-                pushMsg.appData().setPayload(ByteBuffer.wrap(bytes));
+                ByteBuffer payload = ByteBuffer.allocate(bytes.length);
+                payload.put(bytes);
+                pushMsg.appData().setPayload(payload);
 
                 pushMsg.appData().setProperties(props);
                 pushMsg.appData().setIsOldStyleProperties(isOldStyleProperties);

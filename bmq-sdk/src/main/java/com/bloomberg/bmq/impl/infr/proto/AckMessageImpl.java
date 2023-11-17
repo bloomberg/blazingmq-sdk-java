@@ -154,9 +154,7 @@ public class AckMessageImpl implements Streamable {
 
     public void streamOut(ByteBufferOutputStream bbos) throws IOException {
         bbos.writeInt(statusAndCorrelationId);
-        for (int i = 0; i < MessageGUID.SIZE_BINARY; i++) {
-            bbos.writeByte(messageGUID[i]);
-        }
+        bbos.write(messageGUID);
         bbos.writeInt(queueId);
     }
 

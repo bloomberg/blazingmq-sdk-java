@@ -118,7 +118,7 @@ import org.slf4j.LoggerFactory;
 @BenchmarkMode(Mode.Throughput)
 @Fork(value = 1, warmups = 1)
 @Warmup(iterations = 1, time = 1, timeUnit = TimeUnit.MINUTES)
-@Measurement(iterations = 30, time = 1, timeUnit = TimeUnit.MINUTES)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.MINUTES)
 @Timeout(time = 2, timeUnit = TimeUnit.MINUTES)
 public class SessionBenchmark {
 
@@ -152,13 +152,13 @@ public class SessionBenchmark {
         @Override
         public void handleSessionEvent(SessionEvent event) {
             // Uncomment to see additional information in log
-            // logger.info("handleSessionEvent: {}", event);
+            logger.info("handleSessionEvent: {}", event);
         }
 
         @Override
         public void handleQueueEvent(QueueControlEvent event) {
             // Uncomment to see additional information in log
-            // logger.info("handleQueueEvent: {}", event);
+            logger.info("handleQueueEvent: {}", event);
         }
 
         @Override
@@ -289,8 +289,10 @@ public class SessionBenchmark {
         public void post(int size, CompressionAlgorithm compression) {
             counter++;
 
-            ByteBuffer data = ByteBuffer.allocate(size);
+            ByteBuffer data = ByteBuffer.allocate(size + 1);
+            data.putLong(counter);
             data.putLong(size / 2, counter);
+            data.position(size);
 
             PutMessage msg = queue.createPutMessage(data);
             msg.setCorrelationId();
@@ -317,9 +319,9 @@ public class SessionBenchmark {
     private static final int SIZE_5_MIB = 5 * 1024 * 1024;
     private static final int SIZE_60_MIB = 60 * 1024 * 1024;
 
-    private static final int PUSH_PROCESS_TIMEOUT = 100; // ms
+    private static final int PUSH_PROCESS_TIMEOUT = 1; // seconds
 
-    private final Semaphore batchSema = new Semaphore(0);
+    private Semaphore batchSema;
     private final TestSession session;
 
     private Blackhole blackhole;
@@ -332,6 +334,7 @@ public class SessionBenchmark {
     // "Setup" the state object before each benchmark
     @Setup(Level.Trial)
     public void setupTrial(final Blackhole bh) throws IOException {
+        batchSema = new Semaphore(0);
         session.startBroker();
         session.startSession();
         session.openReaderWriterAckQueue();
@@ -463,7 +466,6 @@ public class SessionBenchmark {
         // Post PUT messages
         for (int i = 0; i < batchSize; i++) {
             session.post(rawMsgSize, compression);
-            TestTools.sleepForMilliSeconds(10);
         }
 
         logger.info("Sent {} PUT messages", batchSize);
@@ -487,7 +489,7 @@ public class SessionBenchmark {
     private void confirm(PushMessage msg) {
         msg.confirm();
         // Uncomment to see additional information in log
-        // logger.info("Confirm status: {}", confirmResult);
+        // logger.info("Confirm status: {}", msg);
 
         blackhole.consume(msg.payload());
     }
@@ -504,6 +506,10 @@ public class SessionBenchmark {
 
         // Notify 'post' method
         batchSema.release();
+        logger.debug(
+                "Releaseing sema, now {} permits and {} threads waiting",
+                batchSema.availablePermits(),
+                batchSema.getQueueLength());
     }
 
     private void onAckMessage(AckMessage msg) {

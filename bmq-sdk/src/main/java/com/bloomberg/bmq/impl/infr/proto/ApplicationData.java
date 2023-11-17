@@ -19,7 +19,6 @@ import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.util.Compression;
 import com.bloomberg.bmq.impl.infr.util.PrintUtil;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,8 +33,10 @@ import org.slf4j.LoggerFactory;
 public class ApplicationData {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final ThreadLocal<byte[]> decompressionBuffer =
+            ThreadLocal.withInitial(() -> new byte[1024]);
 
-    private byte[] payload;
+    private ByteBufferOutputStream payload;
     private MessagePropertiesImpl properties;
 
     private CompressionAlgorithmType compressionType = CompressionAlgorithmType.E_NONE;
@@ -45,6 +46,9 @@ public class ApplicationData {
     private boolean isOldStyleProperties = false;
     private boolean arePropertiesCompressed;
 
+    private ByteBufferOutputStream outputBuffer;
+    private long crc;
+
     private void resetCompressedData() {
         compressionType = CompressionAlgorithmType.E_NONE;
         compressedData = null;
@@ -52,23 +56,16 @@ public class ApplicationData {
     }
 
     public final void setPayload(ByteBuffer... data) throws IOException {
-        try (ByteBufferInputStream bbis = new ByteBufferInputStream(data)) {
-            bbis.reset();
-            payload = new byte[bbis.available()];
+        setPayload(true, data);
+    }
 
-            final int numRead = bbis.read(payload);
-            if (numRead != payload.length) {
-                throw new RuntimeException(
-                        "Unexpected error in ApplicationData::setPayload: "
-                                + " expected to read "
-                                + payload.length
-                                + " bytes, but read "
-                                + numRead
-                                + " bytes.");
-            }
-
-            resetCompressedData();
+    public final void setPayload(boolean skipCleared, ByteBuffer... data) throws IOException {
+        if (data == null) {
+            throw new IllegalArgumentException("'buffer array' must be non-null");
         }
+        payload = new ByteBufferOutputStream();
+        payload.writeBuffers(skipCleared, data);
+        resetCompressedData();
     }
 
     public final void setProperties(MessagePropertiesImpl props) {
@@ -86,23 +83,17 @@ public class ApplicationData {
     }
 
     public ByteBuffer[] applicationData() throws IOException {
-        // TODO: used only to calculate CRC32. Can we avoid creating a copy?
-
-        try (ByteBufferOutputStream bbos = new ByteBufferOutputStream()) {
-            streamOut(bbos, false);
-            return bbos.reset();
-        }
+        // used only in tests
+        serializeToBuffer();
+        return outputBuffer.peek();
     }
 
     public ByteBuffer[] payload() throws IOException {
         decompressData();
-
-        try (ByteBufferOutputStream bbos = new ByteBufferOutputStream()) {
-            if (payload != null) {
-                bbos.write(payload);
-            }
-            return bbos.reset();
+        if (payload == null) {
+            return new ByteBuffer[0];
         }
+        return payload.peek();
     }
 
     public MessagePropertiesImpl properties() {
@@ -122,7 +113,7 @@ public class ApplicationData {
     }
 
     public int payloadSize() {
-        return payload == null ? 0 : payload.length;
+        return payload == null ? 0 : payload.size();
     }
 
     boolean hasProperties() {
@@ -212,12 +203,9 @@ public class ApplicationData {
             }
         } else { // or buffer compressed data
             try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
-                byte[] buffer = new byte[size];
-
-                if (bbis.read(buffer) != size) {
+                if (bbis.read(bbos, size) != size) {
                     throw new IOException("failed to read compressed payload into buffer");
                 }
-                bbos.write(buffer);
 
                 compressedData = bbos;
                 this.compressionType = compressionType;
@@ -241,7 +229,7 @@ public class ApplicationData {
         }
 
         logger.debug("Decompressing application data with algorithm={}", compressionType);
-        ByteBuffer[] data = compressedData.reset();
+        ByteBuffer[] data = compressedData.peek();
         ByteBufferInputStream bbis = new ByteBufferInputStream(data);
 
         InputStream decompressedStream = compressionType.getCompression().decompress(bbis);
@@ -254,7 +242,7 @@ public class ApplicationData {
         }
 
         // Stream in payload
-        streamInPayload(inputStream);
+        streamInCompressedPayload(inputStream);
 
         // Check if all data has been read
         if (bbis.available() > 0) {
@@ -284,9 +272,11 @@ public class ApplicationData {
     }
 
     private int streamInPayload(int size, ByteBufferInputStream bbis) throws IOException {
-        payload = new byte[size];
-
-        int read = bbis.read(payload);
+        payload = new ByteBufferOutputStream(size);
+        int read = bbis.read(payload, size);
+        if (payload.size() != size) {
+            throw new IOException("payload size doesn't match: " + payload.size() + " != " + size);
+        }
         if (read != size) {
             throw new IOException("Failed to read payload from input stream");
         }
@@ -294,21 +284,15 @@ public class ApplicationData {
         return read;
     }
 
-    private void streamInPayload(InputStream input) throws IOException {
-        // When compressed, payload size is unknown.
-        // So we need to use ByteArrayOutputStream to accumulate all data
-        // and after that get array of bytes
+    private void streamInCompressedPayload(InputStream input) throws IOException {
+        payload = new ByteBufferOutputStream();
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        byte[] buf = new byte[1024];
+        byte[] buf = decompressionBuffer.get();
         int read;
 
         while ((read = input.read(buf)) > 0) {
-            baos.write(buf, 0, read);
+            payload.write(buf, 0, read);
         }
-
-        payload = baos.toByteArray();
     }
 
     public void compressData(CompressionAlgorithmType compressionType) throws IOException {
@@ -320,7 +304,7 @@ public class ApplicationData {
 
         logger.debug("Compressing application data with algorithm={}", compressionType);
 
-        ByteBufferOutputStream bbos = new ByteBufferOutputStream();
+        ByteBufferOutputStream bbos = ByteBufferOutputStream.smallBlocks();
         Compression compression = compressionType.getCompression();
 
         // We need to close compressed stream in order to flush all compressed bytes
@@ -342,7 +326,9 @@ public class ApplicationData {
             }
 
             if (payload != null) {
-                compressedOutput.write(payload);
+                for (ByteBuffer b : payload.peek()) {
+                    compressedOutput.write(b.array(), b.arrayOffset(), b.remaining());
+                }
             }
         }
 
@@ -351,46 +337,44 @@ public class ApplicationData {
         arePropertiesCompressed = hasProperties() && isOldStyleProperties;
     }
 
-    public void streamOut(ByteBufferOutputStream bbos) throws IOException {
-        streamOut(bbos, true);
+    public long calculateCrc32c() throws IOException {
+        serializeToBuffer();
+        return crc;
     }
 
-    private void streamOut(ByteBufferOutputStream bbos, boolean addPadding) throws IOException {
-        int startPosition = bbos.size();
+    public void streamOut(ByteBufferOutputStream bbos) throws IOException {
+        streamOut(bbos, true /* addPadding */);
+    }
+
+    private void serializeToBuffer() throws IOException {
+        if (outputBuffer != null) {
+            return;
+        }
+        outputBuffer = ByteBufferOutputStream.smallBlocks();
 
         // Stream out properties if they are not compressed (no compression or
         // new style properties).
         if (hasProperties() && !arePropertiesCompressed) {
-            if (isOldStyleProperties) {
-                properties.streamOutOld(bbos);
-            } else {
-                properties.streamOut(bbos);
-            }
+            properties.streamOut(outputBuffer, isOldStyleProperties);
         }
 
         if (compressionType == CompressionAlgorithmType.E_NONE) {
             if (payload != null) {
-                bbos.write(payload);
+                outputBuffer.writeBuffers(payload.peekUnflipped());
             }
         } else {
-            bbos.writeBytes(compressedData);
+            outputBuffer.writeBuffers(compressedData);
         }
+        // calculate crc32c without padding
+        crc = Crc32c.calculate(outputBuffer.peek());
+    }
 
-        int endPosition = bbos.size();
-
+    private void streamOut(ByteBufferOutputStream bbos, boolean addPadding) throws IOException {
+        serializeToBuffer();
+        bbos.writeBuffers(outputBuffer);
         if (addPadding) {
-            final int length = endPosition - startPosition;
-
-            if (length != unpackedSize()) {
-                throw new IOException(
-                        "Invalid output stream length: "
-                                + length
-                                + ", expected: "
-                                + unpackedSize());
-            }
-            final int numPaddingBytes = ProtocolUtil.calculatePadding(length);
-
-            bbos.write(ProtocolUtil.getPaddingBytes(numPaddingBytes), 0, numPaddingBytes);
+            final int paddingSize = ProtocolUtil.calculatePadding(outputBuffer.size());
+            bbos.write(ProtocolUtil.getPaddingBytes(paddingSize), 0, paddingSize);
         }
     }
 
@@ -404,7 +388,7 @@ public class ApplicationData {
             sb.append("[ Payload [");
             if (payload != null) {
                 sb.append("\"");
-                PrintUtil.hexAppend(sb, payload);
+                PrintUtil.hexAppend(sb, payload.peek());
                 sb.append("\" ]");
             } else {
                 sb.append(" EMPTY ]");
