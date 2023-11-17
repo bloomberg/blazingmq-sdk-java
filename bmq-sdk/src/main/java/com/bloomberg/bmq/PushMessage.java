@@ -34,7 +34,7 @@ public interface PushMessage extends QueueEvent {
      */
     MessageGUID messageGUID();
 
-    CorrelationId correlationId();
+    Subscription subscription();
 
     /**
      * Returns {@code true} if the application data of this message contains message properties.

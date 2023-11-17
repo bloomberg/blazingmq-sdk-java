@@ -114,7 +114,7 @@ public class SubscriptionsConsumer
 
         logger.info("*** Got a message from the queue.***");
         logger.info("GUID: {}", msg.messageGUID());
-        logger.info("CorrelationId: {}", msg.correlationId().userData());
+        logger.info("CorrelationId: {}", msg.subscription().getCorrelationId().userData());
         logger.info("Queue URI: {}", msg.queue().uri());
 
         // Check if any properties are associated with the message.

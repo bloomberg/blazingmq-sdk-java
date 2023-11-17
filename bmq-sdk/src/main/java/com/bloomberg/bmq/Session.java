@@ -1249,12 +1249,12 @@ public final class Session implements AbstractSession {
             }
 
             @Override
-            public CorrelationId correlationId() {
+            public Subscription subscription() {
                 for (Integer sId : impl.subQueueIds()) {
                     Subscription subscription =
                             QueueAdapter.this.impl.getSubscriptionIdMap().get(sId);
                     if (subscription != null) {
-                        return subscription.getCorrelationId();
+                        return subscription;
                     }
                 }
                 return null;

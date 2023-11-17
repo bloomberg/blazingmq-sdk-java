@@ -96,7 +96,7 @@ public class SubscriptionIT {
             try {
                 PushMessage message = messages.poll(DEFAULT_TIMEOUT.getSeconds(), TimeUnit.SECONDS);
                 assertNotNull(message);
-                assertNotNull(message.correlationId());
+                assertNotNull(message.subscription().getCorrelationId());
 
                 ByteBuffer bb = TestTools.mergeBuffers(message.payload());
                 String payload = new String(bb.array(), StandardCharsets.UTF_8);
@@ -104,9 +104,9 @@ public class SubscriptionIT {
                 assertEquals(expectedPayload, payload);
 
                 if (userData != null) {
-                    assertNotNull(message.correlationId());
-                    assertNotNull(message.correlationId().userData());
-                    assertEquals(userData, message.correlationId().userData());
+                    assertNotNull(message.subscription().getCorrelationId());
+                    assertNotNull(message.subscription().getCorrelationId().userData());
+                    assertEquals(userData, message.subscription().getCorrelationId().userData());
                 }
 
                 message.confirm();
