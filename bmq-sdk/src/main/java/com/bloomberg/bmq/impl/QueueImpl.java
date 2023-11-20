@@ -104,6 +104,8 @@ public class QueueImpl implements QueueHandle {
         this.pushMessageHandler = pushMessageHandler;
         lock = new Object();
         isReader = QueueFlags.isReader(flags);
+
+        logger.debug("Created queue, uri: {}, flags: {}", uri, flags);
     }
 
     public void setStrategy(QueueControlStrategy<?> strategy) {
@@ -139,6 +141,7 @@ public class QueueImpl implements QueueHandle {
 
     public QueueImpl setState(QueueState state) {
         assert brokerSession.isInSessionExecutor();
+        logger.debug("Changing state [{}] -> [{}] for queue with uri: {}", this.state, state, uri);
         this.state = state;
         return this;
     }

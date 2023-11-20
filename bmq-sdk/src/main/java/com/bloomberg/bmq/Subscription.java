@@ -98,6 +98,8 @@ public class Subscription {
         hash = (long) hash.hashCode();
         hash <<= Integer.SIZE;
         hash |= (long) Integer.hashCode(getConsumerPriority());
+        hash <<= Integer.SIZE;
+        hash |= (long) getExpression().hashCode();
 
         return hash.hashCode();
     }
@@ -207,6 +209,8 @@ public class Subscription {
                 .append(getMaxUnconfirmedBytes())
                 .append(", consumerPriority: ")
                 .append(getConsumerPriority())
+                .append(", expression: ")
+                .append(getExpression())
                 .append(" ]");
         return sb.toString();
     }

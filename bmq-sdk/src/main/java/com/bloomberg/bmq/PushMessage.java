@@ -34,6 +34,12 @@ public interface PushMessage extends QueueEvent {
      */
     MessageGUID messageGUID();
 
+    /**
+     * Returns Subscription object associated with this PushMessage, if consumer was configured with
+     * subscriptions.
+     *
+     * @return Subscription for this PushMessage, or null if subscriptions are not applicable.
+     */
     Subscription subscription();
 
     /**
