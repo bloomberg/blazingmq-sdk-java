@@ -225,6 +225,10 @@ public class QueueStateManager {
         queueManager = QueueManager.createInstance();
     }
 
+    public Integer findSubQId(String appId) {
+        return queueManager.findSubQId(appId);
+    }
+
     public QueueImpl findByQueueId(QueueId queueId) {
         return queueManager.findByQueueId(queueId);
     }

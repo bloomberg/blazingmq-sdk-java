@@ -106,8 +106,10 @@ public final class LateResponseHandler {
         }
 
         int qId = originalRequest.id();
-        int subQId = 0; // We don't have subId in the ConfigureStream
-
+        Integer subQId = queueStateManager.findSubQId(parameters.appId());
+        if (subQId == null) {
+            subQId = QueueId.k_DEFAULT_SUBQUEUE_ID;
+        }
         QueueId queueId = QueueId.createInstance(qId, subQId); // returns not-null QueueId
 
         QueueImpl queue = queueStateManager.findByQueueId(queueId);

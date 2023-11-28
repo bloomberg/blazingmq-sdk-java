@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.impl;
 
 import com.bloomberg.bmq.Uri;
+import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
@@ -45,16 +46,19 @@ public class QueueManager {
     private Map<String, Integer> uriSubStreamCount;
     private Map<String, QueueInfo> uriMap;
     private Map<QueueId, QueueImpl> keyQueueIdMap;
-    private Map<Integer, QueueImpl> subscriptionIdMap;
     private Map<QueueId, QueueImpl> expiredQueueMap;
+
+    private Map<Integer, QueueImpl> subscriptionIdMap;
+    private Map<String, Integer> appId_subQId_Map;
     private AtomicInteger nextQueueId;
 
     private QueueManager() {
         uriSubStreamCount = new HashMap<>();
         uriMap = new TreeMap<>();
         keyQueueIdMap = new HashMap<>();
-        subscriptionIdMap = new HashMap<>();
         expiredQueueMap = new HashMap<>();
+        subscriptionIdMap = new HashMap<>();
+        appId_subQId_Map = new HashMap<>();
         lock = new Object();
         nextQueueId = new AtomicInteger(0);
     }
@@ -65,8 +69,9 @@ public class QueueManager {
             uriSubStreamCount = new HashMap<>();
             uriMap = new TreeMap<>();
             keyQueueIdMap = new HashMap<>();
-            subscriptionIdMap = new HashMap<>();
             expiredQueueMap = new HashMap<>();
+            subscriptionIdMap = new HashMap<>();
+            appId_subQId_Map = new HashMap<>();
             nextQueueId = new AtomicInteger(0);
         }
     }
@@ -138,6 +143,14 @@ public class QueueManager {
                 return false;
             }
             expiredQueueMap.put(queueId, queue);
+
+            SubQueueIdInfo subQueueIdInfo = queue.getParameters().getSubIdInfo();
+            if (subQueueIdInfo != null) {
+                String appId = subQueueIdInfo.appId();
+                if (appId != null) {
+                    appId_subQId_Map.put(appId, queueId.getSubQId());
+                }
+            }
         }
         return true;
     }
@@ -219,6 +232,14 @@ public class QueueManager {
                                 "Wrong QueueIds: %d != %d",
                                 queue.getQueueId(), qHandle.getQueueId()));
             }
+
+            SubQueueIdInfo subQueueIdInfo = queue.getParameters().getSubIdInfo();
+            if (subQueueIdInfo != null) {
+                String appId = subQueueIdInfo.appId();
+                if (appId != null) {
+                    appId_subQId_Map.remove(appId);
+                }
+            }
         }
         return true;
     }
@@ -266,6 +287,12 @@ public class QueueManager {
             int qId = queueInfo.getQueueId();
             QueueId queueId = QueueId.createInstance(qId, queueSubId);
             return findByQueueId(queueId);
+        }
+    }
+
+    public Integer findSubQId(String appId) {
+        synchronized (lock) {
+            return appId_subQId_Map.get(appId);
         }
     }
 
