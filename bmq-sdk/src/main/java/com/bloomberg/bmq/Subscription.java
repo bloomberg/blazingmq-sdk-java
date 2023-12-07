@@ -93,11 +93,15 @@ public class Subscription {
     public int hashCode() {
 
         Long hash = (long) Long.hashCode(getMaxUnconfirmedMessages());
+
         hash <<= Integer.SIZE;
         hash |= (long) Long.hashCode(getMaxUnconfirmedBytes());
         hash = (long) hash.hashCode();
+
         hash <<= Integer.SIZE;
         hash |= (long) Integer.hashCode(getConsumerPriority());
+        hash = (long) hash.hashCode();
+
         hash <<= Integer.SIZE;
         hash |= (long) getExpression().hashCode();
 
