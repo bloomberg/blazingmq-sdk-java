@@ -106,15 +106,14 @@ public class QueueOptions {
      */
     @Override
     public int hashCode() {
-
         Long hash = (long) defaultSubscription.hashCode();
+
         hash <<= Integer.SIZE;
         hash |= (long) Boolean.hashCode(getSuspendsOnBadHostHealth());
-
         hash = (long) hash.hashCode();
+
         hash <<= Integer.SIZE;
         hash |= java.util.Arrays.hashCode(subscriptions);
-
         return hash.hashCode();
     }
 
@@ -198,12 +197,21 @@ public class QueueOptions {
         return suspendsOnBadHostHealth.isPresent();
     }
 
-    // todo docs
+    /**
+     * Returns an array of subscriptions set for this QueueOptions.
+     *
+     * @return Subscription[] array of subscriptions
+     */
     public Subscription[] getSubscriptions() {
         return subscriptions;
     }
 
-    // todo do we need it?
+    /**
+     * Returns whether {@code subscriptions} were specified for this object, or whether it holds an
+     * empty subscriptions array.
+     *
+     * @return boolean true if {@code subscriptions} are not empty.
+     */
     public boolean hasSubscriptions() {
         return subscriptions.length > 0;
     }
@@ -317,13 +325,12 @@ public class QueueOptions {
         }
 
         /**
-         * Remove subscription parameters.
+         * Remove subscription parameters, if they are present in this Builder.
          *
          * @param subscription subscription parameters
          * @return Builder this object
          */
         public Builder removeSubscription(Subscription subscription) {
-            // todo check exception if not found
             this.subscriptions.remove(subscription);
             return this;
         }
@@ -348,10 +355,10 @@ public class QueueOptions {
             if (options.hasSuspendsOnBadHostHealth()) {
                 setSuspendsOnBadHostHealth(options.getSuspendsOnBadHostHealth());
             }
-
-            subscriptions.clear();
-            subscriptions.addAll(Arrays.asList(options.subscriptions));
-
+            if (options.hasSubscriptions()) {
+                subscriptions.clear();
+                subscriptions.addAll(Arrays.asList(options.subscriptions));
+            }
             return this;
         }
 

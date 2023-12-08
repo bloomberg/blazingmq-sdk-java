@@ -579,12 +579,12 @@ public class SubscriptionIT {
             Subscription s1 =
                     Subscription.builder()
                             .setExpressionText("x >= 10")
-                            .setUserData(HANDLE_USER_DATA)
+                            .setCorrelationId(HANDLE_USER_DATA)
                             .build();
             Subscription s2 =
                     Subscription.builder()
                             .setExpressionText("x >= -1000")
-                            .setUserData(HANDLE_USER_DATA)
+                            .setCorrelationId(HANDLE_USER_DATA)
                             .build();
 
             // Passing the same handle, expect only one final subscription 's1'
@@ -680,7 +680,7 @@ public class SubscriptionIT {
                     Subscription subscription =
                             Subscription.builder()
                                     .setExpressionText("x == " + sIndex)
-                                    .setUserData(userData)
+                                    .setCorrelationId(userData)
                                     .build();
                     userDataList.add(userData);
                     builder.addSubscription(subscription);

@@ -213,19 +213,19 @@ public class SubscriptionsConsumer
         Subscription s1 =
                 Subscription.builder()
                         .setExpressionText("firmId == \"FOO\"")
-                        .setUserData("foo")
+                        .setCorrelationId("foo")
                         .build();
 
         Subscription s2 =
                 Subscription.builder()
                         .setExpressionText("firmId == \"BAR\" && price < 25")
-                        .setUserData("bar_low_price")
+                        .setCorrelationId("bar_low_price")
                         .build();
 
         Subscription s3 =
                 Subscription.builder()
                         .setExpressionText("firmId == \"BAR\" && price >= 25")
-                        .setUserData("bar_high_price")
+                        .setCorrelationId("bar_high_price")
                         .build();
 
         QueueOptions options =

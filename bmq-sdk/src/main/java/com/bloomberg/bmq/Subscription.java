@@ -47,12 +47,7 @@ public class Subscription {
         maxUnconfirmedBytes = builder.maxUnconfirmedBytes;
         consumerPriority = builder.consumerPriority;
         expression = builder.expression.orElse(new SubscriptionExpression());
-
-        if (builder.correlationId.isPresent()) {
-            correlationId = builder.correlationId.get();
-        } else {
-            correlationId = CorrelationIdImpl.nextId(builder.userData.orElse(null));
-        }
+        correlationId = CorrelationIdImpl.nextId(builder.userData.orElse(null));
     }
 
     private Subscription() {
@@ -91,7 +86,6 @@ public class Subscription {
      */
     @Override
     public int hashCode() {
-
         Long hash = (long) Long.hashCode(getMaxUnconfirmedMessages());
 
         hash <<= Integer.SIZE;
@@ -104,7 +98,6 @@ public class Subscription {
 
         hash <<= Integer.SIZE;
         hash |= (long) getExpression().hashCode();
-
         return hash.hashCode();
     }
 
@@ -215,6 +208,8 @@ public class Subscription {
                 .append(getConsumerPriority())
                 .append(", expression: ")
                 .append(getExpression())
+                .append(", correlationId: ")
+                .append(getCorrelationId())
                 .append(" ]");
         return sb.toString();
     }
@@ -226,9 +221,6 @@ public class Subscription {
         private Optional<Long> maxUnconfirmedBytes;
         private Optional<Integer> consumerPriority;
         private Optional<SubscriptionExpression> expression;
-
-        private Optional<CorrelationId> correlationId;
-
         private Optional<Object> userData;
 
         /**
@@ -291,12 +283,11 @@ public class Subscription {
          * Sets correlation id user data for this subscription. Overrides correlationId if it was
          * already set for this builder.
          *
-         * @param userData user data
+         * @param obj correlation id user data
          * @return Builder this object
          */
-        public Builder setUserData(Object userData) {
-            this.correlationId = Optional.empty();
-            this.userData = Optional.of(userData);
+        public Builder setCorrelationId(Object obj) {
+            this.userData = Optional.of(obj);
             return this;
         }
 
@@ -319,7 +310,6 @@ public class Subscription {
                 setConsumerPriority(subscription.getConsumerPriority());
             }
             expression = Optional.of(subscription.getExpression());
-            correlationId = Optional.of(subscription.getCorrelationId());
             userData = Optional.empty();
             return this;
         }
@@ -329,7 +319,6 @@ public class Subscription {
             maxUnconfirmedBytes = Optional.empty();
             consumerPriority = Optional.empty();
             expression = Optional.empty();
-            correlationId = Optional.empty();
             userData = Optional.empty();
         }
     }
