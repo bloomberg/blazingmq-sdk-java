@@ -19,8 +19,8 @@ import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.ProtocolEventTcpReader;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
 import com.bloomberg.bmq.impl.infr.msg.ClientIdentity;
-import com.bloomberg.bmq.impl.infr.msg.ConfigureQueueStream;
-import com.bloomberg.bmq.impl.infr.msg.ConfigureQueueStreamResponse;
+import com.bloomberg.bmq.impl.infr.msg.ConfigureStream;
+import com.bloomberg.bmq.impl.infr.msg.ConfigureStreamResponse;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.NegotiationMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.OpenQueue;
@@ -131,7 +131,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
         void processControlMessageChoice(ControlMessageChoice controlMessageChoice) {
             Argument.expectNonNull(controlMessageChoice, "controlMessageChoice");
-            logger.info("Process control message choice");
+            logger.info("Process control message choice: {}", controlMessageChoice);
             // Store received request.
             try {
                 receivedRequests.put(controlMessageChoice);
@@ -143,10 +143,8 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
             int rId = controlMessageChoice.id();
             if (controlMessageChoice.isOpenQueueValue()) {
                 ctrlResp = makeOpenQueueResponse(controlMessageChoice.openQueue(), rId);
-            } else if (controlMessageChoice.isConfigureQueueStreamValue()) {
-                ctrlResp =
-                        makeConfigureQueueResponse(
-                                controlMessageChoice.configureQueueStream(), rId);
+            } else if (controlMessageChoice.isConfigureStreamValue()) {
+                ctrlResp = makeConfigureStreamResponse(controlMessageChoice.configureStream(), rId);
             } else if (controlMessageChoice.isCloseQueueValue()) {
                 ctrlResp = makeCloseQueueResponse(rId);
             } else if (controlMessageChoice.isDisconnectValue()) {
@@ -552,17 +550,15 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
         return ctrlMsg;
     }
 
-    ControlMessageChoice makeConfigureQueueResponse(
-            ConfigureQueueStream configureQueueStream, int rId) {
-        logger.info("Process ConfigureQueue request");
+    ControlMessageChoice makeConfigureStreamResponse(ConfigureStream configureStream, int rId) {
+        logger.info("Process ConfigureStream request");
         ControlMessageChoice ctrlMsg = new ControlMessageChoice();
         ctrlMsg.setId(rId);
-        ctrlMsg.makeConfigureQueueStreamResponse();
-        ConfigureQueueStreamResponse configureQueueStreamResponse =
-                ctrlMsg.configureQueueStreamResponse();
+        ctrlMsg.makeConfigureStreamResponse();
+        ConfigureStreamResponse configureStreamResponse = ctrlMsg.configureStreamResponse();
         RoutingConfiguration routingConfiguration = new RoutingConfiguration();
         routingConfiguration.setFlags(0L);
-        configureQueueStreamResponse.setOriginalRequest(configureQueueStream);
+        configureStreamResponse.setOriginalRequest(configureStream);
         return ctrlMsg;
     }
 

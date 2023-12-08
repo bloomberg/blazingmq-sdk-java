@@ -37,6 +37,8 @@ import com.bloomberg.bmq.impl.intf.QueueState;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +82,8 @@ public class QueueImpl implements QueueHandle {
     // is updated only when corresponding user
     // event is being dispatching.
 
+    private final Map<Integer, com.bloomberg.bmq.Subscription> subscriptionIdMap = new HashMap<>();
+
     public QueueImpl(
             BrokerSession brokerSession,
             Uri uri,
@@ -100,6 +104,8 @@ public class QueueImpl implements QueueHandle {
         this.pushMessageHandler = pushMessageHandler;
         lock = new Object();
         isReader = QueueFlags.isReader(flags);
+
+        logger.debug("Created queue, uri: {}, flags: {}", uri, flags);
     }
 
     public void setStrategy(QueueControlStrategy<?> strategy) {
@@ -122,7 +128,8 @@ public class QueueImpl implements QueueHandle {
     }
 
     public QueueOptions getQueueOptions() {
-        assert brokerSession.isInSessionExecutor();
+        // TODO: immutable object, why in session executor thread required?
+        //        assert brokerSession.isInSessionExecutor();
         return queueOptions; // expose immutable object(thread-safe)
     }
 
@@ -134,6 +141,7 @@ public class QueueImpl implements QueueHandle {
 
     public QueueImpl setState(QueueState state) {
         assert brokerSession.isInSessionExecutor();
+        logger.debug("Changing state [{}] -> [{}] for queue with uri: {}", this.state, state, uri);
         this.state = state;
         return this;
     }
@@ -146,6 +154,11 @@ public class QueueImpl implements QueueHandle {
     public void setIsSuspendedWithBroker(boolean value) {
         assert brokerSession.isInSessionExecutor();
         isSuspendedWithBroker = value;
+    }
+
+    @Override
+    public Map<Integer, com.bloomberg.bmq.Subscription> getSubscriptionIdMap() {
+        return subscriptionIdMap;
     }
 
     @Override

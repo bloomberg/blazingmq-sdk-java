@@ -21,7 +21,7 @@ import com.bloomberg.bmq.ResultCodes.ConfigureQueueResult;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
 import com.bloomberg.bmq.impl.intf.BrokerConnection;
@@ -99,12 +99,11 @@ public class SuspendQueueStrategy extends ConfigureQueueStrategy {
     }
 
     @Override
-    protected QueueStreamParameters createParameters(SubQueueIdInfo subQueueIdInfo) {
+    protected StreamParameters createStreamParameters(SubQueueIdInfo subQueueIdInfo) {
         // For suspend request we use deconfigure parameters regardless of
         // provided queue options which could be used later by resume request
         // when host health changes to healthy state.
-        int qId = getQueue().getQueueId();
-        return QueueStreamParameters.createDeconfigureParameters(qId, subQueueIdInfo);
+        return StreamParameters.createDeconfigureParameters(subQueueIdInfo);
     }
 
     @Override

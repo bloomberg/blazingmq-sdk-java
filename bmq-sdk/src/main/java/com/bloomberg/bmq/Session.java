@@ -587,8 +587,9 @@ public final class Session implements AbstractSession {
         if (handler == null) {
             String msg =
                     "Queue event handler was not provided. It will be mandatory in "
-                            + "one of the the upcoming releases of BLazingMQ Java SDK. Please provide "
-                            + "non-null and valid queue event handler.";
+                            + "one of the the upcoming releases of BlazingMQ Java SDK. Please provide "
+                            + "non-null and valid queue event handler.  Please reach out to BlazingMQ "
+                            + "team with any questions.";
             logger.error(msg);
         }
 
@@ -887,10 +888,11 @@ public final class Session implements AbstractSession {
             PushMessageImpl msg = ev.rawMessage();
             Integer[] subQueueIds = msg.subQueueIds();
             for (Integer subQId : subQueueIds) {
-                QueueId qid = QueueId.createInstance(msg.queueId(), subQId);
-                QueueHandle queue = brokerSession.lookupQueue(qid);
+                QueueHandle queue = brokerSession.lookupQueue(subQId);
                 if (queue != null) {
                     queue.handlePushMessage(msg);
+                } else {
+                    logger.warn("Received PUSH message for unknown queue: {}", msg);
                 }
             }
         }
@@ -902,6 +904,8 @@ public final class Session implements AbstractSession {
             QueueHandle queue = brokerSession.lookupQueue(qid);
             if (queue != null) {
                 queue.handleAckMessage(msg);
+            } else {
+                logger.warn("Received ACK message for unknown queue: {}", msg);
             }
         }
 
@@ -1243,6 +1247,18 @@ public final class Session implements AbstractSession {
             public MessageGUID messageGUID() {
                 return impl.messageGUID();
             }
+
+            @Override
+            public Subscription subscription() {
+                for (Integer sId : impl.subQueueIds()) {
+                    Subscription subscription =
+                            QueueAdapter.this.impl.getSubscriptionIdMap().get(sId);
+                    if (subscription != null) {
+                        return subscription;
+                    }
+                }
+                return null;
+            };
 
             @Override
             public Queue queue() {

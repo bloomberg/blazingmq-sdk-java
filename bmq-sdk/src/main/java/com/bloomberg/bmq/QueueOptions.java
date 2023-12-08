@@ -15,6 +15,9 @@
  */
 package com.bloomberg.bmq;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
@@ -40,42 +43,44 @@ public class QueueOptions {
      * Default maximum number of outstanding messages that can be sent by the broker without being
      * confirmed.
      */
-    public static final long k_MAX_UNCONFIRMED_MESSAGES_DEFAULT = 1000L;
+    public static final long k_MAX_UNCONFIRMED_MESSAGES_DEFAULT =
+            Subscription.k_MAX_UNCONFIRMED_MESSAGES_DEFAULT;
 
     /**
      * Default maximum accumulated bytes of all outstanding messages that can be sent by the broker
      * without being confirmed.
      */
-    public static final long k_MAX_UNCONFIRMED_BYTES_DEFAULT = 33554432;
+    public static final long k_MAX_UNCONFIRMED_BYTES_DEFAULT =
+            Subscription.k_MAX_UNCONFIRMED_BYTES_DEFAULT;
 
     /** Default priority of a consumer with respect to delivery of messages. */
-    public static final int k_CONSUMER_PRIORITY_DEFAULT = 0;
+    public static final int k_CONSUMER_PRIORITY_DEFAULT = Subscription.k_CONSUMER_PRIORITY_DEFAULT;
 
     /** By default, queue is not sensitive to host-health changes. */
     public static final boolean k_SUSPENDS_ON_BAD_HOST_HEALTH_DEFAULT = false;
 
-    private final Optional<Long> maxUnconfirmedMessages;
-    private final Optional<Long> maxUnconfirmedBytes;
-    private final Optional<Integer> consumerPriority;
+    private final Subscription defaultSubscription;
+    private final Subscription[] subscriptions;
     private final Optional<Boolean> suspendsOnBadHostHealth;
 
     private QueueOptions(Builder builder) {
-        maxUnconfirmedMessages = builder.maxUnconfirmedMessages;
-        maxUnconfirmedBytes = builder.maxUnconfirmedBytes;
-        consumerPriority = builder.consumerPriority;
+        defaultSubscription = builder.defaultSubscriptionBuilder.build();
+        subscriptions = new Subscription[builder.subscriptions.size()];
+        builder.subscriptions.toArray(subscriptions);
         suspendsOnBadHostHealth = builder.suspendsOnBadHostHealth;
     }
 
     private QueueOptions() {
-        maxUnconfirmedMessages = Optional.empty();
-        maxUnconfirmedBytes = Optional.empty();
-        consumerPriority = Optional.empty();
+        defaultSubscription = Subscription.createDefault();
+        subscriptions = new Subscription[0];
         suspendsOnBadHostHealth = Optional.empty();
     }
 
     /**
      * Returns true if this {@code QueueOptions} is equal to the specified {@code obj}, false
-     * otherwise. Two {@code QueueOptions} are equal if they have equal properties.
+     * otherwise. Two {@code QueueOptions} are equal if they have equal properties, the
+     * subscriptions number is the same and the contained subscriptions are equal with the same
+     * order.
      *
      * @param obj {@code QueueOptions} object to compare with
      * @return boolean true if {@code QueueOptions} are equal, false otherwise
@@ -89,9 +94,8 @@ public class QueueOptions {
         if (!(obj instanceof QueueOptions)) return false;
         QueueOptions queueOptions = (QueueOptions) obj;
 
-        return getConsumerPriority() == queueOptions.getConsumerPriority()
-                && getMaxUnconfirmedBytes() == queueOptions.getMaxUnconfirmedBytes()
-                && getMaxUnconfirmedMessages() == queueOptions.getMaxUnconfirmedMessages()
+        return defaultSubscription.equals(queueOptions.defaultSubscription)
+                && Arrays.equals(subscriptions, queueOptions.subscriptions)
                 && getSuspendsOnBadHostHealth() == queueOptions.getSuspendsOnBadHostHealth();
     }
 
@@ -102,17 +106,14 @@ public class QueueOptions {
      */
     @Override
     public int hashCode() {
+        Long hash = (long) defaultSubscription.hashCode();
 
-        Long hash = (long) Long.hashCode(getMaxUnconfirmedMessages());
-        hash <<= Integer.SIZE;
-        hash |= (long) Long.hashCode(getMaxUnconfirmedBytes());
-        hash = (long) hash.hashCode();
-        hash <<= Integer.SIZE;
-        hash |= (long) Integer.hashCode(getConsumerPriority());
-        hash = (long) hash.hashCode();
         hash <<= Integer.SIZE;
         hash |= (long) Boolean.hashCode(getSuspendsOnBadHostHealth());
+        hash = (long) hash.hashCode();
 
+        hash <<= Integer.SIZE;
+        hash |= java.util.Arrays.hashCode(subscriptions);
         return hash.hashCode();
     }
 
@@ -123,7 +124,7 @@ public class QueueOptions {
      * @return long maximum number of outstanding messages
      */
     public long getMaxUnconfirmedMessages() {
-        return maxUnconfirmedMessages.orElse(k_MAX_UNCONFIRMED_MESSAGES_DEFAULT);
+        return defaultSubscription.getMaxUnconfirmedMessages();
     }
 
     /**
@@ -133,7 +134,7 @@ public class QueueOptions {
      * @return boolean true if {@code maxUnconfirmedMessages} has been set.
      */
     public boolean hasMaxUnconfirmedMessages() {
-        return maxUnconfirmedMessages.isPresent();
+        return defaultSubscription.hasMaxUnconfirmedMessages();
     }
 
     /**
@@ -143,7 +144,7 @@ public class QueueOptions {
      * @return long maximum accumulated bytes of all outstanding messages without being confirmed
      */
     public long getMaxUnconfirmedBytes() {
-        return maxUnconfirmedBytes.orElse(k_MAX_UNCONFIRMED_BYTES_DEFAULT);
+        return defaultSubscription.getMaxUnconfirmedBytes();
     }
 
     /**
@@ -153,7 +154,7 @@ public class QueueOptions {
      * @return boolean true if {@code maxUnconfirmedBytes} has been set.
      */
     public boolean hasMaxUnconfirmedBytes() {
-        return maxUnconfirmedBytes.isPresent();
+        return defaultSubscription.hasMaxUnconfirmedBytes();
     }
 
     /**
@@ -163,7 +164,7 @@ public class QueueOptions {
      * @return int priority of a consumer
      */
     public int getConsumerPriority() {
-        return consumerPriority.orElse(k_CONSUMER_PRIORITY_DEFAULT);
+        return defaultSubscription.getConsumerPriority();
     }
 
     /**
@@ -173,7 +174,7 @@ public class QueueOptions {
      * @return boolean true if {@code consumerPriority} has been set.
      */
     public boolean hasConsumerPriority() {
-        return consumerPriority.isPresent();
+        return defaultSubscription.hasConsumerPriority();
     }
 
     /**
@@ -194,6 +195,25 @@ public class QueueOptions {
      */
     public boolean hasSuspendsOnBadHostHealth() {
         return suspendsOnBadHostHealth.isPresent();
+    }
+
+    /**
+     * Returns an array of subscriptions set for this QueueOptions.
+     *
+     * @return Subscription[] array of subscriptions
+     */
+    public Subscription[] getSubscriptions() {
+        return subscriptions;
+    }
+
+    /**
+     * Returns whether {@code subscriptions} were specified for this object, or whether it holds an
+     * empty subscriptions array.
+     *
+     * @return boolean true if {@code subscriptions} are not empty.
+     */
+    public boolean hasSubscriptions() {
+        return subscriptions.length > 0;
     }
 
     /**
@@ -226,15 +246,13 @@ public class QueueOptions {
                 .append(", suspendsOnBadHostHealth: ")
                 .append(getSuspendsOnBadHostHealth())
                 .append(" ]");
-
         return sb.toString();
     }
 
     /** A helper class to create immutable {@code QueueOptions} with custom settings. */
     public static class Builder {
-        private Optional<Long> maxUnconfirmedMessages;
-        private Optional<Long> maxUnconfirmedBytes;
-        private Optional<Integer> consumerPriority;
+        private final Subscription.Builder defaultSubscriptionBuilder;
+        private final List<Subscription> subscriptions;
         private Optional<Boolean> suspendsOnBadHostHealth;
 
         /**
@@ -254,7 +272,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder setMaxUnconfirmedMessages(long maxUnconfirmedMessages) {
-            this.maxUnconfirmedMessages = Optional.of(maxUnconfirmedMessages);
+            this.defaultSubscriptionBuilder.setMaxUnconfirmedMessages(maxUnconfirmedMessages);
             return this;
         }
 
@@ -267,7 +285,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder setMaxUnconfirmedBytes(long maxUnconfirmedBytes) {
-            this.maxUnconfirmedBytes = Optional.of(maxUnconfirmedBytes);
+            this.defaultSubscriptionBuilder.setMaxUnconfirmedBytes(maxUnconfirmedBytes);
             return this;
         }
 
@@ -278,7 +296,7 @@ public class QueueOptions {
          * @return Builder this object
          */
         public Builder setConsumerPriority(int consumerPriority) {
-            this.consumerPriority = Optional.of(consumerPriority);
+            this.defaultSubscriptionBuilder.setConsumerPriority(consumerPriority);
             return this;
         }
 
@@ -291,6 +309,29 @@ public class QueueOptions {
          */
         public Builder setSuspendsOnBadHostHealth(boolean suspendsOnBadHostHealth) {
             this.suspendsOnBadHostHealth = Optional.of(suspendsOnBadHostHealth);
+            return this;
+        }
+
+        /**
+         * Adds subscription parameters for a specified subscription. Update subscription parameters
+         * if subscription with current 'subscription.getId()' previously added.
+         *
+         * @param subscription subscription parameters
+         * @return Builder this object
+         */
+        public Builder addSubscription(Subscription subscription) {
+            this.subscriptions.add(subscription);
+            return this;
+        }
+
+        /**
+         * Remove subscription parameters, if they are present in this Builder.
+         *
+         * @param subscription subscription parameters
+         * @return Builder this object
+         */
+        public Builder removeSubscription(Subscription subscription) {
+            this.subscriptions.remove(subscription);
             return this;
         }
 
@@ -314,13 +355,16 @@ public class QueueOptions {
             if (options.hasSuspendsOnBadHostHealth()) {
                 setSuspendsOnBadHostHealth(options.getSuspendsOnBadHostHealth());
             }
+            if (options.hasSubscriptions()) {
+                subscriptions.clear();
+                subscriptions.addAll(Arrays.asList(options.subscriptions));
+            }
             return this;
         }
 
         private Builder() {
-            maxUnconfirmedMessages = Optional.empty();
-            maxUnconfirmedBytes = Optional.empty();
-            consumerPriority = Optional.empty();
+            defaultSubscriptionBuilder = Subscription.builder();
+            subscriptions = new ArrayList<>();
             suspendsOnBadHostHealth = Optional.empty();
         }
     }

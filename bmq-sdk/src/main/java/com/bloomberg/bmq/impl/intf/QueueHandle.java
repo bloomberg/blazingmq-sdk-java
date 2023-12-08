@@ -19,6 +19,7 @@ import com.bloomberg.bmq.QueueOptions;
 import com.bloomberg.bmq.ResultCodes.CloseQueueCode;
 import com.bloomberg.bmq.ResultCodes.ConfigureQueueCode;
 import com.bloomberg.bmq.ResultCodes.OpenQueueCode;
+import com.bloomberg.bmq.Subscription;
 import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.impl.BmqFuture;
 import com.bloomberg.bmq.impl.QueueId;
@@ -27,11 +28,14 @@ import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
 import com.bloomberg.bmq.impl.infr.proto.AckMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import java.time.Duration;
+import java.util.Map;
 
 public interface QueueHandle {
     int getQueueId();
 
     int getSubQueueId();
+
+    Map<Integer, Subscription> getSubscriptionIdMap();
 
     QueueId getFullQueueId();
 

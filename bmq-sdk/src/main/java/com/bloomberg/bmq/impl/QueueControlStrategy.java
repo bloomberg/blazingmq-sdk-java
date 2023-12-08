@@ -22,8 +22,8 @@ import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.impl.events.QueueControlEvent;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.msg.SubQueueIdInfo;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
 import com.bloomberg.bmq.impl.infr.util.Argument;
@@ -307,30 +307,34 @@ public abstract class QueueControlStrategy<RESULT extends GenericCode> {
 
     protected RequestManager.Request createConfigureQueueRequest() {
         QueueImpl q = getQueue();
-        RequestManager.Request req = getRequestManager().createRequest();
-        ControlMessageChoice msg = new ControlMessageChoice();
-        msg.makeConfigureQueueStream();
-        req.setRequest(msg);
-        req.request().configureQueueStream().setId(q.getQueueId());
+
         SubQueueIdInfo subQueueIdInfo = null;
         if (q.getSubQueueId() != QueueId.k_DEFAULT_SUBQUEUE_ID) {
             subQueueIdInfo = new SubQueueIdInfo(q.getSubQueueId(), q.getUri().id());
         }
 
-        QueueStreamParameters params = createParameters(subQueueIdInfo);
-        req.request().configureQueueStream().setStreamParameters(params);
+        ControlMessageChoice msg = new ControlMessageChoice();
+        msg.makeConfigureStream();
+
+        RequestManager.Request req = getRequestManager().createRequest();
+        req.setRequest(msg);
+        req.request().configureStream().setId(q.getQueueId());
+        StreamParameters params = createStreamParameters(subQueueIdInfo);
+        req.request().configureStream().setStreamParameters(params);
+
         return req;
     }
 
-    protected QueueStreamParameters createParameters(SubQueueIdInfo subQueueIdInfo) {
-        QueueStreamParameters params;
+    protected StreamParameters createStreamParameters(SubQueueIdInfo subQueueIdInfo) {
+        StreamParameters params;
         Long flags = getQueue().getParameters().getFlags();
-        int qId = getQueue().getQueueId();
         QueueOptions ops = getQueueOptions();
         if (QueueFlags.isReader(flags)) {
-            params = QueueStreamParameters.createParameters(qId, subQueueIdInfo, ops);
+            params =
+                    StreamParameters.createParameters(
+                            subQueueIdInfo, ops, getQueue().getSubscriptionIdMap());
         } else {
-            params = QueueStreamParameters.createDeconfigureParameters(qId, subQueueIdInfo);
+            params = StreamParameters.createDeconfigureParameters(subQueueIdInfo);
         }
         return params;
     }

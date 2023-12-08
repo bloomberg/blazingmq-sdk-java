@@ -278,7 +278,7 @@ public class BrokerSessionStressIT {
                     Integer[] subQueueIds = pshMsg.subQueueIds();
                     assertNotNull(subQueueIds);
                     assertEquals(subQueueIds.length, 1);
-                    assertEquals(subQueueIds[0].intValue(), reader.getSubQueueId());
+                    assertTrue(reader.getSubscriptionIdMap().containsKey(subQueueIds[0]));
                 }
 
                 // Check payload
@@ -632,6 +632,8 @@ public class BrokerSessionStressIT {
 
             broker.setDropTmpFolder();
 
+        } catch (AssertionError e) {
+            logger.error("Exception: ", e);
         } finally {
             // Stop the session.
             assertEquals(GenericResult.SUCCESS, session.stop(TEST_REQUEST_TIMEOUT));

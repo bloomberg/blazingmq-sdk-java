@@ -18,13 +18,13 @@ package com.bloomberg.bmq.impl;
 import com.bloomberg.bmq.QueueOptions;
 import com.bloomberg.bmq.ResultCodes.ConfigureQueueCode;
 import com.bloomberg.bmq.SessionOptions;
-import com.bloomberg.bmq.impl.infr.msg.ConfigureQueueStream;
-import com.bloomberg.bmq.impl.infr.msg.ConfigureQueueStreamResponse;
+import com.bloomberg.bmq.impl.infr.msg.ConfigureStream;
+import com.bloomberg.bmq.impl.infr.msg.ConfigureStreamResponse;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
 import com.bloomberg.bmq.impl.infr.msg.OpenQueue;
 import com.bloomberg.bmq.impl.infr.msg.OpenQueueResponse;
 import com.bloomberg.bmq.impl.infr.msg.QueueHandleParameters;
-import com.bloomberg.bmq.impl.infr.msg.QueueStreamParameters;
+import com.bloomberg.bmq.impl.infr.msg.StreamParameters;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.bloomberg.bmq.impl.intf.QueueState;
 import java.lang.invoke.MethodHandles;
@@ -59,8 +59,8 @@ public final class LateResponseHandler {
         Argument.expectNonNull(controlMessageChoice, "controlMessageChoice");
         if (controlMessageChoice.isOpenQueueResponseValue()) {
             handleOpenQueueResponse(controlMessageChoice.openQueueResponse());
-        } else if (controlMessageChoice.isConfigureQueueStreamResponseValue()) {
-            handleConfigureQueueResponse(controlMessageChoice.configureQueueStreamResponse());
+        } else if (controlMessageChoice.isConfigureStreamResponseValue()) {
+            handleConfigureStreamResponse(controlMessageChoice.configureStreamResponse());
         } else {
             logger.error("Inappropriate late response received: {}", controlMessageChoice);
         }
@@ -88,30 +88,28 @@ public final class LateResponseHandler {
         strategyFactory.createOnLateOpenRespCloseSequence(queue).start();
     }
 
-    private void handleConfigureQueueResponse(
-            ConfigureQueueStreamResponse configureQueueStreamResponse) {
-        if (configureQueueStreamResponse == null) {
+    private void handleConfigureStreamResponse(ConfigureStreamResponse configureStreamResponse) {
+        if (configureStreamResponse == null) {
             logger.error("Malformed late configureQueueStreamResponse.");
             return;
         }
-        logger.debug("Late CONFIGURE response: {}", configureQueueStreamResponse);
-        ConfigureQueueStream originalRequest = configureQueueStreamResponse.getOriginalRequest();
+        logger.debug("Late CONFIGURE response: {}", configureStreamResponse);
+        ConfigureStream originalRequest = configureStreamResponse.getOriginalRequest();
         if (originalRequest == null) {
-            logger.error("Malformed late configureQueueStreamResponse. Missed OriginalRequest.");
+            logger.error("Malformed late configureStreamResponse. Missed OriginalRequest.");
             return;
         }
-        QueueStreamParameters parameters = originalRequest.streamParameters();
+        StreamParameters parameters = originalRequest.streamParameters();
         if (parameters == null) {
-            logger.error(
-                    "Malformed late configureQueueStreamResponse. Missed QueueHandleParameters.");
+            logger.error("Malformed late configureStreamResponse. Missed QueueHandleParameters.");
             return;
-        }
-        int qId = parameters.qId();
-        int subQId = 0;
-        if (parameters.subIdInfo() != null) {
-            subQId = parameters.subIdInfo().subId();
         }
 
+        int qId = originalRequest.id();
+        Integer subQId = queueStateManager.findSubQId(parameters.appId());
+        if (subQId == null) {
+            subQId = QueueId.k_DEFAULT_SUBQUEUE_ID;
+        }
         QueueId queueId = QueueId.createInstance(qId, subQId); // returns not-null QueueId
 
         QueueImpl queue = queueStateManager.findByQueueId(queueId);
@@ -143,8 +141,26 @@ public final class LateResponseHandler {
         }
     }
 
-    private void onStandaloneConfigurationResponse(
-            QueueImpl queue, QueueStreamParameters parameters) {
+    private boolean areParametersInSync(
+            QueueOptions currentQueueOptions, StreamParameters parameters) {
+
+        StreamParameters currentStreamParameters =
+                StreamParameters.createParameters(null, currentQueueOptions, null);
+
+        if (currentStreamParameters.subscriptions().length != parameters.subscriptions().length) {
+            return false;
+        }
+
+        for (int i = 0; i < parameters.subscriptions().length; i++) {
+            if (!currentStreamParameters.subscriptions()[i].equals(parameters.subscriptions()[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void onStandaloneConfigurationResponse(QueueImpl queue, StreamParameters parameters) {
         Argument.expectCondition(
                 queue.getState() != QueueState.e_CLOSED, "'queue' must not be closed");
         if (queue.getState() != QueueState.e_OPENED) {
@@ -161,15 +177,7 @@ public final class LateResponseHandler {
         // Check if parameters applied to server is similar to parameters stored in queue.
         // Build new options (apply values from 'parameters' on top of
         // 'currentQueueOptions' options) and compare with 'currentQueueOptions'.
-        boolean parametersInSync =
-                QueueOptions.builder()
-                        .merge(currentQueueOptions)
-                        .setMaxUnconfirmedMessages(parameters.maxUnconfirmedMessages())
-                        .setMaxUnconfirmedBytes(parameters.maxUnconfirmedBytes())
-                        .setConsumerPriority(parameters.consumerPriority())
-                        .build()
-                        .equals(currentQueueOptions);
-
+        boolean parametersInSync = areParametersInSync(currentQueueOptions, parameters);
         if (!parametersInSync) {
             // If actual parameters are not the same as received in late configure response
             // we should send the update to server with current parameters.

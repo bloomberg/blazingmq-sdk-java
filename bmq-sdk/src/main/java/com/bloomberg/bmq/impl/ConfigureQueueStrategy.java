@@ -83,6 +83,9 @@ public abstract class ConfigureQueueStrategy extends QueueControlStrategy<Config
         logger.info("Async notifier for response received: {}", r.response());
 
         StatusCategory statusCategory = extractResponseStatus(r);
+
+        getQueueStateManager().onConfigureStreamSent(getQueue());
+
         completeConfiguring(ResultCodeUtils.toGenericResult(statusCategory));
     }
 

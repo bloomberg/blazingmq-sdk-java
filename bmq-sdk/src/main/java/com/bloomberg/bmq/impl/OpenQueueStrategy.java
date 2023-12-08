@@ -190,6 +190,7 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
         // Consider stream params as applied on the broker side and store in queue instance
         storeOptionsToQueue();
         setQueueState(QueueState.e_OPENED);
+        getQueueStateManager().onConfigureStreamSent(getQueue());
         resultHook(OpenQueueResult.SUCCESS);
     }
 

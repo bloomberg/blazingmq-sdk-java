@@ -15,18 +15,13 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-public class QueueStreamParameters {
-
-    public static final int CONSUMER_PRIORITY_INVALID = Integer.MIN_VALUE;
-
-    private SubQueueIdInfo subIdInfo;
+public class ConsumerInfo {
     private long maxUnconfirmedMessages;
     private long maxUnconfirmedBytes;
     private int consumerPriority;
     private int consumerPriorityCount;
-    private int qId;
 
-    public QueueStreamParameters() {
+    public ConsumerInfo() {
         init();
     }
 
@@ -37,18 +32,8 @@ public class QueueStreamParameters {
     private void init() {
         maxUnconfirmedMessages = 0L;
         maxUnconfirmedBytes = 0L;
-        subIdInfo = null;
         consumerPriority = 0;
         consumerPriorityCount = 0;
-        qId = 0;
-    }
-
-    public SubQueueIdInfo subIdInfo() {
-        return subIdInfo;
-    }
-
-    public void setSubIdInfo(SubQueueIdInfo value) {
-        subIdInfo = value;
     }
 
     public long maxUnconfirmedMessages() {
@@ -84,26 +69,6 @@ public class QueueStreamParameters {
     }
 
     public Object createNewInstance() {
-        return new QueueStreamParameters();
-    }
-
-    public int qId() {
-        return qId;
-    }
-
-    public void setQId(int qId) {
-        this.qId = qId;
-    }
-
-    public static QueueStreamParameters createDeconfigureParameters(
-            int qId, SubQueueIdInfo subQueueIdInfo) {
-        QueueStreamParameters params = new QueueStreamParameters();
-        params.setQId(qId);
-        params.setSubIdInfo(subQueueIdInfo);
-        params.setConsumerPriority(CONSUMER_PRIORITY_INVALID);
-        params.setConsumerPriorityCount(0);
-        params.setMaxUnconfirmedBytes(0);
-        params.setMaxUnconfirmedMessages(0);
-        return params;
+        return new ConsumerInfo();
     }
 }
