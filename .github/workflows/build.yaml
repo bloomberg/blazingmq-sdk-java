@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build_and_test:
-    name: "Check if BlazingMQ Java SDK can build and pass unit tests with JDK ${{ matrix.Java }}"
+    name: "Build & UTs: JDK ${{ matrix.Java }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -29,7 +29,7 @@ jobs:
       run:  mvn --batch-mode -Dspotbugs.skip=true test
 
   integration_test:
-    name: "Check if BlazingMQ Java SDK pass integration tests with JDK ${{ matrix.Java }}"
+    name: "ITs: JDK ${{ matrix.Java }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
