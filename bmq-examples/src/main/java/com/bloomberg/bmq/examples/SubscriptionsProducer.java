@@ -230,7 +230,7 @@ public class SubscriptionsProducer
         // Enable compression for this message.
         msg.setCompressionAlgorithm(CompressionAlgorithm.Zlib);
 
-        // We will associated some properties with the published message
+        // We associate some properties with the published message
         MessageProperties mp = msg.messageProperties();
         mp.setPropertyAsString("routingId", "42");
         mp.setPropertyAsInt64("timestamp", new Date().getTime());
