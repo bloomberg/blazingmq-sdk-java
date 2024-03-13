@@ -145,6 +145,8 @@ public class SubscriptionsProducer
             logger.error("Unexpected CorrelationId: {}", corrId);
             return;
         }
+        correlationIds.remove(corrId);
+
         Object userData = corrId.userData();
         if (userData != null) {
             logger.info("*** Correlation ID User Data: {}", userData);
