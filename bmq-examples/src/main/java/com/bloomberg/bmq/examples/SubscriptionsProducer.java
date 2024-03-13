@@ -141,11 +141,10 @@ public class SubscriptionsProducer
         // to the CorrelationId from the initial PUT message
         CorrelationId corrId = msg.correlationId();
         logger.info("*** Correlation ID: {}", corrId);
-        if (!correlationIds.contains(corrId)) {
+        if (!correlationIds.remove(corrId)) {
             logger.error("Unexpected CorrelationId: {}", corrId);
             return;
         }
-        correlationIds.remove(corrId);
 
         Object userData = corrId.userData();
         if (userData != null) {
