@@ -141,10 +141,11 @@ public class SubscriptionsProducer
         // to the CorrelationId from the initial PUT message
         CorrelationId corrId = msg.correlationId();
         logger.info("*** Correlation ID: {}", corrId);
-        if (!correlationIds.contains(corrId)) {
+        if (!correlationIds.remove(corrId)) {
             logger.error("Unexpected CorrelationId: {}", corrId);
             return;
         }
+
         Object userData = corrId.userData();
         if (userData != null) {
             logger.info("*** Correlation ID User Data: {}", userData);
@@ -229,7 +230,7 @@ public class SubscriptionsProducer
         // Enable compression for this message.
         msg.setCompressionAlgorithm(CompressionAlgorithm.Zlib);
 
-        // We will associated some properties with the published message
+        // We associate some properties with the published message
         MessageProperties mp = msg.messageProperties();
         mp.setPropertyAsString("routingId", "42");
         mp.setPropertyAsInt64("timestamp", new Date().getTime());

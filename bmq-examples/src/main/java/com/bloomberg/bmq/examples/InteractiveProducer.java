@@ -134,10 +134,11 @@ public class InteractiveProducer
         // to the CorrelationId from the initial PUT message
         CorrelationId corrId = msg.correlationId();
         logger.info("*** Correlation ID: {}", corrId);
-        if (!correlationIds.contains(corrId)) {
+        if (!correlationIds.remove(corrId)) {
             logger.error("Unexpected CorrelationId: {}", corrId);
             return;
         }
+
         Object userData = corrId.userData();
         if (userData != null) {
             logger.info("*** Correlation ID User Data: {}", userData);
