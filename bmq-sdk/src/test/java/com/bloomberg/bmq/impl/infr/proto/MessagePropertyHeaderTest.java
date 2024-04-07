@@ -15,22 +15,22 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessagePropertyHeaderTest {
+class MessagePropertyHeaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testGettersSetters() {
+    void testGettersSetters() {
         MessagePropertyHeader mph = new MessagePropertyHeader();
         assertEquals(0, mph.propertyType());
         assertEquals(0, mph.propertyValueLength());
@@ -56,7 +56,7 @@ public class MessagePropertyHeaderTest {
     }
 
     @Test
-    public void testStreamInStreamOut() throws IOException {
+    void testStreamInStreamOut() throws IOException {
         final int valueLength = (1 << 26) - 1; // max per protocol
         final int nameLength = (1 << 12) - 1; // max per protocol
 

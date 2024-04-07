@@ -15,9 +15,9 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.CorrelationId;
 import com.bloomberg.bmq.impl.CorrelationIdImpl;
@@ -26,16 +26,16 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutEventImplBuilderTest {
+class PutEventImplBuilderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testErrorPutMessage() throws IOException {
+    void testErrorPutMessage() throws IOException {
         for (boolean isOldStyleProperties : new boolean[] {false, true}) {
             PutMessageImpl putMsg = new PutMessageImpl();
             PutEventBuilder builder = new PutEventBuilder();
@@ -96,7 +96,7 @@ public class PutEventImplBuilderTest {
     }
 
     @Test
-    public void testBigPutEvent() throws IOException {
+    void testBigPutEvent() throws IOException {
         // Check that ByteBuffer limit is honored when Put event is being built
 
         for (boolean isOldStyleProperties : new boolean[] {false, true}) {
@@ -132,7 +132,7 @@ public class PutEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildPutMessageWithProperties() throws IOException {
+    void testBuildPutMessageWithProperties() throws IOException {
         final String k = "abcdefghijklmnopqrstuvwxyz";
         final ByteBuffer b = ByteBuffer.wrap(k.getBytes());
 

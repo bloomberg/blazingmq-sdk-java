@@ -15,25 +15,25 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OptionsTest {
+class OptionsTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testStreamInIds() throws IOException {
+    void testStreamInIds() throws IOException {
         ByteBuffer bb =
                 ByteBuffer.wrap(
                         new byte[] {
@@ -62,7 +62,7 @@ public class OptionsTest {
     }
 
     @Test
-    public void testStreamInInfos() throws IOException {
+    void testStreamInInfos() throws IOException {
         ByteBuffer bb =
                 ByteBuffer.wrap(
                         new byte[] {
@@ -97,7 +97,7 @@ public class OptionsTest {
     }
 
     @Test
-    public void testStreamInInfosIds() throws IOException {
+    void testStreamInInfosIds() throws IOException {
         ByteBuffer bb =
                 ByteBuffer.wrap(
                         new byte[] {

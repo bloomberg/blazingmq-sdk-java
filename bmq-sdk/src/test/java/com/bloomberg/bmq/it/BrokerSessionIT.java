@@ -15,12 +15,12 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -86,7 +86,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,11 +190,11 @@ public class BrokerSessionIT {
             QueueHandle queue) {
         assertNotNull(event);
         assertTrue(
+                event instanceof QueueControlEvent,
                 "Expected 'QueueControlEvent', received '"
                         + event.getClass().getName()
                         + "': "
-                        + event,
-                event instanceof QueueControlEvent);
+                        + event);
 
         QueueControlEvent queueControlEvent = (QueueControlEvent) event;
         assertEquals(eventType, queueControlEvent.getEventType());
@@ -204,11 +205,11 @@ public class BrokerSessionIT {
     private static void verifyBrokerSessionEvent(Event event, BrokerSessionEvent.Type eventType) {
         assertNotNull(event);
         assertTrue(
+                event instanceof BrokerSessionEvent,
                 "Expected 'BrokerSessionEvent', received '"
                         + event.getClass().getName()
                         + "': "
-                        + event,
-                event instanceof BrokerSessionEvent);
+                        + event);
 
         BrokerSessionEvent brokerSessionEvent = (BrokerSessionEvent) event;
         assertEquals(eventType, brokerSessionEvent.getEventType());
@@ -239,7 +240,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void openConfigureCloseQueueAsyncTest() {
+    void openConfigureCloseQueueAsyncTest() {
         logger.info("=================================================================");
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueAsyncTest.");
         logger.info("=================================================================");
@@ -290,7 +291,7 @@ public class BrokerSessionIT {
             assertEquals(1, events.size());
             Event event = events.pollLast();
             assertNotNull(event);
-            assertEquals(event.getClass(), QueueControlEvent.class);
+            assertEquals(QueueControlEvent.class, event.getClass());
             QueueControlEvent queueControlEvent = (QueueControlEvent) event;
             assertEquals(
                     QueueControlEvent.Type.e_QUEUE_OPEN_RESULT, queueControlEvent.getEventType());
@@ -307,7 +308,7 @@ public class BrokerSessionIT {
             assertEquals(1, events.size());
             event = events.pollLast();
             assertNotNull(event);
-            assertEquals(event.getClass(), QueueControlEvent.class);
+            assertEquals(QueueControlEvent.class, event.getClass());
             queueControlEvent = (QueueControlEvent) event;
             assertEquals(
                     QueueControlEvent.Type.e_QUEUE_CONFIGURE_RESULT,
@@ -325,7 +326,7 @@ public class BrokerSessionIT {
             assertEquals(1, events.size());
             event = events.pollLast();
             assertNotNull(event);
-            assertEquals(event.getClass(), QueueControlEvent.class);
+            assertEquals(QueueControlEvent.class, event.getClass());
             queueControlEvent = (QueueControlEvent) event;
             assertEquals(
                     QueueControlEvent.Type.e_QUEUE_CLOSE_RESULT, queueControlEvent.getEventType());
@@ -370,7 +371,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void openConfigureCloseQueueTest() {
+    void openConfigureCloseQueueTest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueTest.");
         logger.info("============================================================");
@@ -471,7 +472,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void pushMessageTest() throws IOException {
+    void pushMessageTest() throws IOException {
         logger.info("============================================================");
         logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueTest.");
         logger.info("============================================================");
@@ -547,7 +548,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void queueConfigureNotSupported() {
+    void queueConfigureNotSupported() {
         logger.info("===========================================================");
         logger.info("BEGIN Testing BrokerSessionIT queueConfigureNotSupported.");
         logger.info("===========================================================");
@@ -613,7 +614,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void queueOpenAlreadyInProgress() {
+    void queueOpenAlreadyInProgress() {
         logger.info("===========================================================");
         logger.info("BEGIN Testing BrokerSessionIT queueOpenAlreadyInProgress.");
         logger.info("===========================================================");
@@ -672,7 +673,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void startSessionTimeoutTest() {
+    void startSessionTimeoutTest() {
 
         logger.info("========================================================");
         logger.info("BEGIN Testing BrokerSessionIT startSessionTimeoutTest.");
@@ -718,7 +719,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void openQueueTimeoutTest() {
+    void openQueueTimeoutTest() {
 
         logger.info("===================================================");
         logger.info("BEGIN Testing BrokerSessionIT openQueueTimeoutTest.");
@@ -814,7 +815,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void openQueueConfigureTimeoutTest() {
+    void openQueueConfigureTimeoutTest() {
 
         logger.info("============================================================");
         logger.info("BEGIN Testing BrokerSessionIT openQueueConfigureTimeoutTest.");
@@ -920,7 +921,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void openQueueConfigureCanceledTest() {
+    void openQueueConfigureCanceledTest() {
 
         logger.info("=============================================================");
         logger.info("BEGIN Testing BrokerSessionIT openQueueConfigureCanceledTest.");
@@ -1044,7 +1045,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueConfigurationFailedTest() {
+    void closeQueueConfigurationFailedTest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationFailedTest.");
         logger.info("==================================================================");
@@ -1154,7 +1155,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueConfigurationTimeoutTest() {
+    void closeQueueConfigurationTimeoutTest() {
         logger.info("=================================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationTimeoutTest.");
         logger.info("=================================================================");
@@ -1276,7 +1277,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueConfigurationCanceledTest() {
+    void closeQueueConfigurationCanceledTest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationCanceledTest.");
         logger.info("==================================================================");
@@ -1408,7 +1409,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sequenceTimeoutTest() {
+    void sequenceTimeoutTest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing BrokerSessionIT sequenceTimeoutTest.");
         logger.info("============================================================");
@@ -1516,7 +1517,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void lateOpenQueueResponseTest() {
+    void lateOpenQueueResponseTest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing BrokerSessionIT lateOpenQueueResponseTest.");
         logger.info("============================================================");
@@ -1683,7 +1684,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void lateConfigureOpenQueueResponseTest() {
+    void lateConfigureOpenQueueResponseTest() {
         logger.info("===================================================================");
         logger.info("BEGIN Testing BrokerSessionIT lateConfigureOpenQueueResponseTest.");
         logger.info("===================================================================");
@@ -1846,7 +1847,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void lateStandaloneConfigureResponseTest() {
+    void lateStandaloneConfigureResponseTest() {
         logger.info("===================================================================");
         logger.info("BEGIN Testing BrokerSessionIT lateStandaloneConfigureResponseTest.");
         logger.info("===================================================================");
@@ -1990,7 +1991,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void lateCloseQueueConfigureResponseTest() {
+    void lateCloseQueueConfigureResponseTest() {
         logger.info("===================================================================");
         logger.info("BEGIN Testing BrokerSessionIT lateCloseQueueConfigureResponseTest.");
         logger.info("===================================================================");
@@ -2409,7 +2410,7 @@ public class BrokerSessionIT {
     }
 
     @Test
-    public void stateRestoredWithoutQueuesTest() {
+    void stateRestoredWithoutQueuesTest() {
         logger.info("===============================================================");
         logger.info("BEGIN Testing BrokerSessionIT stateRestoredWithoutQueuesTest.");
         logger.info("===============================================================");
@@ -2420,7 +2421,7 @@ public class BrokerSessionIT {
     }
 
     @Test
-    public void multipleQueuesReopenTest() {
+    void multipleQueuesReopenTest() {
         logger.info("=========================================================");
         logger.info("BEGIN Testing BrokerSessionIT multipleQueuesReopenTest.");
         logger.info("=========================================================");
@@ -2447,7 +2448,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueOnStoppedSession() {
+    void closeQueueOnStoppedSession() {
         logger.info("===========================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueOnStoppedSession.");
         logger.info("===========================================================");
@@ -2538,7 +2539,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void closeQueuePreconditionFailures() {
+    void closeQueuePreconditionFailures() {
         logger.info("===============================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueuePreconditionFailures.");
         logger.info("===============================================================");
@@ -2688,9 +2689,9 @@ public class BrokerSessionIT {
      *   <li>stop and linger broker session and stop server
      * </ul>
      */
-    // Temporarily disable this test
-    // Until achieved more stable repeatability on slow hosts
-    // @Test
+    @Test
+    @Disabled(
+            "Temporarily disable this test until achieved more stable repeatability on slow hosts")
     public void closeQueueOnPendingConfigureRequest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueOnPendingConfigureRequest.");
@@ -2893,7 +2894,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueOnDeferredResumeRequest() {
+    void closeQueueOnDeferredResumeRequest() {
         logger.info("================================================================");
         logger.info("BEGIN Testing BrokerSessionIT closeQueueOnDeferredResumeRequest.");
         logger.info("================================================================");
@@ -3011,7 +3012,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void configureQueuePreconditionFailures() {
+    void configureQueuePreconditionFailures() {
         logger.info("===================================================================");
         logger.info("BEGIN Testing BrokerSessionIT configureQueuePreconditionFailures.");
         logger.info("===================================================================");
@@ -3153,7 +3154,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void configureSuspendedQueue() throws ExecutionException, InterruptedException {
+    void configureSuspendedQueue() throws ExecutionException, InterruptedException {
         logger.info("======================================================");
         logger.info("BEGIN Testing BrokerSessionIT configureSuspendedQueue.");
         logger.info("======================================================");
@@ -3506,7 +3507,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void configureOptionsAndParameters() throws ExecutionException, InterruptedException {
+    void configureOptionsAndParameters() throws ExecutionException, InterruptedException {
         logger.info("======================================================");
         logger.info("BEGIN Testing BrokerSessionIT configureOptionsAndParameters.");
         logger.info("======================================================");
@@ -3899,7 +3900,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void queueOpenErrorTest() throws BMQException {
+    void queueOpenErrorTest() throws BMQException {
         logger.info("================================================");
         logger.info("BEGIN Testing BrokerSessionIT queueOpenErrorTest");
         logger.info("================================================");
@@ -3973,7 +3974,7 @@ public class BrokerSessionIT {
             assertEquals(1, events.size());
             Event event = events.pollLast();
             assertNotNull(event);
-            assertEquals(event.getClass(), QueueControlEvent.class);
+            assertEquals(QueueControlEvent.class, event.getClass());
 
             QueueControlEvent queueControlEvent = (QueueControlEvent) event;
 
@@ -4005,7 +4006,7 @@ public class BrokerSessionIT {
             assertEquals(1, events.size());
             event = events.pollLast();
             assertNotNull(event);
-            assertEquals(event.getClass(), QueueControlEvent.class);
+            assertEquals(QueueControlEvent.class, event.getClass());
 
             queueControlEvent = (QueueControlEvent) event;
 
@@ -4051,7 +4052,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void openCloseMultipleSubqueuesTest() {
+    void openCloseMultipleSubqueuesTest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing BrokerSessionIT openCloseMultipleSubqueuesTest");
         logger.info("============================================================");
@@ -4581,7 +4582,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopTest() throws ExecutionException, InterruptedException {
+    void sessionStopTest() throws ExecutionException, InterruptedException {
         logger.info("==============================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopTest.");
         logger.info("==============================================");
@@ -4784,7 +4785,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopNullTimeoutTest() {
+    void sessionStopNullTimeoutTest() {
         logger.info("=========================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopNullTimeoutTest.");
         logger.info("=========================================================");
@@ -4864,7 +4865,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopAsyncTest() throws IOException {
+    void sessionStopAsyncTest() throws IOException {
         logger.info("===================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncTest.");
         logger.info("===================================================");
@@ -5054,7 +5055,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopAsyncNullTimeoutTest() {
+    void sessionStopAsyncNullTimeoutTest() {
         logger.info("==============================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncNullTimeoutTest.");
         logger.info("==============================================================");
@@ -5138,7 +5139,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopTimeoutTest() {
+    void sessionStopTimeoutTest() {
         logger.info("=====================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopTimeoutTest.");
         logger.info("=====================================================");
@@ -5221,7 +5222,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopAsyncTimeoutTest() {
+    void sessionStopAsyncTimeoutTest() {
         logger.info("==========================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncTimeoutTest.");
         logger.info("==========================================================");
@@ -5320,7 +5321,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopInProgressTest() {
+    void sessionStopInProgressTest() {
         logger.info("========================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopInProgressTest.");
         logger.info("========================================================");
@@ -5409,7 +5410,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void sessionStopAsyncInProgressTest() {
+    void sessionStopAsyncInProgressTest() {
         logger.info("=============================================================");
         logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncInProgressTest.");
         logger.info("=============================================================");
@@ -5511,7 +5512,7 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    public void inboundWatermarksTest() throws TimeoutException, InterruptedException {
+    void inboundWatermarksTest() throws TimeoutException, InterruptedException {
         logger.info("====================================================");
         logger.info("BEGIN Testing BrokerSessionIT inboundWatermarksTest.");
         logger.info("====================================================");

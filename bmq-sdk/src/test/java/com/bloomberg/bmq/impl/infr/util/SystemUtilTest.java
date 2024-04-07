@@ -15,20 +15,20 @@
  */
 package com.bloomberg.bmq.impl.infr.util;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SystemUtilTest {
+class SystemUtilTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testJavaVersions() {
+    void testJavaVersions() {
         assertTrue(
                 SystemUtil.JavaVersion.JAVA_UNSUPPORTED.compareTo(SystemUtil.JavaVersion.JAVA_8)
                         < 0);
@@ -37,7 +37,7 @@ public class SystemUtilTest {
     }
 
     @Test
-    public void testVersion() {
+    void testVersion() {
         SystemUtil.JavaVersion v = SystemUtil.getJavaVersion();
 
         logger.info("JAVA ver.: {}", v);
@@ -46,7 +46,7 @@ public class SystemUtilTest {
     }
 
     @Test
-    public void testPid() {
+    void testPid() {
         int p = SystemUtil.getProcessId();
 
         logger.info("PID: {}", p);
@@ -55,12 +55,12 @@ public class SystemUtilTest {
     }
 
     @Test
-    public void testProcName() {
+    void testProcName() {
         assertTrue(SystemUtil.getProcessName().length() > 0);
     }
 
     @Test
-    public void testOsName() {
+    void testOsName() {
         logger.info("OS: [{}]", SystemUtil.getOsName());
         assertTrue(SystemUtil.getOsName().length() > 0);
     }

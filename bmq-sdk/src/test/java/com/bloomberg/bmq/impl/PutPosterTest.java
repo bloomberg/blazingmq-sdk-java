@@ -15,10 +15,11 @@
  */
 package com.bloomberg.bmq.impl;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.mock;
@@ -50,16 +51,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutPosterTest {
+class PutPosterTest {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         try {
             new PutPoster(null, null);
             fail(); // Should not get here
@@ -86,7 +87,7 @@ public class PutPosterTest {
     }
 
     @Test
-    public void testPostEmptyArray() {
+    void testPostEmptyArray() {
         BrokerConnection mockedConnection = mock(BrokerConnection.class);
         PutPoster poster = new PutPoster(mockedConnection, new EventsStats());
 
@@ -118,7 +119,7 @@ public class PutPosterTest {
     }
 
     @Test
-    public void testPostFailed() throws IOException {
+    void testPostFailed() throws IOException {
         BrokerConnection mockedConnection = mock(BrokerConnection.class);
         PutPoster poster = new PutPoster(mockedConnection, new EventsStats());
 
@@ -159,7 +160,7 @@ public class PutPosterTest {
     }
 
     @Test
-    public void testPostValidMessages() throws IOException {
+    void testPostValidMessages() throws IOException {
         for (boolean isOldStyleProperties : new boolean[] {false, true}) {
             BrokerConnection mockedConnection = mock(BrokerConnection.class);
             when(mockedConnection.isOldStyleMessageProperties()).thenReturn(isOldStyleProperties);
@@ -248,8 +249,8 @@ public class PutPosterTest {
             assertArrayEquals(data2, allData.get(1));
 
             // Verify second argument
-            assertEquals(true, allBooleans.get(0));
-            assertEquals(true, allBooleans.get(1));
+            assertTrue(allBooleans.get(0));
+            assertTrue(allBooleans.get(1));
 
             StringBuilder expectedBuilder = new StringBuilder();
             EventsStatsTest.dump(expectedStats, expectedBuilder, false);
@@ -266,8 +267,7 @@ public class PutPosterTest {
     }
 
     @Test
-    public void testPostNoInfiniteLoop()
-            throws IOException, TimeoutException, InterruptedException {
+    void testPostNoInfiniteLoop() throws IOException, TimeoutException, InterruptedException {
 
         for (boolean isOldStyleProperties : new boolean[] {false, true}) {
             BrokerConnection connection = mock(BrokerConnection.class);
@@ -312,7 +312,7 @@ public class PutPosterTest {
     }
 
     @Test
-    public void testRegisterAck() throws Exception {
+    void testRegisterAck() throws Exception {
         for (boolean isOldStyleProperties : new boolean[] {false, true}) {
             BrokerConnection connection = mock(BrokerConnection.class);
             when(connection.isOldStyleMessageProperties()).thenReturn(isOldStyleProperties);

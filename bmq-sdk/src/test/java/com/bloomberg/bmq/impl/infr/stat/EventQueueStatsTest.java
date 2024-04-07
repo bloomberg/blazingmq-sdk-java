@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.stat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
 import com.bloomberg.bmq.util.TestHelpers;
@@ -25,16 +25,16 @@ import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventQueueStatsTest {
+class EventQueueStatsTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testOnDequeue() {
+    void testOnDequeue() {
         EventQueueStats stats = new EventQueueStats();
 
         // Invalid arguments
@@ -72,7 +72,7 @@ public class EventQueueStatsTest {
     }
 
     @Test
-    public void testEmptyOutput() throws IOException {
+    void testEmptyOutput() throws IOException {
         EventQueueStats stats = new EventQueueStats();
 
         StringBuilder builder = new StringBuilder();
@@ -98,7 +98,7 @@ public class EventQueueStatsTest {
     }
 
     @Test
-    public void testSampleOutput() throws Exception {
+    void testSampleOutput() throws Exception {
         EventQueueStats stats = new EventQueueStats();
 
         // First group of activities

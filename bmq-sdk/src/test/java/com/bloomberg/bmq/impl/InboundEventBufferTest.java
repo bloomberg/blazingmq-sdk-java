@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.impl.events.BrokerSessionEvent;
@@ -26,11 +26,11 @@ import com.bloomberg.bmq.impl.events.Event;
 import com.bloomberg.bmq.impl.infr.stat.EventQueueStats;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InboundEventBufferTest {
+class InboundEventBufferTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -58,7 +58,7 @@ public class InboundEventBufferTest {
     }
 
     @Test
-    public void testErrors() throws InterruptedException {
+    void testErrors() throws InterruptedException {
         // Null watermarks object
         try {
             new InboundEventBuffer(null, new EventQueueStats());
@@ -115,7 +115,7 @@ public class InboundEventBufferTest {
     }
 
     @Test
-    public void testWatermarkEvents() throws InterruptedException {
+    void testWatermarkEvents() throws InterruptedException {
         InboundEventBuffer b =
                 new InboundEventBuffer(
                         new SessionOptions.InboundEventBufferWaterMark(0, 1),
@@ -160,7 +160,7 @@ public class InboundEventBufferTest {
     }
 
     @Test
-    public void testPollAfterDumpFinalStats() throws InterruptedException {
+    void testPollAfterDumpFinalStats() throws InterruptedException {
         EventQueueStats stats = new EventQueueStats();
 
         InboundEventBuffer b =

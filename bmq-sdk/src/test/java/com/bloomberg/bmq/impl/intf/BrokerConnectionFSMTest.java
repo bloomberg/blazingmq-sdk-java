@@ -15,16 +15,16 @@
  */
 package com.bloomberg.bmq.impl.intf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.BrokerConnectionFSMImpl;
 import com.bloomberg.bmq.impl.intf.BrokerConnectionFSM.Inputs;
 import com.bloomberg.bmq.impl.intf.BrokerConnectionFSM.States;
 import java.lang.invoke.MethodHandles;
 import java.util.TreeSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class BrokerConnectionFSMTest {
     static final int[][] transitions = BrokerConnectionFSMImpl.transitionTable();
 
     @Test
-    public void testTransitions() {
+    void testTransitions() {
         // Check that transition table contains only existed states and each
         // state is reachable.
 
@@ -68,7 +68,7 @@ public class BrokerConnectionFSMTest {
         return States.fromInt(idx);
     }
 
-    public void testStopped() {
+    private void testStopped() {
         // Check transitions fom the STOPPED state
         States initState = States.STOPPED;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -88,7 +88,7 @@ public class BrokerConnectionFSMTest {
         }
     }
 
-    public void testDisconnectingBroker() {
+    private void testDisconnectingBroker() {
         // Check transitions fom the DISCONNECTING_BROKER state
         States initState = States.DISCONNECTING_BROKER;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -113,7 +113,7 @@ public class BrokerConnectionFSMTest {
         }
     }
 
-    public void testDisconnectingChannel() {
+    private void testDisconnectingChannel() {
         // Check transitions fom the DISCONNECTING_CHANNEL state
         States initState = States.DISCONNECTING_CHANNEL;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -137,7 +137,7 @@ public class BrokerConnectionFSMTest {
         }
     }
 
-    public void testConnectionLost() {
+    private void testConnectionLost() {
         // Check transitions fom the CONNECTION_LOST state
         States initState = States.CONNECTION_LOST;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -164,7 +164,7 @@ public class BrokerConnectionFSMTest {
         }
     }
 
-    public void testConnecting() {
+    private void testConnecting() {
         // Check transitions fom the CONNECTING state
         States initState = States.CONNECTING;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -194,7 +194,7 @@ public class BrokerConnectionFSMTest {
         }
     }
 
-    public void testNegotiating() {
+    private void testNegotiating() {
         // Check transitions fom the NEGOTIATING state
         States initState = States.NEGOTIATING;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -222,7 +222,7 @@ public class BrokerConnectionFSMTest {
         }
     }
 
-    public void testConnected() {
+    private void testConnected() {
         // Check transitions fom the CONNECTED state
         States initState = States.CONNECTED;
         int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
@@ -246,7 +246,7 @@ public class BrokerConnectionFSMTest {
     }
 
     @Test
-    public void testStates() {
+    void testStates() {
         for (States s : States.values()) {
             switch (s) {
                 case CONNECTION_LOST:

@@ -15,14 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ArgumentTest {
+class ArgumentTest {
     @Test
-    public void testExpectPrimitiveInteger() {
+    void testExpectPrimitiveInteger() {
         int val1 = 10;
         assertEquals(10, Argument.expectPositive(val1, "val1"));
         assertEquals(10, Argument.expectNonNegative(val1, "val1"));
@@ -60,7 +60,7 @@ public class ArgumentTest {
     }
 
     @Test
-    public void testExpectPrimitiveLong() {
+    void testExpectPrimitiveLong() {
         long val1 = 10;
         assertEquals(10, Argument.expectNonNegative(val1, "val1"));
 
@@ -77,7 +77,7 @@ public class ArgumentTest {
     }
 
     @Test
-    public void testExpectNonNull() {
+    void testExpectNonNull() {
         // empty string is not a null string so the check must be fine
         assertEquals("", Argument.expectNonNull("", "empty string"));
         try {
@@ -103,7 +103,7 @@ public class ArgumentTest {
     }
 
     @Test
-    public void testExpectCondition() {
+    void testExpectCondition() {
         // basic condition checks without extra message components
         Argument.expectCondition(true);
         try {

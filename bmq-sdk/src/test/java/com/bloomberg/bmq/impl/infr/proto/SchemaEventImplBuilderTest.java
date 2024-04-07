@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
@@ -35,16 +35,16 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SchemaEventImplBuilderTest {
+class SchemaEventImplBuilderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testBuildClientIdentityJson() throws IOException {
+    void testBuildClientIdentityJson() throws IOException {
         NegotiationMessageChoice negoMsgChoice = new NegotiationMessageChoice();
         negoMsgChoice.makeClientIdentity();
 
@@ -71,7 +71,7 @@ public class SchemaEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildBrokerResponseJson() throws IOException {
+    void testBuildBrokerResponseJson() throws IOException {
         NegotiationMessageChoice negoMsgChoice = new NegotiationMessageChoice();
         negoMsgChoice.makeBrokerResponse();
         BrokerResponse br = negoMsgChoice.brokerResponse();
@@ -103,7 +103,7 @@ public class SchemaEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildStatusJson() throws IOException {
+    void testBuildStatusJson() throws IOException {
         ControlMessageChoice msgChoice = new ControlMessageChoice();
         msgChoice.makeStatus();
 
@@ -126,7 +126,7 @@ public class SchemaEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildOpenQueueJson() throws IOException {
+    void testBuildOpenQueueJson() throws IOException {
         ControlMessageChoice msgChoice = new ControlMessageChoice();
 
         msgChoice.makeOpenQueue();
@@ -158,7 +158,7 @@ public class SchemaEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildOpenQueueResponseJson() throws IOException {
+    void testBuildOpenQueueResponseJson() throws IOException {
         ControlMessageChoice msgChoice = new ControlMessageChoice();
 
         msgChoice.makeOpenQueueResponse();

@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.bloomberg.bmq.CorrelationId;
 import com.bloomberg.bmq.impl.CorrelationIdImpl;
@@ -27,16 +27,16 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutHeaderTest {
+class PutHeaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testStreamIn() throws IOException {
+    void testStreamIn() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUT_MULTI_MSG.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -83,7 +83,7 @@ public class PutHeaderTest {
     }
 
     @Test
-    public void testStreamInZlib() throws IOException {
+    void testStreamInZlib() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUT_MSG_ZLIB.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -116,7 +116,7 @@ public class PutHeaderTest {
     }
 
     @Test
-    public void testStreamOut() throws IOException {
+    void testStreamOut() throws IOException {
         // Stream out
 
         PutHeader putHeader = new PutHeader();
@@ -158,7 +158,7 @@ public class PutHeaderTest {
     }
 
     @Test
-    public void testStreamOutZlib() throws IOException {
+    void testStreamOutZlib() throws IOException {
         // Stream out
 
         PutHeader putHeader = new PutHeader();

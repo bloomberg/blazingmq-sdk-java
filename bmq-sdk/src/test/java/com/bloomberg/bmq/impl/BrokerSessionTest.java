@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -71,11 +71,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BrokerSessionTest {
+class BrokerSessionTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -158,7 +158,7 @@ public class BrokerSessionTest {
         public void start(Duration timeout) {
             session.startAsync(Argument.expectNonNull(timeout, "timeout"));
 
-            sendNegotiationRespose(verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
+            sendNegotiationResponse(verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
 
             verifySessionEvent(BrokerSessionEvent.Type.e_CONNECTED);
         }
@@ -219,7 +219,8 @@ public class BrokerSessionTest {
             return negotiationMessageChoice.clientIdentity();
         }
 
-        public void sendNegotiationRespose(ClientIdentity clientIdentity, StatusCategory category) {
+        public void sendNegotiationResponse(
+                ClientIdentity clientIdentity, StatusCategory category) {
             Argument.expectNonNull(clientIdentity, "clientIdentity");
             Argument.expectNonNull(category, "category");
 
@@ -519,7 +520,7 @@ public class BrokerSessionTest {
                             connection.setChannelStatus(ChannelStatus.CHANNEL_UP);
 
                             // Negotiate
-                            sendNegotiationRespose(
+                            sendNegotiationResponse(
                                     verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
 
                             // Wait RECONNECTED event
@@ -589,8 +590,8 @@ public class BrokerSessionTest {
                                     Argument.expectNonNull(curRequest, "curRequest")
                                             .configureStream()
                                             .streamParameters();
-                            assertEquals(params.subscriptions().length, 1);
-                            assertEquals(params.subscriptions()[0].consumers().length, 1);
+                            assertEquals(1, params.subscriptions().length);
+                            assertEquals(1, params.subscriptions()[0].consumers().length);
 
                             ConsumerInfo info = params.subscriptions()[0].consumers()[0];
                             info.setMaxUnconfirmedBytes(info.maxUnconfirmedBytes() - 1);
@@ -709,7 +710,7 @@ public class BrokerSessionTest {
 
     /** Basic test that creates BrokerSession with a test channel */
     @Test
-    public void breathingTest() {
+    void breathingTest() {
         TcpConnectionFactory connectionFactory = new TestTcpConnectionFactory();
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
@@ -731,7 +732,7 @@ public class BrokerSessionTest {
 
     /** Check that BrokerSession with a test channel can be started and stopped asynchronously */
     @Test
-    public void checkStartStopAsyncTest() {
+    void checkStartStopAsyncTest() {
         TestSession obj = new TestSession();
 
         try {
@@ -750,7 +751,7 @@ public class BrokerSessionTest {
             // Check startAsync OK
             obj.session().startAsync(Duration.ofSeconds(1));
 
-            obj.sendNegotiationRespose(obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
+            obj.sendNegotiationResponse(obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
 
             obj.verifySessionEvent(BrokerSessionEvent.Type.e_CONNECTED);
 
@@ -777,7 +778,7 @@ public class BrokerSessionTest {
      * stopped asynchronously
      */
     @Test
-    public void checkStartStopAsyncWithMonitorTest() {
+    void checkStartStopAsyncWithMonitorTest() {
         HostHealthMonitor monitor = mock(HostHealthMonitor.class);
         SessionOptions options = SessionOptions.builder().setHostHealthMonitor(monitor).build();
 
@@ -804,7 +805,7 @@ public class BrokerSessionTest {
             // Call startAsync first time
             obj.session().startAsync(Duration.ofSeconds(1));
 
-            obj.sendNegotiationRespose(obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
+            obj.sendNegotiationResponse(obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
 
             // Since monitor returns Unknown state, HOST_UNHEALTHY event
             // should be issued
@@ -850,7 +851,7 @@ public class BrokerSessionTest {
      * stopped synchronously
      */
     @Test
-    public void checkStartStopSyncWithMonitorTest() {
+    void checkStartStopSyncWithMonitorTest() {
         HostHealthMonitor monitor = mock(HostHealthMonitor.class);
         SessionOptions options = SessionOptions.builder().setHostHealthMonitor(monitor).build();
 
@@ -877,7 +878,7 @@ public class BrokerSessionTest {
             // Call start first time
             CompletableFuture.runAsync(
                     () -> {
-                        obj.sendNegotiationRespose(
+                        obj.sendNegotiationResponse(
                                 obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
                     });
             obj.session().start(Duration.ofSeconds(1));
@@ -925,7 +926,7 @@ public class BrokerSessionTest {
      * drop
      */
     @Test
-    public void checkRestartTest() {
+    void checkRestartTest() {
         TestSession obj = new TestSession();
 
         try {
@@ -945,7 +946,7 @@ public class BrokerSessionTest {
                 obj.connection().setChannelStatus(ChannelStatus.CHANNEL_UP);
 
                 // Negotiate
-                obj.sendNegotiationRespose(
+                obj.sendNegotiationResponse(
                         obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
 
                 obj.verifySessionEvent(BrokerSessionEvent.Type.e_RECONNECTED);
@@ -968,7 +969,7 @@ public class BrokerSessionTest {
 
     /** Check substreamcount when broker session fails to send open queue request */
     @Test
-    public void openQueueRequestFailsTest() {
+    void openQueueRequestFailsTest() {
         TestSession obj = new TestSession();
 
         try {
@@ -1048,7 +1049,7 @@ public class BrokerSessionTest {
 
     /** Check substreamcount when broker session fails to send open configure queue request */
     @Test
-    public void openConfigureQueueRequestFailsTest() {
+    void openConfigureQueueRequestFailsTest() {
         TestSession obj = new TestSession();
 
         try {
@@ -1140,7 +1141,7 @@ public class BrokerSessionTest {
 
     /** Check substreamcount when broker session fails to send close configure queue request */
     @Test
-    public void closeConfigureQueueRequestFailsTest() {
+    void closeConfigureQueueRequestFailsTest() {
         TestSession obj = new TestSession();
 
         try {
@@ -1225,7 +1226,7 @@ public class BrokerSessionTest {
      * response
      */
     @Test
-    public void closeQueueRequestFailsTest() {
+    void closeQueueRequestFailsTest() {
         TestSession obj = new TestSession();
 
         try {
@@ -1328,7 +1329,7 @@ public class BrokerSessionTest {
     }
 
     @Test
-    public void cancelRequestTest() {
+    void cancelRequestTest() {
 
         class Test {
             TestSession.QueueTestStep queueTestStep;
@@ -1439,7 +1440,7 @@ public class BrokerSessionTest {
                 obj.connection().setChannelStatus(ChannelStatus.CHANNEL_UP);
 
                 // Negotiate
-                obj.sendNegotiationRespose(
+                obj.sendNegotiationResponse(
                         obj.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
 
                 obj.verifySessionEvent(BrokerSessionEvent.Type.e_RECONNECTED);
@@ -1492,12 +1493,12 @@ public class BrokerSessionTest {
     }
 
     @Test
-    public void testMultipleStartAsync() {
+    void multipleStartAsync() {
         final Duration TIMEOUT = Duration.ofSeconds(1);
         final TestSession testSession = new TestSession();
 
         testSession.session().startAsync(TIMEOUT);
-        testSession.sendNegotiationRespose(
+        testSession.sendNegotiationResponse(
                 testSession.verifyNegotiationRequest(), StatusCategory.E_SUCCESS);
         testSession.verifySessionEvent(BrokerSessionEvent.Type.e_CONNECTED);
 
@@ -1513,7 +1514,7 @@ public class BrokerSessionTest {
     }
 
     @Test
-    public void testMultipleStopAsync() {
+    void multipleStopAsync() {
         final Duration TIMEOUT = Duration.ofSeconds(1);
         final TestSession testSession = new TestSession();
 

@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.AbstractSession;
 import com.bloomberg.bmq.AckMessage;
@@ -56,11 +56,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SessionStressIT {
+class SessionStressIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -716,7 +716,7 @@ public class SessionStressIT {
             }
             throw new IllegalStateException("Unknown queue: " + queueEv.queue());
         }
-        assertEquals(queueEventFIFO.size(), 0);
+        assertEquals(0, queueEventFIFO.size());
     }
 
     void testConnectionLost(int numQueues, int numMsgs) throws BMQException, IOException {
@@ -977,7 +977,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testZlibIncompressableSize() throws BMQException, IOException {
+    void testZlibIncompressableSize() throws BMQException, IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queue, verify the payload.
         // For each PUT message Zlib compression is set, but payload( + props) is not compressed due
@@ -1007,7 +1007,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testZlibCompressableSize() throws BMQException, IOException {
+    void testZlibCompressableSize() throws BMQException, IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queue, verify the payload.
         // For each PUT message Zlib compression is set
@@ -1035,7 +1035,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testZlibBigSize() throws BMQException, IOException {
+    void testZlibBigSize() throws BMQException, IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queue, verify the payload.
         // For each PUT message Zlib compression is set
@@ -1063,7 +1063,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testMultipleEvents() throws BMQException, IOException {
+    void testMultipleEvents() throws BMQException, IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queue, verify the payload.
 
@@ -1085,7 +1085,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testMultipleEventsNoPushWait() throws BMQException, IOException {
+    void testMultipleEventsNoPushWait() throws BMQException, IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // waiting only for related ACK messages.
         // Receive related PUSH messages from the queue, verify the payload.
@@ -1108,7 +1108,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testMultipleQueuesConnectionLost() throws BMQException, IOException {
+    void testMultipleQueuesConnectionLost() throws BMQException, IOException {
         // Create and open multiple read/write queues.
         // For each queue:
         //     - send multiple PUT messages via native Broker;
@@ -1131,7 +1131,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testFanoutThroughput() throws IOException {
+    void testFanoutThroughput() throws IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queues, verify the payload.
 
@@ -1150,7 +1150,7 @@ public class SessionStressIT {
     }
 
     @Test
-    public void testMultithreadedWriters() throws IOException {
+    void testMultithreadedWriters() throws IOException {
         // Using one Session and multiple writer queues each posting from its
         // own thread send multiple PUT messages with unique payload via native Broker,
         // receive related PUSH messages from the queues, verify the payload.

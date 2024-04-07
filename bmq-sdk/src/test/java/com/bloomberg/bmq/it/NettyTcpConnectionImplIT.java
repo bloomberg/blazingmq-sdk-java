@@ -15,12 +15,12 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.SessionOptions.WriteBufferWaterMark;
@@ -49,7 +49,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +168,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testConnectDisconnectNoServer() {
+    void testConnectDisconnectNoServer() {
 
         logger.info("================================================");
         logger.info("BEGIN Testing NettyTcpConnection without server.");
@@ -224,7 +224,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testConnectDisconnectWithServer() {
+    void testConnectDisconnectWithServer() {
 
         logger.info("=============================================");
         logger.info("BEGIN Testing NettyTcpConnection with server.");
@@ -297,7 +297,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testConnectDropReconnect() {
+    void testConnectDropReconnect() {
 
         logger.info("========================================================");
         logger.info("BEGIN Testing NettyTcpConnection Connect-Drop-Reconnect.");
@@ -396,7 +396,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testConnectDisconnectWithIntermittentServer() {
+    void testConnectDisconnectWithIntermittentServer() {
 
         logger.info("==========================================================");
         logger.info("BEGIN Testing NettyTcpConnection with intermittent server.");
@@ -482,7 +482,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testDisconnectWhileConnectionInProgress() {
+    void testDisconnectWhileConnectionInProgress() {
 
         logger.info("============================================");
         logger.info("BEGIN Testing NettyTcpConnection disconnect.");
@@ -544,7 +544,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testReadWrite() {
+    void testReadWrite() {
 
         logger.info("============================================");
         logger.info("BEGIN Testing NettyTcpConnection read/write.");
@@ -645,7 +645,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testChannelWaterMark() {
+    void testChannelWaterMark() {
 
         logger.info("====================================================");
         logger.info("BEGIN Testing NettyTcpConnection channel water mark.");
@@ -765,7 +765,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testChannelWritable() {
+    void testChannelWritable() {
 
         logger.info("=========================================================");
         logger.info("BEGIN Testing NettyTcpConnection channel writable status.");
@@ -866,7 +866,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testChannelWaterMarkSlowServer() {
+    void testChannelWaterMarkSlowServer() {
 
         logger.info("================================================================");
         logger.info("BEGIN Testing NettyTcpConnection channel water mark slow server.");
@@ -980,7 +980,7 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
-    public void testBmqServer() throws IOException {
+    void testBmqServer() throws IOException {
         logger.info("======================================================================");
         logger.info("BEGIN Testing NettyTcpConnection channel and connection to BlazingMQ Broker.");
         logger.info("======================================================================");

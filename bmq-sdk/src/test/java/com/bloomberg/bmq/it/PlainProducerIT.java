@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.QueueFlags;
 import com.bloomberg.bmq.Uri;
@@ -56,6 +56,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,7 +273,7 @@ public class PlainProducerIT {
         PutEventBuilder putBuilder = new PutEventBuilder();
         EventBuilderResult res = putBuilder.packMessage(putMsg, isOldStyleProperties);
 
-        assertSame(res, EventBuilderResult.SUCCESS);
+        assertSame(EventBuilderResult.SUCCESS, res);
 
         message = putBuilder.build();
 
@@ -423,9 +425,8 @@ public class PlainProducerIT {
         schannel.close();
     }
 
-    // Disable this test because it uses plain sockets and read BMQ
-    // events unreliably
-    // @Test
+    @Test
+    @Disabled("Disable this test because it uses plain sockets and read BMQ events unreliably")
     public void testProducer() throws IOException, InterruptedException {
         logger.info("==================================================");
         logger.info("BEGIN Testing PlainProducerIT sending a message.");

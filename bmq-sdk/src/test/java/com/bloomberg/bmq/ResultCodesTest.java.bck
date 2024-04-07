@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.ResultCodes.AckCode;
 import com.bloomberg.bmq.ResultCodes.AckResult;
@@ -30,7 +30,7 @@ import com.bloomberg.bmq.ResultCodes.GenericCode;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.ResultCodes.OpenQueueCode;
 import com.bloomberg.bmq.ResultCodes.OpenQueueResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ResultCodesTest {
     // ================================================================

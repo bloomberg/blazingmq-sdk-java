@@ -15,12 +15,12 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.SessionOptions;
@@ -68,11 +68,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TcpBrokerConnectionIT {
+class TcpBrokerConnectionIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -313,7 +313,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testConnectionDown() throws Exception {
+    void testConnectionDown() throws Exception {
 
         logger.info("===========================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT connection down.");
@@ -367,7 +367,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testReconnection() throws Exception {
+    void testReconnection() throws Exception {
 
         logger.info("=========================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT re-connection.");
@@ -442,7 +442,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testDropAndReconnection() throws Exception {
+    void testDropAndReconnection() throws Exception {
 
         logger.info("===========================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT drop and re-connection.");
@@ -512,7 +512,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testRestart() throws Exception {
+    void testRestart() throws Exception {
 
         logger.info("===================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT restart.");
@@ -599,7 +599,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testNegotiationMpsEx() throws IOException {
+    void testNegotiationMpsEx() throws IOException {
         final ConnectionOptions opts = new ConnectionOptions();
         opts.setBrokerUri(getServerUri());
 
@@ -705,7 +705,7 @@ public class TcpBrokerConnectionIT {
                             .getSeconds();
 
             // 3) Wait for start status callback and ensure it reports error status.
-            assertEquals(session.startStatus((int) timeout + 1), StartStatus.NEGOTIATION_FAILURE);
+            assertEquals(StartStatus.NEGOTIATION_FAILURE, session.startStatus((int) timeout + 1));
         } finally {
             // 4) Stop the server.
             server.stop();
@@ -718,7 +718,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testNegotiationTimeout() {
+    void testNegotiationTimeout() {
         logger.info("===============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT negotiation timeout.");
         logger.info("===============================================================");
@@ -732,7 +732,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testNegotiationError() {
+    void testNegotiationError() {
         logger.info("=============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT negotiation error.");
         logger.info("=============================================================");
@@ -746,7 +746,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testNegotiationInterrupted() {
+    void testNegotiationInterrupted() {
         logger.info("===================================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT negotiation interrupted.");
         logger.info("===================================================================");
@@ -761,7 +761,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testConnectionTimeout() {
+    void testConnectionTimeout() {
         logger.info("==============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT connection timeout.");
         logger.info("==============================================================");
@@ -802,7 +802,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testConnectionDelay() throws IOException {
+    void testConnectionDelay() throws IOException {
         logger.info("============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT connection delay.");
         logger.info("============================================================");
@@ -859,7 +859,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testMultipleStarts() throws IOException {
+    void testMultipleStarts() throws IOException {
         logger.info("===========================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT multiple starts.");
         logger.info("===========================================================");
@@ -921,7 +921,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testMultipleRestarts() throws IOException {
+    void testMultipleRestarts() throws IOException {
         logger.info("=============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT multiple restarts.");
         logger.info("=============================================================");
@@ -990,7 +990,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testLinger() {
+    void testLinger() {
         logger.info("=============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT multiple restarts.");
         logger.info("=============================================================");
@@ -1023,7 +1023,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testPartialPayload() throws IOException {
+    void testPartialPayload() throws IOException {
         logger.info("===========================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT partial payload.");
         logger.info("===========================================================");
@@ -1105,7 +1105,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testUnresolvedUri() throws Exception {
+    void testUnresolvedUri() throws Exception {
         logger.info("======================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT testUnresolvedUri.");
         logger.info("======================================================");
@@ -1145,7 +1145,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testUnknownCompressionType() throws IOException {
+    void testUnknownCompressionType() throws IOException {
         logger.info("=============================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT unknown compression type.");
         logger.info("=============================================================");
@@ -1286,7 +1286,7 @@ public class TcpBrokerConnectionIT {
     }
 
     @Test
-    public void testStopConnection() {
+    void testStopConnection() {
         logger.info("===========================================================");
         logger.info("BEGIN Testing TcpBrokerConnectionIT stop connection.");
         logger.info("===========================================================");

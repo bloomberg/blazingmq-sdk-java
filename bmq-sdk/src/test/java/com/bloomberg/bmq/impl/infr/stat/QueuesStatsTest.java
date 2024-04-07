@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.stat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.impl.QueueId;
@@ -29,11 +29,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueuesStatsTest {
+class QueuesStatsTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -94,7 +94,7 @@ public class QueuesStatsTest {
     }
 
     @Test
-    public void testOnQueueOpen() {
+    void testOnQueueOpen() {
         QueuesStats stats = new QueuesStats();
         Uri uri = new Uri("bmq://test/queue");
 
@@ -133,7 +133,7 @@ public class QueuesStatsTest {
     }
 
     @Test
-    public void testOnQueueClose() {
+    void testOnQueueClose() {
         QueuesStats stats = new QueuesStats();
 
         // Open queues
@@ -167,7 +167,7 @@ public class QueuesStatsTest {
     }
 
     @Test
-    public void testOnPushMessage() {
+    void testOnPushMessage() {
         QueuesStats stats = new QueuesStats();
 
         QueueId queueId1 = QueueId.createInstance(1, 0);
@@ -228,7 +228,7 @@ public class QueuesStatsTest {
     }
 
     @Test
-    public void testOnPutEvent() {
+    void testOnPutEvent() {
         QueuesStats stats = new QueuesStats();
 
         QueueId queueId1 = QueueId.createInstance(1, 0);
@@ -295,7 +295,7 @@ public class QueuesStatsTest {
     }
 
     @Test
-    public void testEmptyOutput() throws IOException {
+    void testEmptyOutput() throws IOException {
         QueuesStats stats = new QueuesStats();
 
         StringBuilder builder = new StringBuilder();
@@ -321,7 +321,7 @@ public class QueuesStatsTest {
     }
 
     @Test
-    public void testSampleOutput() throws Exception {
+    void testSampleOutput() throws Exception {
         QueuesStats stats = new QueuesStats();
         Simulator simulator = new Simulator(stats);
 

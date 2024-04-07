@@ -15,14 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ProtocolUtilTest {
+class ProtocolUtilTest {
 
     @Test
-    public void testPadding() {
+    void testPadding() {
         for (int i = 1; i < 5; i++) {
             byte[] p = ProtocolUtil.getPaddingBytes(i);
 

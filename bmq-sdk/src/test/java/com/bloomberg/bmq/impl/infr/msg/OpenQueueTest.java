@@ -15,14 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OpenQueueTest {
+class OpenQueueTest {
 
     @Test
-    public void testReset() {
+    void testReset() {
         OpenQueue openQueue = new OpenQueue();
         QueueHandleParameters parametersBefore = openQueue.getHandleParameters();
         openQueue.reset();
@@ -31,7 +31,7 @@ public class OpenQueueTest {
     }
 
     @Test
-    public void testCreateNewInstance() {
+    void testCreateNewInstance() {
         OpenQueue openQueue = new OpenQueue();
         OpenQueue queueBefore = openQueue;
         openQueue = (OpenQueue) openQueue.createNewInstance();

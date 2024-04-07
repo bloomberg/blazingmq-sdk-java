@@ -15,32 +15,32 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OptionHeaderTest {
+class OptionHeaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testPreconditions() {
+    void testPreconditions() {
         assertTrue(OptionHeader.HEADER_SIZE > 0);
         assertTrue(Protocol.WORD_SIZE > 0);
         assertEquals(0, OptionHeader.HEADER_SIZE % Protocol.WORD_SIZE);
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         OptionHeader optionHeader = new OptionHeader();
 
         assertEquals(OptionType.UNDEFINED, optionHeader.type());
@@ -50,7 +50,7 @@ public class OptionHeaderTest {
     }
 
     @Test
-    public void testGetterSetterType() {
+    void testGetterSetterType() {
         OptionHeader optionHeader = new OptionHeader();
 
         for (OptionType t : OptionType.values()) {
@@ -64,7 +64,7 @@ public class OptionHeaderTest {
     }
 
     @Test
-    public void testGetterSetterPacked() {
+    void testGetterSetterPacked() {
         OptionHeader optionHeader = new OptionHeader();
 
         optionHeader.setPacked(true);
@@ -83,7 +83,7 @@ public class OptionHeaderTest {
     }
 
     @Test
-    public void testGetterSetterTypeSpecific() {
+    void testGetterSetterTypeSpecific() {
         OptionHeader optionHeader = new OptionHeader();
 
         // ts < 0
@@ -120,7 +120,7 @@ public class OptionHeaderTest {
     }
 
     @Test
-    public void testGetterSetterWords() {
+    void testGetterSetterWords() {
         OptionHeader optionHeader = new OptionHeader();
 
         // words < 0
@@ -157,7 +157,7 @@ public class OptionHeaderTest {
     }
 
     @Test
-    public void testStreamIn() throws IOException {
+    void testStreamIn() throws IOException {
         // packed option
         ByteBuffer bb =
                 ByteBuffer.wrap(new byte[] {0b00001110, 0b00000000, 0b00000000, 0b00000101});

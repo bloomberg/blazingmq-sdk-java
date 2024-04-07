@@ -15,9 +15,9 @@
  */
 package com.bloomberg.bmq.it.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.proto.Crc32c;
@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Crc32cTest {
+class Crc32cTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -63,10 +63,10 @@ public class Crc32cTest {
     }
 
     @Test
-    public void testImplementation() {
+    void testImplementation() {
         // Ensure we are running with supported version of JVM
         SystemUtil.JavaVersion javaVersion = SystemUtil.getJavaVersion();
-        assertTrue("Unsupported JDK", javaVersion.isSupported());
+        assertTrue(javaVersion.isSupported(), "Unsupported JDK");
 
         boolean isPartOfJar = VersionUtil.getJarVersion() != null;
 
@@ -88,7 +88,7 @@ public class Crc32cTest {
     }
 
     @Test
-    public void testCrc32c() throws IOException {
+    void testCrc32c() throws IOException {
         Set<Map.Entry<String, Long>> set = DATA.entrySet();
         for (Map.Entry<String, Long> me : set) {
             ByteBufferOutputStream bbos = new ByteBufferOutputStream();
@@ -98,7 +98,7 @@ public class Crc32cTest {
     }
 
     @Test
-    public void testCrc32cUnsigned() throws IOException {
+    void testCrc32cUnsigned() throws IOException {
         final String PAYLOAD = "3jf-_3";
         final long CRC32C_VALUE = 0xE186B745L;
         ByteBuffer bb = ByteBuffer.allocate(Integer.BYTES);
@@ -114,7 +114,7 @@ public class Crc32cTest {
     }
 
     @Test
-    public void testCrc32cMultithreaded() throws InterruptedException {
+    void testCrc32cMultithreaded() throws InterruptedException {
         class TestThread implements Runnable {
             final Thread thread;
             boolean hasError;
