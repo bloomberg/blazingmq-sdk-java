@@ -25,12 +25,6 @@ import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkRefused;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkSuccess;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkTimeout;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkUnknown;
-import static com.bloomberg.bmq.resultcodes.OpenQueueResultChecks.checkAlreadyInProgress;
-import static com.bloomberg.bmq.resultcodes.OpenQueueResultChecks.checkAlreadyOpened;
-import static com.bloomberg.bmq.resultcodes.OpenQueueResultChecks.checkGeneric;
-import static com.bloomberg.bmq.resultcodes.OpenQueueResultChecks.checkInvalidFlags;
-import static com.bloomberg.bmq.resultcodes.OpenQueueResultChecks.checkInvalidUri;
-import static com.bloomberg.bmq.resultcodes.OpenQueueResultChecks.checkQueueIdNotUnique;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,152 +34,185 @@ import org.junit.jupiter.api.Test;
 // ================================================================
 // OpenQueueResult tests
 // ================================================================
-public class OpenQueueResultTest {
-    public static class OpenQueueGenericTest {
-        public void isAlreadyOpenedTest(ResultCodes.OpenQueueCode obj) {
+class OpenQueueResultTest {
+    static class OpenQueueGenericTest {
+        void isAlreadyOpenedTest(ResultCodes.OpenQueueCode obj) {
             assertFalse(obj.isAlreadyOpened());
         }
 
-        public void isAlreadyInProgressTest(ResultCodes.OpenQueueCode obj) {
+        void isAlreadyInProgressTest(ResultCodes.OpenQueueCode obj) {
             assertFalse(obj.isAlreadyInProgress());
         }
 
-        public void isInvalidUriTest(ResultCodes.OpenQueueCode obj) {
+        void isInvalidUriTest(ResultCodes.OpenQueueCode obj) {
             assertFalse(obj.isInvalidUri());
         }
 
-        public void isInvalidFlagsTest(ResultCodes.OpenQueueCode obj) {
+        void isInvalidFlagsTest(ResultCodes.OpenQueueCode obj) {
             assertFalse(obj.isInvalidFlags());
         }
 
-        public void isQueueIdNotUniqueTest(ResultCodes.OpenQueueCode obj) {
+        void isQueueIdNotUniqueTest(ResultCodes.OpenQueueCode obj) {
             assertFalse(obj.isQueueIdNotUnique());
         }
     }
 
-    public static class AlreadyOpenedTest extends OpenQueueGenericTest {
+    static class AlreadyOpenedTest extends OpenQueueGenericTest {
         @Override
-        public void isAlreadyOpenedTest(ResultCodes.OpenQueueCode obj) {
+        void isAlreadyOpenedTest(ResultCodes.OpenQueueCode obj) {
             assertTrue(obj.isAlreadyOpened());
         }
     }
 
-    public static class AlreadyInProgressTest extends OpenQueueGenericTest {
-        public void isAlreadyInProgressTest(ResultCodes.OpenQueueCode obj) {
+    static class AlreadyInProgressTest extends OpenQueueGenericTest {
+        void isAlreadyInProgressTest(ResultCodes.OpenQueueCode obj) {
             assertTrue(obj.isAlreadyInProgress());
         }
     }
 
-    public static class InvalidUriTest extends OpenQueueGenericTest {
+    static class InvalidUriTest extends OpenQueueGenericTest {
         @Override
-        public void isInvalidUriTest(ResultCodes.OpenQueueCode obj) {
+        void isInvalidUriTest(ResultCodes.OpenQueueCode obj) {
             assertTrue(obj.isInvalidUri());
         }
     }
 
-    public static class InvalidFlagsTest extends OpenQueueGenericTest {
+    static class InvalidFlagsTest extends OpenQueueGenericTest {
         @Override
-        public void isInvalidFlagsTest(ResultCodes.OpenQueueCode obj) {
+        void isInvalidFlagsTest(ResultCodes.OpenQueueCode obj) {
             assertTrue(obj.isInvalidFlags());
         }
     }
 
-    public static class QueueIdNotUniqueTest extends OpenQueueGenericTest {
+    static class QueueIdNotUniqueTest extends OpenQueueGenericTest {
         @Override
-        public void isQueueIdNotUniqueTest(ResultCodes.OpenQueueCode obj) {
+        void isQueueIdNotUniqueTest(ResultCodes.OpenQueueCode obj) {
             assertTrue(obj.isQueueIdNotUnique());
         }
     }
 
+    static void checkExtraPredicates(
+            OpenQueueResultTest.OpenQueueGenericTest test, ResultCodes.OpenQueueCode obj) {
+        test.isAlreadyInProgressTest(obj);
+        test.isAlreadyOpenedTest(obj);
+        test.isInvalidFlagsTest(obj);
+        test.isInvalidUriTest(obj);
+        test.isQueueIdNotUniqueTest(obj);
+    }
+
+    static void checkGeneric(ResultCodes.OpenQueueCode obj) {
+        checkExtraPredicates(new OpenQueueResultTest.OpenQueueGenericTest(), obj);
+    }
+
+    static void checkAlreadyInProgress(ResultCodes.OpenQueueCode obj) {
+        checkExtraPredicates(new OpenQueueResultTest.AlreadyInProgressTest(), obj);
+    }
+
+    static void checkAlreadyOpened(ResultCodes.OpenQueueCode obj) {
+        checkExtraPredicates(new OpenQueueResultTest.AlreadyOpenedTest(), obj);
+    }
+
+    static void checkInvalidFlags(ResultCodes.OpenQueueCode obj) {
+        checkExtraPredicates(new OpenQueueResultTest.InvalidFlagsTest(), obj);
+    }
+
+    static void checkInvalidUri(ResultCodes.OpenQueueCode obj) {
+        checkExtraPredicates(new OpenQueueResultTest.InvalidUriTest(), obj);
+    }
+
+    static void checkQueueIdNotUnique(ResultCodes.OpenQueueCode obj) {
+        checkExtraPredicates(new OpenQueueResultTest.QueueIdNotUniqueTest(), obj);
+    }
+
     @Test
-    public void successTest() {
+    void successTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.SUCCESS);
         checkSuccess(ResultCodes.OpenQueueResult.SUCCESS);
         checkGeneric(ResultCodes.OpenQueueResult.SUCCESS);
     }
 
     @Test
-    public void timeOutTest() {
+    void timeOutTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.TIMEOUT);
         checkTimeout(ResultCodes.OpenQueueResult.TIMEOUT);
         checkGeneric(ResultCodes.OpenQueueResult.TIMEOUT);
     }
 
     @Test
-    public void notConnectedTest() {
+    void notConnectedTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.NOT_CONNECTED);
         checkNotConnected(ResultCodes.OpenQueueResult.NOT_CONNECTED);
         checkGeneric(ResultCodes.OpenQueueResult.NOT_CONNECTED);
     }
 
     @Test
-    public void canceledTest() {
+    void canceledTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.CANCELED);
         checkCanceled(ResultCodes.OpenQueueResult.CANCELED);
         checkGeneric(ResultCodes.OpenQueueResult.CANCELED);
     }
 
     @Test
-    public void notSupportedTest() {
+    void notSupportedTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.NOT_SUPPORTED);
         checkNotSupported(ResultCodes.OpenQueueResult.NOT_SUPPORTED);
         checkGeneric(ResultCodes.OpenQueueResult.NOT_SUPPORTED);
     }
 
     @Test
-    public void refusedTest() {
+    void refusedTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.REFUSED);
         checkRefused(ResultCodes.OpenQueueResult.REFUSED);
         checkGeneric(ResultCodes.OpenQueueResult.REFUSED);
     }
 
     @Test
-    public void invalidArgumentTest() {
+    void invalidArgumentTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.INVALID_ARGUMENT);
         checkInvalidArgument(ResultCodes.OpenQueueResult.INVALID_ARGUMENT);
         checkGeneric(ResultCodes.OpenQueueResult.INVALID_ARGUMENT);
     }
 
     @Test
-    public void notReadyTest() {
+    void notReadyTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.NOT_READY);
         checkNotReady(ResultCodes.OpenQueueResult.NOT_READY);
         checkGeneric(ResultCodes.OpenQueueResult.NOT_READY);
     }
 
     @Test
-    public void unknownTest() {
+    void unknownTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.UNKNOWN);
         checkUnknown(ResultCodes.OpenQueueResult.UNKNOWN);
         checkGeneric(ResultCodes.OpenQueueResult.UNKNOWN);
     }
 
     @Test
-    public void alreadyInProgressTest() {
+    void alreadyInProgressTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.ALREADY_IN_PROGRESS);
         checkAlreadyInProgress(ResultCodes.OpenQueueResult.ALREADY_IN_PROGRESS);
     }
 
     @Test
-    public void alreadyOpenedTest() {
+    void alreadyOpenedTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.ALREADY_OPENED);
         checkAlreadyOpened(ResultCodes.OpenQueueResult.ALREADY_OPENED);
     }
 
     @Test
-    public void invalidFlagsTest() {
+    void invalidFlagsTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.INVALID_FLAGS);
         checkInvalidFlags(ResultCodes.OpenQueueResult.INVALID_FLAGS);
     }
 
     @Test
-    public void invalidUriTest() {
+    void invalidUriTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.INVALID_URI);
         checkInvalidUri(ResultCodes.OpenQueueResult.INVALID_URI);
     }
 
     @Test
-    public void queueIdNotUniqueTest() {
+    void queueIdNotUniqueTest() {
         checkIfNotGeneric(ResultCodes.OpenQueueResult.QUEUE_ID_NOT_UNIQUE);
         checkQueueIdNotUnique(ResultCodes.OpenQueueResult.QUEUE_ID_NOT_UNIQUE);
     }

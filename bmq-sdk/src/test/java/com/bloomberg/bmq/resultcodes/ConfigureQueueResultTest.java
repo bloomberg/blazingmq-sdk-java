@@ -15,9 +15,6 @@
  */
 package com.bloomberg.bmq.resultcodes;
 
-import static com.bloomberg.bmq.resultcodes.ConfigureQueueResultChecks.checkAlreadyInProgress;
-import static com.bloomberg.bmq.resultcodes.ConfigureQueueResultChecks.checkAlreadyOpenedTest;
-import static com.bloomberg.bmq.resultcodes.ConfigureQueueResultChecks.checkGeneric;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkCanceled;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkIfNotGeneric;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkInvalidArgument;
@@ -37,102 +34,121 @@ import org.junit.jupiter.api.Test;
 // ================================================================
 // ConfigureQueueResult tests
 // ================================================================
-public class ConfigureQueueResultTest {
-    public static class ConfigureQueueGenericTest {
-        public void isAlreadyInProgressTest(ResultCodes.ConfigureQueueCode obj) {
+class ConfigureQueueResultTest {
+    static class ConfigureQueueGenericTest {
+        void isAlreadyInProgressTest(ResultCodes.ConfigureQueueCode obj) {
             assertFalse(obj.isAlreadyInProgress());
         }
 
-        public void isInvalidQueueTest(ResultCodes.ConfigureQueueCode obj) {
+        void isInvalidQueueTest(ResultCodes.ConfigureQueueCode obj) {
             assertFalse(obj.isInvalidQueue());
         }
     }
 
-    public static class AlreadyInProgressTest extends ConfigureQueueGenericTest {
+    static class AlreadyInProgressTest extends ConfigureQueueGenericTest {
         @Override
         public void isAlreadyInProgressTest(ResultCodes.ConfigureQueueCode obj) {
             assertTrue(obj.isAlreadyInProgress());
         }
     }
 
-    public static class InvalidQueueTest extends ConfigureQueueGenericTest {
+    static class InvalidQueueTest extends ConfigureQueueGenericTest {
         @Override
         public void isInvalidQueueTest(ResultCodes.ConfigureQueueCode obj) {
             assertTrue(obj.isInvalidQueue());
         }
     }
 
+    static void checkPredicates(
+            ConfigureQueueResultTest.ConfigureQueueGenericTest test,
+            ResultCodes.ConfigureQueueCode obj) {
+        test.isAlreadyInProgressTest(obj);
+        test.isInvalidQueueTest(obj);
+    }
+
+    static void checkGeneric(ResultCodes.ConfigureQueueCode obj) {
+        checkPredicates(new ConfigureQueueResultTest.ConfigureQueueGenericTest(), obj);
+    }
+
+    static void checkAlreadyInProgress(ResultCodes.ConfigureQueueCode obj) {
+        checkPredicates(new ConfigureQueueResultTest.AlreadyInProgressTest(), obj);
+    }
+
+    static void checkAlreadyOpenedTest(ResultCodes.ConfigureQueueCode obj) {
+        checkPredicates(new ConfigureQueueResultTest.InvalidQueueTest(), obj);
+    }
+
     @Test
-    public void successTest() {
+    void successTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.SUCCESS);
         checkSuccess(ResultCodes.ConfigureQueueResult.SUCCESS);
         checkGeneric(ResultCodes.ConfigureQueueResult.SUCCESS);
     }
 
     @Test
-    public void timeOutTest() {
+    void timeOutTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.TIMEOUT);
         checkTimeout(ResultCodes.ConfigureQueueResult.TIMEOUT);
         checkGeneric(ResultCodes.ConfigureQueueResult.TIMEOUT);
     }
 
     @Test
-    public void notConnectedTest() {
+    void notConnectedTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.NOT_CONNECTED);
         checkNotConnected(ResultCodes.ConfigureQueueResult.NOT_CONNECTED);
         checkGeneric(ResultCodes.ConfigureQueueResult.NOT_CONNECTED);
     }
 
     @Test
-    public void canceledTest() {
+    void canceledTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.CANCELED);
         checkCanceled(ResultCodes.ConfigureQueueResult.CANCELED);
         checkGeneric(ResultCodes.ConfigureQueueResult.CANCELED);
     }
 
     @Test
-    public void notSupportedTest() {
+    void notSupportedTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.NOT_SUPPORTED);
         checkNotSupported(ResultCodes.ConfigureQueueResult.NOT_SUPPORTED);
         checkGeneric(ResultCodes.ConfigureQueueResult.NOT_SUPPORTED);
     }
 
     @Test
-    public void refusedTest() {
+    void refusedTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.REFUSED);
         checkRefused(ResultCodes.ConfigureQueueResult.REFUSED);
         checkGeneric(ResultCodes.ConfigureQueueResult.REFUSED);
     }
 
     @Test
-    public void invalidArgumentTest() {
+    void invalidArgumentTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.INVALID_ARGUMENT);
         checkInvalidArgument(ResultCodes.ConfigureQueueResult.INVALID_ARGUMENT);
         checkGeneric(ResultCodes.ConfigureQueueResult.INVALID_ARGUMENT);
     }
 
     @Test
-    public void notReadyTest() {
+    void notReadyTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.NOT_READY);
         checkNotReady(ResultCodes.ConfigureQueueResult.NOT_READY);
         checkGeneric(ResultCodes.ConfigureQueueResult.NOT_READY);
     }
 
     @Test
-    public void unknownTest() {
+    void unknownTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.UNKNOWN);
         checkUnknown(ResultCodes.ConfigureQueueResult.UNKNOWN);
         checkGeneric(ResultCodes.ConfigureQueueResult.UNKNOWN);
     }
 
     @Test
-    public void alreadyInProgressTest() {
+    void alreadyInProgressTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.ALREADY_IN_PROGRESS);
         checkAlreadyInProgress(ResultCodes.ConfigureQueueResult.ALREADY_IN_PROGRESS);
     }
 
     @Test
-    public void alreadyOpenedTest() {
+    void alreadyOpenedTest() {
         checkIfNotGeneric(ResultCodes.ConfigureQueueResult.INVALID_QUEUE);
         checkAlreadyOpenedTest(ResultCodes.ConfigureQueueResult.INVALID_QUEUE);
     }

@@ -15,10 +15,6 @@
  */
 package com.bloomberg.bmq.resultcodes;
 
-import static com.bloomberg.bmq.resultcodes.AckResultChecks.checkGeneric;
-import static com.bloomberg.bmq.resultcodes.AckResultChecks.checkLimitBytes;
-import static com.bloomberg.bmq.resultcodes.AckResultChecks.checkLimitMessages;
-import static com.bloomberg.bmq.resultcodes.AckResultChecks.checkStorageFailure;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkCanceled;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkIfNotGeneric;
 import static com.bloomberg.bmq.resultcodes.GenericResultChecks.checkInvalidArgument;
@@ -38,119 +34,141 @@ import org.junit.jupiter.api.Test;
 // ================================================================
 // AckResult tests
 // ================================================================
-public class AckResultTest {
-    public static class AckGenericTest {
-        public void isLimitMessages(ResultCodes.AckCode obj) {
+class AckResultTest {
+    static class AckGenericTest {
+        void isLimitMessages(ResultCodes.AckCode obj) {
             assertFalse(obj.isLimitMessages());
         }
 
-        public void isLimitBytes(ResultCodes.AckCode obj) {
+        void isLimitBytes(ResultCodes.AckCode obj) {
             assertFalse(obj.isLimitBytes());
         }
 
-        public void isStorageFailure(ResultCodes.AckCode obj) {
+        void isStorageFailure(ResultCodes.AckCode obj) {
             assertFalse(obj.isStorageFailure());
         }
     }
 
-    public static class LimitMessagesTest extends AckGenericTest {
+    static class LimitMessagesTest extends AckGenericTest {
         @Override
         public void isLimitMessages(ResultCodes.AckCode obj) {
             assertTrue(obj.isLimitMessages());
         }
     }
 
-    public static class LimitBytesTest extends AckGenericTest {
+    static class LimitBytesTest extends AckGenericTest {
         @Override
         public void isLimitBytes(ResultCodes.AckCode obj) {
             assertTrue(obj.isLimitBytes());
         }
     }
 
-    public static class StorageFailureTest extends AckGenericTest {
+    static class StorageFailureTest extends AckGenericTest {
         @Override
         public void isStorageFailure(ResultCodes.AckCode obj) {
             assertTrue(obj.isStorageFailure());
         }
     }
 
+    static void checkExtraPredicates(AckResultTest.AckGenericTest test, ResultCodes.AckResult obj) {
+        test.isLimitMessages(obj);
+        test.isLimitBytes(obj);
+        test.isStorageFailure(obj);
+    }
+
+    static void checkGeneric(ResultCodes.AckResult obj) {
+        checkExtraPredicates(new AckResultTest.AckGenericTest(), obj);
+    }
+
+    static void checkLimitMessages(ResultCodes.AckResult obj) {
+        checkExtraPredicates(new AckResultTest.LimitMessagesTest(), obj);
+    }
+
+    static void checkLimitBytes(ResultCodes.AckResult obj) {
+        checkExtraPredicates(new AckResultTest.LimitBytesTest(), obj);
+    }
+
+    static void checkStorageFailure(ResultCodes.AckResult obj) {
+        checkExtraPredicates(new AckResultTest.StorageFailureTest(), obj);
+    }
+
     @Test
-    public void successTest() {
+    void successTest() {
         checkIfNotGeneric(ResultCodes.AckResult.SUCCESS);
         checkSuccess(ResultCodes.AckResult.SUCCESS);
         checkGeneric(ResultCodes.AckResult.SUCCESS);
     }
 
     @Test
-    public void timeOutTest() {
+    void timeOutTest() {
         checkIfNotGeneric(ResultCodes.AckResult.TIMEOUT);
         checkTimeout(ResultCodes.AckResult.TIMEOUT);
         checkGeneric(ResultCodes.AckResult.TIMEOUT);
     }
 
     @Test
-    public void notConnectedTest() {
+    void notConnectedTest() {
         checkIfNotGeneric(ResultCodes.AckResult.NOT_CONNECTED);
         checkNotConnected(ResultCodes.AckResult.NOT_CONNECTED);
         checkGeneric(ResultCodes.AckResult.NOT_CONNECTED);
     }
 
     @Test
-    public void canceledTest() {
+    void canceledTest() {
         checkIfNotGeneric(ResultCodes.AckResult.CANCELED);
         checkCanceled(ResultCodes.AckResult.CANCELED);
         checkGeneric(ResultCodes.AckResult.CANCELED);
     }
 
     @Test
-    public void notSupportedTest() {
+    void notSupportedTest() {
         checkIfNotGeneric(ResultCodes.AckResult.NOT_SUPPORTED);
         checkNotSupported(ResultCodes.AckResult.NOT_SUPPORTED);
         checkGeneric(ResultCodes.AckResult.NOT_SUPPORTED);
     }
 
     @Test
-    public void refusedTest() {
+    void refusedTest() {
         checkIfNotGeneric(ResultCodes.AckResult.REFUSED);
         checkRefused(ResultCodes.AckResult.REFUSED);
         checkGeneric(ResultCodes.AckResult.REFUSED);
     }
 
     @Test
-    public void invalidArgumentTest() {
+    void invalidArgumentTest() {
         checkIfNotGeneric(ResultCodes.AckResult.INVALID_ARGUMENT);
         checkInvalidArgument(ResultCodes.AckResult.INVALID_ARGUMENT);
         checkGeneric(ResultCodes.AckResult.INVALID_ARGUMENT);
     }
 
     @Test
-    public void notReadyTest() {
+    void notReadyTest() {
         checkIfNotGeneric(ResultCodes.AckResult.NOT_READY);
         checkNotReady(ResultCodes.AckResult.NOT_READY);
         checkGeneric(ResultCodes.AckResult.NOT_READY);
     }
 
     @Test
-    public void unknownTest() {
+    void unknownTest() {
         checkIfNotGeneric(ResultCodes.AckResult.UNKNOWN);
         checkUnknown(ResultCodes.AckResult.UNKNOWN);
         checkGeneric(ResultCodes.AckResult.UNKNOWN);
     }
 
     @Test
-    public void limitMessagesTest() {
+    void limitMessagesTest() {
         checkIfNotGeneric(ResultCodes.AckResult.LIMIT_MESSAGES);
         checkLimitMessages(ResultCodes.AckResult.LIMIT_MESSAGES);
     }
 
     @Test
-    public void limitBytesTest() {
+    void limitBytesTest() {
         checkIfNotGeneric(ResultCodes.AckResult.LIMIT_BYTES);
         checkLimitBytes(ResultCodes.AckResult.LIMIT_BYTES);
     }
 
     @Test
-    public void storageFailureTest() {
+    void storageFailureTest() {
         checkIfNotGeneric(ResultCodes.AckResult.STORAGE_FAILURE);
         checkStorageFailure(ResultCodes.AckResult.STORAGE_FAILURE);
     }

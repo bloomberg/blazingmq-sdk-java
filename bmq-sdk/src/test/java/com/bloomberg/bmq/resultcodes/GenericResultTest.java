@@ -33,114 +33,114 @@ import org.junit.jupiter.api.Test;
 // ================================================================
 // GenericResult tests
 // ================================================================
-public class GenericResultTest {
+class GenericResultTest {
 
-    public abstract static class BaseTest {
-        public void isSuccessTest(ResultCodes.GenericCode obj) {
+    abstract static class BaseTest {
+        void isSuccessTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isSuccess());
         }
 
-        public void isFailureTest(ResultCodes.GenericCode obj) {
+        void isFailureTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isFailure());
         }
 
-        public void isCanceledTest(ResultCodes.GenericCode obj) {
+        void isCanceledTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isCanceled());
         }
 
-        public void isInvalidArgumentTest(ResultCodes.GenericCode obj) {
+        void isInvalidArgumentTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isInvalidArgument());
         }
 
-        public void isNotConnectedTest(ResultCodes.GenericCode obj) {
+        void isNotConnectedTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isNotConnected());
         }
 
-        public void isNotReadyTest(ResultCodes.GenericCode obj) {
+        void isNotReadyTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isNotReady());
         }
 
-        public void isNotSupportedTest(ResultCodes.GenericCode obj) {
+        void isNotSupportedTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isNotSupproted());
         }
 
-        public void isRefusedTest(ResultCodes.GenericCode obj) {
+        void isRefusedTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isRefused());
         }
 
-        public void isTimeoutTest(ResultCodes.GenericCode obj) {
+        void isTimeoutTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isTimeout());
         }
 
-        public void isUnknownTest(ResultCodes.GenericCode obj) {
+        void isUnknownTest(ResultCodes.GenericCode obj) {
             assertFalse(obj.isUnknown());
         }
     }
 
-    public static class SuccessTest extends BaseTest {
+    static class SuccessTest extends BaseTest {
         @Override
         public void isSuccessTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isSuccess());
         }
     }
 
-    public abstract static class FailureStatusTest extends BaseTest {
+    abstract static class FailureStatusTest extends BaseTest {
         @Override
         public void isFailureTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isFailure());
         }
     }
 
-    public static class CanceledTest extends FailureStatusTest {
+    static class CanceledTest extends FailureStatusTest {
         @Override
         public void isCanceledTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isCanceled());
         }
     }
 
-    public static class InvalidArgumentTest extends FailureStatusTest {
+    static class InvalidArgumentTest extends FailureStatusTest {
         @Override
         public void isInvalidArgumentTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isInvalidArgument());
         }
     }
 
-    public static class NotConnectedTest extends FailureStatusTest {
+    static class NotConnectedTest extends FailureStatusTest {
         @Override
         public void isNotConnectedTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isNotConnected());
         }
     }
 
-    public static class NotReadyTest extends FailureStatusTest {
+    static class NotReadyTest extends FailureStatusTest {
         @Override
         public void isNotReadyTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isNotReady());
         }
     }
 
-    public static class NotSupportedTest extends FailureStatusTest {
+    static class NotSupportedTest extends FailureStatusTest {
         @Override
         public void isNotSupportedTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isNotSupproted());
         }
     }
 
-    public static class RefusedTest extends FailureStatusTest {
+    static class RefusedTest extends FailureStatusTest {
         @Override
         public void isRefusedTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isRefused());
         }
     }
 
-    public static class TimeoutTest extends FailureStatusTest {
+    static class TimeoutTest extends FailureStatusTest {
         @Override
         public void isTimeoutTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isTimeout());
         }
     }
 
-    public static class UnknownTest extends FailureStatusTest {
+    static class UnknownTest extends FailureStatusTest {
         @Override
         public void isUnknownTest(ResultCodes.GenericCode obj) {
             assertTrue(obj.isUnknown());
@@ -148,49 +148,49 @@ public class GenericResultTest {
     }
 
     @Test
-    public void timeOutTest() {
+    void timeOutTest() {
         checkIfGeneric(ResultCodes.GenericResult.TIMEOUT);
         checkTimeout(ResultCodes.GenericResult.TIMEOUT);
     }
 
     @Test
-    public void notConnectedTest() {
+    void notConnectedTest() {
         checkIfGeneric(ResultCodes.GenericResult.NOT_CONNECTED);
         checkNotConnected(ResultCodes.GenericResult.NOT_CONNECTED);
     }
 
     @Test
-    public void canceledTest() {
+    void canceledTest() {
         checkIfGeneric(ResultCodes.GenericResult.CANCELED);
         checkCanceled(ResultCodes.GenericResult.CANCELED);
     }
 
     @Test
-    public void notSupportedTest() {
+    void notSupportedTest() {
         checkIfGeneric(ResultCodes.GenericResult.NOT_SUPPORTED);
         checkNotSupported(ResultCodes.GenericResult.NOT_SUPPORTED);
     }
 
     @Test
-    public void refusedTest() {
+    void refusedTest() {
         checkIfGeneric(ResultCodes.GenericResult.REFUSED);
         checkRefused(ResultCodes.GenericResult.REFUSED);
     }
 
     @Test
-    public void invalidArgumentTest() {
+    void invalidArgumentTest() {
         checkIfGeneric(ResultCodes.GenericResult.INVALID_ARGUMENT);
         checkInvalidArgument(ResultCodes.GenericResult.INVALID_ARGUMENT);
     }
 
     @Test
-    public void notReadyTest() {
+    void notReadyTest() {
         checkIfGeneric(ResultCodes.GenericResult.NOT_READY);
         checkNotReady(ResultCodes.GenericResult.NOT_READY);
     }
 
     @Test
-    public void unknownTest() {
+    void unknownTest() {
         checkIfGeneric(ResultCodes.GenericResult.UNKNOWN);
         checkUnknown(ResultCodes.GenericResult.UNKNOWN);
     }

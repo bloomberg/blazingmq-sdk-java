@@ -20,10 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.bloomberg.bmq.ResultCodes;
 
-public class GenericResultChecks {
+class GenericResultChecks {
 
-    public static void checkPredicates(
-            GenericResultTest.BaseTest test, ResultCodes.GenericCode obj) {
+    static void checkPredicates(GenericResultTest.BaseTest test, ResultCodes.GenericCode obj) {
         test.isSuccessTest(obj);
         test.isFailureTest(obj);
         test.isCanceledTest(obj);
@@ -36,47 +35,47 @@ public class GenericResultChecks {
         test.isUnknownTest(obj);
     }
 
-    public static void checkIfGeneric(ResultCodes.GenericCode obj) {
+    static void checkIfGeneric(ResultCodes.GenericCode obj) {
         assertEquals(obj, obj.getGeneralResult());
     }
 
-    public static void checkIfNotGeneric(ResultCodes.GenericCode obj) {
+    static void checkIfNotGeneric(ResultCodes.GenericCode obj) {
         assertNotEquals(obj, obj.getGeneralResult());
     }
 
-    public static void checkSuccess(ResultCodes.GenericCode obj) {
+    static void checkSuccess(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.SuccessTest(), obj);
     }
 
-    public static void checkTimeout(ResultCodes.GenericCode obj) {
+    static void checkTimeout(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.TimeoutTest(), obj);
     }
 
-    public static void checkNotConnected(ResultCodes.GenericCode obj) {
+    static void checkNotConnected(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.NotConnectedTest(), obj);
     }
 
-    public static void checkCanceled(ResultCodes.GenericCode obj) {
+    static void checkCanceled(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.CanceledTest(), obj);
     }
 
-    public static void checkNotSupported(ResultCodes.GenericCode obj) {
+    static void checkNotSupported(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.NotSupportedTest(), obj);
     }
 
-    public static void checkRefused(ResultCodes.GenericCode obj) {
+    static void checkRefused(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.RefusedTest(), obj);
     }
 
-    public static void checkInvalidArgument(ResultCodes.GenericCode obj) {
+    static void checkInvalidArgument(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.InvalidArgumentTest(), obj);
     }
 
-    public static void checkNotReady(ResultCodes.GenericCode obj) {
+    static void checkNotReady(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.NotReadyTest(), obj);
     }
 
-    public static void checkUnknown(ResultCodes.GenericCode obj) {
+    static void checkUnknown(ResultCodes.GenericCode obj) {
         checkPredicates(new GenericResultTest.UnknownTest(), obj);
     }
 }

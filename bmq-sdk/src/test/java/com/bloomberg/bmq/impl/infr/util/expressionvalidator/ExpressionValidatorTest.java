@@ -23,16 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class ExpressionValidatorTest {
-    private String inputExpression;
-    private Boolean expectedResult;
-    private String expectedErrorMessage;
-
-    public void initExpressionValidatorTest(
-            String inputExpression, Boolean expectedResult, String expectedErrorMessage) {
-        this.inputExpression = inputExpression;
-        this.expectedResult = expectedResult;
-        this.expectedErrorMessage = expectedErrorMessage;
-    }
 
     private static String makeTooManyOperators() {
         int numOperators = ExpressionValidator.MAX_OPERATORS + 1;
@@ -347,7 +337,6 @@ public class ExpressionValidatorTest {
     public void testExpressionValidator(
             String inputExpression, Boolean expectedResult, String expectedErrorMessage)
             throws java.io.IOException {
-        initExpressionValidatorTest(inputExpression, expectedResult, expectedErrorMessage);
         try (java.io.Reader expression = new java.io.StringReader(inputExpression)) {
             ValidationResult result = ExpressionValidator.validate(expression);
             assertEquals(result.isSuccess(), expectedResult);
