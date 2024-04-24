@@ -15,16 +15,18 @@
  */
 package com.bloomberg.bmq;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-public class UriTest {
+class UriTest {
 
     @Test
-    public void testBasic() {
+    void testBasic() {
 
         String uriStr = "bmq://my.domain/queue-foo-bar?id=my.app";
 
@@ -41,7 +43,7 @@ public class UriTest {
     }
 
     @Test
-    public void testValidParsing() {
+    void testValidParsing() {
         {
             String uriStr = "bmq://ts.trades.myapp/my.queue";
             Uri obj = new Uri(uriStr);
@@ -91,43 +93,41 @@ public class UriTest {
         }
     }
 
-    @Test
-    public void testInvalidParsing() {
-        String[] URIs = {
-            "",
-            "foobar",
-            "bb://",
-            "bmq://",
-            "bmq://a/",
-            "bmq://$%@/ts.trades.myapp/queue@sss",
-            "bb:///ts.trades.myapp/myqueue",
-            "bmq://ts.trades.myapp/",
-            "bmq://ts.trades.myapp/queue?id=",
-            "bmq://ts.trades.myapp/queue?bs=a",
-            "bmq://ts.trades.myapp/queue?",
-            "bmq://ts.trades.myapp/queue?id=",
-            "bmq://ts.trades.myapp/queue&id==",
-            "bmq://ts.trades.myapp/queue&id=foo",
-            "bmq://ts.trades.myapp/queue?id=foo&",
-            "bmq://ts.trades.myapp/queue?pid=foo",
-            "bmq://ts.trades.myapp.~/queue",
-            "bmq://ts.trades~myapp/queue",
-            "bmq://ts.trades.myapp.~a_b/queue"
-        };
-
-        for (String uriStr : URIs) {
-            try {
-                new Uri(uriStr);
-                // Shouldn't be here
-                fail();
-            } catch (RuntimeException e) {
-                // OK
-            }
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "",
+                "foobar",
+                "bb://",
+                "bmq://",
+                "bmq://a/",
+                "bmq://$%@/ts.trades.myapp/queue@sss",
+                "bb:///ts.trades.myapp/myqueue",
+                "bmq://ts.trades.myapp/",
+                "bmq://ts.trades.myapp/queue?id=",
+                "bmq://ts.trades.myapp/queue?bs=a",
+                "bmq://ts.trades.myapp/queue?",
+                "bmq://ts.trades.myapp/queue?id=",
+                "bmq://ts.trades.myapp/queue&id==",
+                "bmq://ts.trades.myapp/queue&id=foo",
+                "bmq://ts.trades.myapp/queue?id=foo&",
+                "bmq://ts.trades.myapp/queue?pid=foo",
+                "bmq://ts.trades.myapp.~/queue",
+                "bmq://ts.trades~myapp/queue",
+                "bmq://ts.trades.myapp.~a_b/queue"
+            })
+    void testInvalidParsing(String uri) {
+        try {
+            new Uri(uri);
+            // Shouldn't be here
+            fail();
+        } catch (RuntimeException e) {
+            // OK
         }
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         // Equals with the same string URI
         {
             String uriStr = "bmq://my.domain/queue-foo-bar?id=my.app";

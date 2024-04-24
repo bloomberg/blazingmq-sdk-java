@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.QueueFlags;
 import com.bloomberg.bmq.QueueOptions;
@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,7 +140,7 @@ public class NettyConsumerIT {
     }
 
     @Test
-    public void testConsumer() throws IOException {
+    void testConsumer() throws IOException {
 
         logger.info("====================================================================");
         logger.info("BEGIN Testing NettyConsumerIT getting message from the BlazingMQ Broker.");

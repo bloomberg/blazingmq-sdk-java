@@ -15,26 +15,26 @@
  */
 package com.bloomberg.bmq.impl.infr.net;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NetResolverTest {
+class NetResolverTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testValidHosts() {
+    void testValidHosts() {
 
         NetResolver nr = new NetResolver();
         URI uri = nr.getNextUri();
@@ -70,7 +70,7 @@ public class NetResolverTest {
     }
 
     @Test
-    public void testInvalidHosts() {
+    void testInvalidHosts() {
 
         NetResolver nr = new NetResolver();
 
@@ -93,7 +93,7 @@ public class NetResolverTest {
     }
 
     @Test
-    public void testUnknownHost() throws URISyntaxException, InterruptedException {
+    void testUnknownHost() throws URISyntaxException {
 
         NetResolver nr = new NetResolver();
         assertFalse(nr.isUnknownHost());

@@ -15,22 +15,22 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.MessageGUID;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfirmMessageIteratorTest {
+class ConfirmMessageIteratorTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testWithBuilder() throws IOException {
+    void testWithBuilder() throws IOException {
         String GUID = "0000000000003039CD8101000000270F";
         final int NUM_MSGS = 1000;
 

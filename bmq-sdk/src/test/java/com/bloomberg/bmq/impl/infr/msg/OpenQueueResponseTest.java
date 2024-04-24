@@ -15,16 +15,16 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OpenQueueResponseTest {
+class OpenQueueResponseTest {
 
     @Test
-    public void testReset() {
+    void testReset() {
         OpenQueueResponse openQueueResponse = new OpenQueueResponse();
         assertNull(openQueueResponse.getOriginalRequest());
         assertNull(openQueueResponse.getRoutingConfiguration());
@@ -38,7 +38,7 @@ public class OpenQueueResponseTest {
     }
 
     @Test
-    public void testCreateNewInstance() {
+    void testCreateNewInstance() {
         OpenQueueResponse openQueueResponse = new OpenQueueResponse();
         OpenQueueResponse responseBefore = openQueueResponse;
         openQueueResponse = (OpenQueueResponse) openQueueResponse.createNewInstance();

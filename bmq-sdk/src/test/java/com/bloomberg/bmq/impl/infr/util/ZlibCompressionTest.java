@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.util;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
@@ -30,11 +30,11 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ZlibCompressionTest {
+class ZlibCompressionTest {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final String TEXT =
@@ -43,7 +43,7 @@ public class ZlibCompressionTest {
             "eJwLzs9NVSguKcrMS1cozyzJUCgGCZSkVpQoJCbll5aA+SUZIOnEvBQgzi/JSC1C0QETw6opN78oFQBxgiXz";
 
     @Test
-    public void testCompress() throws IOException {
+    void testCompress() throws IOException {
         // Prepare expected data
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
@@ -91,7 +91,7 @@ public class ZlibCompressionTest {
     }
 
     @Test
-    public void testDecompress() throws IOException {
+    void testDecompress() throws IOException {
         ZlibCompression compression = new ZlibCompression();
 
         byte[] zipped = Base64.getDecoder().decode(ZIPPED64);

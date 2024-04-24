@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.QueueFlags;
@@ -58,11 +58,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BrokerSessionStressIT {
+class BrokerSessionStressIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -265,7 +265,7 @@ public class BrokerSessionStressIT {
                 assertNotNull(data);
 
                 // Check ACK status
-                assertEquals(ackMsg.status(), ResultCodes.AckResult.SUCCESS);
+                assertEquals(ResultCodes.AckResult.SUCCESS, ackMsg.status());
 
                 // Check Correlation IDs
                 assertEquals(putMsg.correlationId(), ackMsg.correlationId());
@@ -277,7 +277,7 @@ public class BrokerSessionStressIT {
                 if (reader.getSubQueueId() != SubQueueIdInfo.DEFAULT_SUB_ID) {
                     Integer[] subQueueIds = pshMsg.subQueueIds();
                     assertNotNull(subQueueIds);
-                    assertEquals(subQueueIds.length, 1);
+                    assertEquals(1, subQueueIds.length);
                     assertTrue(reader.getSubscriptionIdMap().containsKey(subQueueIds[0]));
                 }
 
@@ -391,7 +391,7 @@ public class BrokerSessionStressIT {
     }
 
     @Test
-    public void testMultipleEvents() throws IOException {
+    void testMultipleEvents() throws IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queue, verify the payload.
 
@@ -413,7 +413,7 @@ public class BrokerSessionStressIT {
     }
 
     @Test
-    public void testMultipleEventsNoPushWait() throws IOException {
+    void testMultipleEventsNoPushWait() throws IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // waiting only for related ACK messages.
         // Receive related PUSH messages from the queue, verify the payload.
@@ -466,7 +466,7 @@ public class BrokerSessionStressIT {
     }
 
     @Test
-    public void testMultipleSessionStartStop() throws IOException {
+    void testMultipleSessionStartStop() throws IOException {
 
         logger.info("===========================================");
         logger.info("BEGIN Testing testMultipleSessionStartStop.");
@@ -516,7 +516,7 @@ public class BrokerSessionStressIT {
     }
 
     @Test
-    public void testBigEvent() throws IOException {
+    void testBigEvent() throws IOException {
         // Send a single PUT messages with a big payload via native Broker,
         // receive related PUSH message from the queue, verify the payload.
 
@@ -538,7 +538,7 @@ public class BrokerSessionStressIT {
     }
 
     @Test
-    public void testFanoutThroughput() throws IOException {
+    void testFanoutThroughput() throws IOException {
         // Send multiple PUT messages each with unique payload via native Broker,
         // receive related PUSH messages from the queue, verify the payload.
 

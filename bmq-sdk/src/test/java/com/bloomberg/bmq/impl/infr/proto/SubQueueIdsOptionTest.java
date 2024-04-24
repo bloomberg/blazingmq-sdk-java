@@ -15,24 +15,24 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubQueueIdsOptionTest {
+class SubQueueIdsOptionTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         // Null header
         try {
             new SubQueueIdsOption(null);
@@ -61,7 +61,7 @@ public class SubQueueIdsOptionTest {
     }
 
     @Test
-    public void testStreamIn() throws IOException {
+    void testStreamIn() throws IOException {
         ByteBuffer bb =
                 ByteBuffer.wrap(
                         new byte[] {

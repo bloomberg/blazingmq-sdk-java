@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 import com.google.gson.Gson;
@@ -29,12 +29,12 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import java.lang.reflect.Type;
 import java.time.Duration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SessionOptionsTest {
+class SessionOptionsTest {
 
     @Test
-    public void testWaterMarks() {
+    void testWaterMarks() {
         // Negative LWM
         try {
             SessionOptions.builder()
@@ -104,7 +104,7 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void testStatsDumpInterval() {
+    void testStatsDumpInterval() {
         // Negative SDI
         try {
             SessionOptions.builder().setStatsDumpInterval(Duration.ofNanos(-1));
@@ -122,7 +122,7 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void testHostHealthMonitor() {
+    void testHostHealthMonitor() {
         // Default value is null
         assertNull(SessionOptions.createDefault().hostHealthMonitor());
 
@@ -146,7 +146,7 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void testBuilderWithOptions() {
+    void testBuilderWithOptions() {
         // GSON cannot serialize Duration type, so add simple adapter to convert Duration to string
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(
@@ -160,12 +160,12 @@ public class SessionOptionsTest {
                 });
         Gson gson = gsonBuilder.create();
 
-        SessionOptions defaulOptions = SessionOptions.createDefault();
-        assertEquals(gson.toJson(defaulOptions), gson.toJson(SessionOptions.builder().build()));
+        SessionOptions defaultOptions = SessionOptions.createDefault();
+        assertEquals(gson.toJson(defaultOptions), gson.toJson(SessionOptions.builder().build()));
 
         assertEquals(
-                gson.toJson(defaulOptions),
-                gson.toJson(SessionOptions.builder(defaulOptions).build()));
+                gson.toJson(defaultOptions),
+                gson.toJson(SessionOptions.builder(defaultOptions).build()));
 
         Duration startTimeout = Duration.ofSeconds(1);
         Duration stopTimeout = Duration.ofMinutes(1);
@@ -176,7 +176,7 @@ public class SessionOptionsTest {
                         .setStopTimeout(stopTimeout)
                         .build();
 
-        assertNotEquals(gson.toJson(defaulOptions), gson.toJson(newOptions));
+        assertNotEquals(gson.toJson(defaultOptions), gson.toJson(newOptions));
         assertEquals(
                 gson.toJson(newOptions), gson.toJson(SessionOptions.builder(newOptions).build()));
     }

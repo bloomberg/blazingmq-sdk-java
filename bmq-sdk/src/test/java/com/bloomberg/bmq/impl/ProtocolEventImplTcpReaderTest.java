@@ -15,9 +15,9 @@
  */
 package com.bloomberg.bmq.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
@@ -45,11 +45,11 @@ import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProtocolEventImplTcpReaderTest {
+class ProtocolEventImplTcpReaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -71,7 +71,7 @@ public class ProtocolEventImplTcpReaderTest {
     }
 
     @Test
-    public void testIODump() throws IOException, InterruptedException {
+    void testIODump() throws IOException, InterruptedException {
         logger.info("========================================================");
         logger.info("BEGIN Testing ProtocolEventImplTcpReaderTest testIODump.");
         logger.info("========================================================");
@@ -193,7 +193,7 @@ public class ProtocolEventImplTcpReaderTest {
     }
 
     @Test
-    public void testPartialReading() throws IOException {
+    void testPartialReading() throws IOException {
 
         // Check that ProtocolEventTcpReader correctly reads BlazingMQ events
         // even if incoming buffer contains partial EventImpl header or body.

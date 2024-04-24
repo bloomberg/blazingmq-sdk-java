@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
@@ -26,16 +26,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventImplHeaderTest {
+class EventImplHeaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testStreamIn() throws IOException {
+    void testStreamIn() throws IOException {
         try (InputStream is =
                 this.getClass()
                         .getResourceAsStream(MessagesTestSamples.STATUS_MSG_27032018.filePath())) {
@@ -69,7 +69,7 @@ public class EventImplHeaderTest {
     }
 
     @Test
-    public void testStreamInFragmented() throws IOException {
+    void testStreamInFragmented() throws IOException {
         try (InputStream is =
                 this.getClass()
                         .getResourceAsStream(MessagesTestSamples.STATUS_MSG_FRAGMENT.filePath())) {
@@ -103,7 +103,7 @@ public class EventImplHeaderTest {
     }
 
     @Test
-    public void testStreamOut() throws IOException {
+    void testStreamOut() throws IOException {
         // Plan:
         // - Create an EventHeader instance, populate it and stream it out.
         // - Compare the streamed out representation with the one stored in the
@@ -129,7 +129,7 @@ public class EventImplHeaderTest {
     }
 
     @Test
-    public void testGetters() {
+    void testGetters() {
         // Ensure that getters on a default constructed EventHeader return
         // correct values.
 
@@ -143,7 +143,7 @@ public class EventImplHeaderTest {
     }
 
     @Test
-    public void testSetters() {
+    void testSetters() {
         // Set the maximum values for various fields as allowed by the
         // EventHeader struct, and ensure that getters return the same values.
 

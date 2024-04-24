@@ -7,7 +7,7 @@
 # USAGE
 # =====
 #   docker-build.sh image_name
-#   BMQ_DOCKER_IMAGE=image_name docker_build.sh
+#   BMQ_DOCKER_IMAGE=image_name docker-build.sh
 
 image=""
 

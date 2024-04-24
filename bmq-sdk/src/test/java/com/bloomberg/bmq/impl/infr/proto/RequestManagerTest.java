@@ -15,11 +15,11 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.impl.infr.msg.ControlMessageChoice;
@@ -41,11 +41,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RequestManagerTest {
+class RequestManagerTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -173,7 +173,7 @@ public class RequestManagerTest {
     }
 
     @Test
-    public void testCallbackReentrance() {
+    void testCallbackReentrance() {
 
         /*
          * 1. Send one Request using RequestManager and a test Channel.
@@ -209,7 +209,7 @@ public class RequestManagerTest {
     }
 
     @Test
-    public void testRequestTimeout() {
+    void testRequestTimeout() {
         /*
          * 1. Set request timeout duration.
          * 2. Connect via channel and disable pseudo-server.
@@ -245,7 +245,7 @@ public class RequestManagerTest {
     }
 
     @Test
-    public void testCancelAllEvents() {
+    void testCancelAllEvents() {
         /*
          * 1. Set request timeout duration.
          * 2. Connect via channel and disable pseudo-server.
@@ -294,7 +294,7 @@ public class RequestManagerTest {
     }
 
     @Test
-    public void testAsyncNotifier() {
+    void testAsyncNotifier() {
         channel = new Channel();
         eventHandler = new EventHandler();
         scheduler = Executors.newSingleThreadScheduledExecutor();

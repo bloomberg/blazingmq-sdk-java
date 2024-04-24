@@ -20,23 +20,23 @@ import static com.bloomberg.bmq.impl.infr.stat.StatsUtil.formatCenter;
 import static com.bloomberg.bmq.impl.infr.stat.StatsUtil.formatNum;
 import static com.bloomberg.bmq.impl.infr.stat.StatsUtil.numWidth;
 import static com.bloomberg.bmq.impl.infr.stat.StatsUtil.repeatCharacter;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.stat.StatsUtil.Format;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatsUtilTest {
+class StatsUtilTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testColumnWidth() {
+    void testColumnWidth() {
         // Null table
         try {
             columnWidth(null, -1, -1, Format.NUM);
@@ -83,7 +83,7 @@ public class StatsUtilTest {
     }
 
     @Test
-    public void testColumnWidthWithSummary() {
+    void testColumnWidthWithSummary() {
         // Null summary
         try {
             columnWidth(new ArrayList<>(), null, -1, -1, Format.NUM);
@@ -123,7 +123,7 @@ public class StatsUtilTest {
     }
 
     @Test
-    public void testFormatCenter() {
+    void testFormatCenter() {
         // Null string
         try {
             formatCenter(null, 0);
@@ -156,7 +156,7 @@ public class StatsUtilTest {
     }
 
     @Test
-    public void testFormatNum() {
+    void testFormatNum() {
         // Negative number
         try {
             formatNum(-1, Format.NUM, false);
@@ -218,7 +218,7 @@ public class StatsUtilTest {
     }
 
     @Test
-    public void testNumWidth() {
+    void testNumWidth() {
         // Negative number
         try {
             numWidth(-1, Format.NUM, false);
@@ -280,7 +280,7 @@ public class StatsUtilTest {
     }
 
     @Test
-    public void testRepeatCharacter() {
+    void testRepeatCharacter() {
         // Null builder
         try {
             repeatCharacter(null, 'c', -1);

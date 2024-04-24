@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
@@ -23,16 +23,16 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfirmEventImplBuilderTest {
+class ConfirmEventImplBuilderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testErrorMessages() throws IOException {
+    void testErrorMessages() throws IOException {
         EventBuilderResult res;
         ConfirmEventBuilder builder = new ConfirmEventBuilder();
         ConfirmMessage message = new ConfirmMessage();
@@ -51,7 +51,7 @@ public class ConfirmEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildConfirmMessage() throws IOException {
+    void testBuildConfirmMessage() throws IOException {
         String GUID = "0000000000003039CD8101000000270F";
         // Above hex string represents a valid guid with these values:
         //   TS = 12345

@@ -15,16 +15,16 @@
  */
 package com.bloomberg.bmq;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MessageGUIDTest {
+class MessageGUIDTest {
 
     @Test
-    public void testGUID() {
+    void testGUID() {
         // Test some valid & invalid hex reps
         final String INVALID_HEX_REP = "abcdefghijklmnopqrstuvwxyz012345";
         final String VALID_HEX_REP = "ABCDEF0123456789ABCDEF0123456789";

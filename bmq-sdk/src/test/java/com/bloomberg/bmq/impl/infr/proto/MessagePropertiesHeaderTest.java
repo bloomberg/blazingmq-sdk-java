@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
@@ -23,16 +23,16 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessagePropertiesHeaderTest {
+class MessagePropertiesHeaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testWithPattern() throws IOException {
+    void testWithPattern() throws IOException {
         class TestData {
             final String fileName;
             final int headerSize;
@@ -112,7 +112,7 @@ public class MessagePropertiesHeaderTest {
     }
 
     @Test
-    public void testGettersSetters() {
+    void testGettersSetters() {
         MessagePropertiesHeader mph = new MessagePropertiesHeader();
         assertEquals(MessagePropertiesHeader.HEADER_SIZE, mph.headerSize());
         assertEquals(MessagePropertyHeader.HEADER_SIZE, mph.messagePropertyHeaderSize());

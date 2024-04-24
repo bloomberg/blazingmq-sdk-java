@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
@@ -26,11 +26,11 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushHeaderTest {
+class PushHeaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -57,7 +57,7 @@ public class PushHeaderTest {
             BitUtil.oneMask(HEADER_WORDS_START_IDX, HEADER_WORDS_NUM_BITS);
 
     @Test
-    public void testStreamIn() throws IOException {
+    void testStreamIn() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUSH_MULTI_MSG.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -98,7 +98,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testStreamInZlib() throws IOException {
+    void testStreamInZlib() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUSH_MSG_ZLIB.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -127,7 +127,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testGetterSetterFlags() {
+    void testGetterSetterFlags() {
         PushHeader pushHeader = new PushHeader();
         int value = Integer.MAX_VALUE;
         int flagVal = ((value << FLAGS_START_IDX) & FLAGS_MASK) >>> FLAGS_START_IDX;
@@ -141,7 +141,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testGetterSetterHeaderWords() {
+    void testGetterSetterHeaderWords() {
         PushHeader pushHeader = new PushHeader();
         int value = Integer.MAX_VALUE;
         int headerWords = value & HEADER_WORDS_MASK;
@@ -155,7 +155,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testGetterSetterMessageWords() {
+    void testGetterSetterMessageWords() {
         PushHeader pushHeader = new PushHeader();
         int value = Integer.MAX_VALUE;
         int messageWords = value & MSG_WORDS_MASK;
@@ -169,7 +169,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testGetterSetterCompressionType() {
+    void testGetterSetterCompressionType() {
         PushHeader pushHeader = new PushHeader();
         assertEquals(0, pushHeader.compressionType());
 
@@ -187,7 +187,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testGetterSetterOptionWords() {
+    void testGetterSetterOptionWords() {
         PushHeader pushHeader = new PushHeader();
         int value = Integer.MAX_VALUE;
         int optionsWords =
@@ -205,7 +205,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testStreamOut() throws IOException {
+    void testStreamOut() throws IOException {
         PushHeader pushHeader = new PushHeader();
 
         pushHeader.setMessageWords(14);
@@ -243,7 +243,7 @@ public class PushHeaderTest {
     }
 
     @Test
-    public void testStreamOutZlib() throws IOException {
+    void testStreamOutZlib() throws IOException {
         PushHeader pushHeader = new PushHeader();
 
         pushHeader.setMessageWords(14);

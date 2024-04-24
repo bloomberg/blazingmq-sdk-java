@@ -15,22 +15,22 @@
  */
 package com.bloomberg.bmq.impl.infr.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ByteBufferInputStreamTest {
+class ByteBufferInputStreamTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testEmpty() {
+    void testEmpty() {
         ByteBuffer buf = ByteBuffer.allocate(0);
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
         assertEquals(0, bbis.available());
@@ -50,7 +50,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void testReadByte() throws IOException {
+    void testReadByte() throws IOException {
         ByteBuffer buf = ByteBuffer.allocate(1);
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
         assertEquals(1, bbis.available());
@@ -68,7 +68,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void testReadBytes() throws IOException {
+    void testReadBytes() throws IOException {
         ByteBuffer buf1 = ByteBuffer.allocate(1);
         ByteBuffer buf2 = ByteBuffer.allocate(1);
         buf1.put((byte) 'A').rewind();
@@ -94,7 +94,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void testSkipBytes() throws IOException {
+    void testSkipBytes() throws IOException {
         ByteBuffer buf1 = ByteBuffer.allocate(1);
         ByteBuffer buf2 = ByteBuffer.allocate(1);
         buf1.put((byte) 'A').rewind();
@@ -127,7 +127,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void testReadType() throws IOException {
+    void testReadType() throws IOException {
         ByteBuffer buf1 = ByteBuffer.allocate(1);
         ByteBuffer buf2 = ByteBuffer.allocate(1);
         buf1.put((byte) 1).rewind();
@@ -152,7 +152,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void testRead() throws IOException {
+    void testRead() throws IOException {
         ByteBuffer buf1 = ByteBuffer.allocate(1);
         ByteBuffer buf2 = ByteBuffer.allocate(1);
         buf1.put((byte) 1).rewind();

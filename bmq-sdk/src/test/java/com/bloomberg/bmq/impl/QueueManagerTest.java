@@ -15,16 +15,16 @@
  */
 package com.bloomberg.bmq.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 import com.bloomberg.bmq.Uri;
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ public class QueueManagerTest {
      * </ol>
      */
     @Test
-    public void insertActiveQueueTest() {
+    void insertActiveQueueTest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing QueueManager insertActiveQueueTest.");
         logger.info("==================================================================");
@@ -124,7 +124,7 @@ public class QueueManagerTest {
      * </ol>
      */
     @Test
-    public void removeActiveQueueTest() {
+    void removeActiveQueueTest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing QueueManager removeActiveQueueTest.");
         logger.info("==================================================================");
@@ -187,7 +187,7 @@ public class QueueManagerTest {
      * </ol>
      */
     @Test
-    public void insertExpiredQueueTest() {
+    void insertExpiredQueueTest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing QueueManager insertExpiredQueueTest.");
         logger.info("==================================================================");
@@ -236,7 +236,7 @@ public class QueueManagerTest {
      * </ol>
      */
     @Test
-    public void removeExpiredQueueTest() {
+    void removeExpiredQueueTest() {
         logger.info("==================================================================");
         logger.info("BEGIN Testing QueueManager removeExpiredQueueTest.");
         logger.info("==================================================================");
@@ -295,7 +295,7 @@ public class QueueManagerTest {
      * </ol>
      */
     @Test
-    public void subStreamCountTest() {
+    void subStreamCountTest() {
         logger.info("==============================================");
         logger.info("BEGIN Testing QueueManager subStreamCountTest.");
         logger.info("==============================================");

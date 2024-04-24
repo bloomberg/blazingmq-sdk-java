@@ -15,35 +15,33 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.CompressionAlgorithm;
 import com.bloomberg.bmq.impl.infr.util.ZlibCompression;
 import java.util.EnumSet;
 import java.util.Set;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CompressionAlgorithmTypeTest {
+class CompressionAlgorithmTypeTest {
 
     @Test
-    public void testToInt() {
+    void testToInt() {
         assertEquals(0, CompressionAlgorithmType.E_NONE.toInt());
         assertEquals(1, CompressionAlgorithmType.E_ZLIB.toInt());
     }
 
     @Test
-    public void testToAlgorithm() {
+    void testToAlgorithm() {
         assertEquals(CompressionAlgorithm.None, CompressionAlgorithmType.E_NONE.toAlgorithm());
         assertEquals(CompressionAlgorithm.Zlib, CompressionAlgorithmType.E_ZLIB.toAlgorithm());
     }
 
     @Test
-    public void testFromInt() {
+    void testFromInt() {
         for (CompressionAlgorithmType t : CompressionAlgorithmType.values()) {
             int i = t.toInt();
             assertEquals(t, CompressionAlgorithmType.fromInt(i));
@@ -85,7 +83,7 @@ public class CompressionAlgorithmTypeTest {
     }
 
     @Test
-    public void testFromAlgorithm() {
+    void testFromAlgorithm() {
         Set<CompressionAlgorithm> toCover = EnumSet.allOf(CompressionAlgorithm.class);
 
         for (CompressionAlgorithmType t : CompressionAlgorithmType.values()) {
@@ -99,7 +97,7 @@ public class CompressionAlgorithmTypeTest {
     }
 
     @Test
-    public void testGetCompression() {
+    void testGetCompression() {
         try {
             CompressionAlgorithmType.E_NONE.getCompression();
             fail(); // should not get here
@@ -107,8 +105,7 @@ public class CompressionAlgorithmTypeTest {
             assertEquals("No compression for type 'E_NONE'", e.getMessage());
         }
 
-        assertThat(
-                CompressionAlgorithmType.E_ZLIB.getCompression(),
-                instanceOf(ZlibCompression.class));
+        assertEquals(
+                ZlibCompression.class, CompressionAlgorithmType.E_ZLIB.getCompression().getClass());
     }
 }

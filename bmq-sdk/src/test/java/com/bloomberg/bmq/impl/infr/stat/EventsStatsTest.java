@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.stat;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +111,7 @@ public class EventsStatsTest {
     }
 
     @Test
-    public void testEmptyOutput() throws IOException {
+    void testEmptyOutput() throws IOException {
         EventsStats stats = new EventsStats();
 
         StringBuilder builder = new StringBuilder();
@@ -137,7 +137,7 @@ public class EventsStatsTest {
     }
 
     @Test
-    public void testSampleOutput() throws Exception {
+    void testSampleOutput() throws Exception {
         EventsStats stats = new EventsStats();
 
         Simulator simulator = new Simulator(stats);

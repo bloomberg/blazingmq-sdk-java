@@ -15,13 +15,13 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.AbstractSession;
 import com.bloomberg.bmq.AckMessage;
@@ -81,7 +81,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -502,7 +503,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testConnectionDown() throws BMQException, IOException {
+    void testConnectionDown() throws BMQException, IOException {
 
         logger.info("===========================================================");
         logger.info("BEGIN Testing SessionIT connection down.");
@@ -565,7 +566,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testAsyncConnection() throws BMQException, IOException {
+    void testAsyncConnection() throws BMQException, IOException {
 
         logger.info("================================================");
         logger.info("BEGIN Testing SessionIT async connection.");
@@ -628,7 +629,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueRestored() throws BMQException, IOException {
+    void testQueueRestored() throws BMQException, IOException {
 
         logger.info("==============================================");
         logger.info("BEGIN Testing SessionIT queue restored.");
@@ -730,7 +731,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueReadAndConfirm() throws BMQException, IOException {
+    void testQueueReadAndConfirm() throws BMQException, IOException {
 
         logger.info("=======================================================");
         logger.info("BEGIN Testing SessionIT testQueueReadAndConfirm.");
@@ -837,7 +838,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openConfigureCloseQueueAsyncTest() throws BMQException {
+    void openConfigureCloseQueueAsyncTest() throws BMQException {
         logger.info("=================================================================");
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueAsyncTest.");
         logger.info("=================================================================");
@@ -1215,7 +1216,7 @@ public class SessionIT {
 
     /** Tests for opening insensitive queue when host health changes */
     @Test
-    public void openInsensitiveQueueHostHeathChangesTest() throws BMQException {
+    void openInsensitiveQueueHostHeathChangesTest() throws BMQException {
         // For insensitive queues, there should be no suspend/resume requests
         // and QUEUE_SUSPENDED/QUEUE_RESUMED events.
 
@@ -1231,7 +1232,7 @@ public class SessionIT {
 
     /** Tests for opening sensitive queue when host health changes */
     @Test
-    public void openSensitiveQueueHostHeathChangesTest() throws BMQException {
+    void openSensitiveQueueHostHeathChangesTest() throws BMQException {
         // Sensitive queue, open before changing host health.
         // When opening queue in healthy state, open and open configure
         // requests should be sent.
@@ -1287,7 +1288,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openConfigureCloseQueueAsyncNullHandlerTest() {
+    void openConfigureCloseQueueAsyncNullHandlerTest() {
         logger.info("====================================================================");
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueAsyncNullHandlerTest.");
         logger.info("====================================================================");
@@ -1402,7 +1403,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openConfigureCloseQueueTest() throws BMQException {
+    void openConfigureCloseQueueTest() throws BMQException {
         logger.info("============================================================");
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueTest.");
         logger.info("============================================================");
@@ -1467,7 +1468,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openHealthSensitiveQueueNullHandlerTest() {
+    void openHealthSensitiveQueueNullHandlerTest() {
         logger.info("====================================================================");
         logger.info("BEGIN Testing SessionIT openConfigureCloseQueueAsyncNullHandlerTest.");
         logger.info("====================================================================");
@@ -1562,7 +1563,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void queueOpenErrorTest() throws BMQException {
+    void queueOpenErrorTest() throws BMQException {
         logger.info("==========================================");
         logger.info("BEGIN Testing SessionIT queueOpenErrorTest");
         logger.info("==========================================");
@@ -1656,12 +1657,13 @@ public class SessionIT {
      *   <li>stop session
      * </ul>
      */
-    // Disable this test for 2 reasons:
-    // - API misses convenient setters for Options, and it's not possible to override
-    // the default subQueueId of the mocked PushMessageImpl
-    // - we don't expose subscription id in Queue, and we need it to mock PushMessageImpl
-    // @Test
-    public void pushMessageTest() throws BMQException, IOException {
+    @Test
+    @Disabled(
+            "Disable this test for 2 reasons:\n"
+                    + "- API misses convenient setters for Options, and it's not possible to override "
+                    + "  the default subQueueId of the mocked PushMessageImpl\n"
+                    + "- we don't expose subscription id in Queue, and we need it to mock PushMessageImpl")
+    void pushMessageTest() throws BMQException, IOException {
         logger.info("===============================================");
         logger.info("BEGIN Testing SessionIT pushMessageTest.");
         logger.info("===============================================");
@@ -1731,7 +1733,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void queueConfigureNotSupported() throws BMQException {
+    void queueConfigureNotSupported() throws BMQException {
         logger.info("===========================================================");
         logger.info("BEGIN Testing SessionIT queueConfigureNotSupported.");
         logger.info("===========================================================");
@@ -1789,7 +1791,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void queueOpenAlreadyInProgress() throws BMQException {
+    void queueOpenAlreadyInProgress() throws BMQException {
         logger.info("===========================================================");
         logger.info("BEGIN Testing SessionIT queueOpenAlreadyInProgress.");
         logger.info("===========================================================");
@@ -1841,7 +1843,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void startSessionTimeoutTest() throws BMQException {
+    void startSessionTimeoutTest() throws BMQException {
 
         logger.info("========================================================");
         logger.info("BEGIN Testing SessionIT startSessionTimeoutTest.");
@@ -1886,7 +1888,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openQueueTimeoutTest() throws BMQException {
+    void openQueueTimeoutTest() throws BMQException {
 
         logger.info("=====================================================");
         logger.info("BEGIN Testing SessionIT openQueueTimeoutTest.");
@@ -1953,7 +1955,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openWriteQueueAppIdTest() throws BMQException {
+    void openWriteQueueAppIdTest() throws BMQException {
 
         logger.info("================================================");
         logger.info("BEGIN Testing SessionIT openWriteQueueAppIdTest.");
@@ -2032,7 +2034,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void openQueueConfigureTimeoutTest() throws BMQException {
+    void openQueueConfigureTimeoutTest() throws BMQException {
 
         logger.info("======================================================");
         logger.info("BEGIN Testing SessionIT openQueueConfigureTimeoutTest.");
@@ -2110,7 +2112,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueConfigurationFailedTest() throws BMQException {
+    void closeQueueConfigurationFailedTest() throws BMQException {
         logger.info("==================================================================");
         logger.info("BEGIN Testing SessionIT closeQueueConfigurationFailedTest.");
         logger.info("==================================================================");
@@ -2192,7 +2194,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueConfigurationTimeoutTest() {
+    void closeQueueConfigurationTimeoutTest() {
         logger.info("===========================================================");
         logger.info("BEGIN Testing SessionIT closeQueueConfigurationTimeoutTest.");
         logger.info("===========================================================");
@@ -2299,10 +2301,10 @@ public class SessionIT {
      *   <li>stop and linger broker session and stop server
      * </ul>
      */
-    // Temporarily disable this test
-    // Until achieved more stable repeatability on slow hosts
-    // @Test
-    public void closeQueueOnPendingConfigureRequest() {
+    @Test
+    @Disabled(
+            "Temporarily disable this test until achieved more stable repeatability on slow hosts")
+    void closeQueueOnPendingConfigureRequest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing SessionIT closeQueueOnPendingConfigureRequest.");
         logger.info("============================================================");
@@ -2499,7 +2501,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void closeQueueOnDeferredResumeRequest() {
+    void closeQueueOnDeferredResumeRequest() {
         logger.info("==========================================================");
         logger.info("BEGIN Testing SessionIT closeQueueOnDeferredResumeRequest.");
         logger.info("==========================================================");
@@ -2593,7 +2595,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void sequenceTimeoutTest() throws BMQException {
+    void sequenceTimeoutTest() throws BMQException {
         logger.info("============================================================");
         logger.info("BEGIN Testing SessionIT sequenceTimeoutTest.");
         logger.info("============================================================");
@@ -2655,7 +2657,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueFlush() throws BMQException, IOException {
+    void testQueueFlush() throws BMQException, IOException {
 
         logger.info("==============================================");
         logger.info("BEGIN Testing SessionIT testQueueFlush.");
@@ -2746,7 +2748,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueAck() throws BMQException, IOException {
+    void testQueueAck() throws BMQException, IOException {
 
         logger.info("=====================================");
         logger.info("BEGIN Testing SessionIT testQueueAck.");
@@ -2843,7 +2845,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testPushProperties() throws BMQException, IOException {
+    void testPushProperties() throws BMQException, IOException {
 
         logger.info("===========================================");
         logger.info("BEGIN Testing SessionIT testPushProperties.");
@@ -2997,7 +2999,7 @@ public class SessionIT {
                             boolFound = true;
 
                             assertEquals(MessageProperty.Type.BOOL, type);
-                            assertEquals(true, value);
+                            assertTrue((Boolean) value);
                             assertEquals(String.format(strPattern, true), str);
                             break;
                         case "byte":
@@ -3077,7 +3079,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueCompression() throws BMQException, IOException {
+    void testQueueCompression() throws BMQException, IOException {
 
         logger.info("=============================================");
         logger.info("BEGIN Testing SessionIT testQueueCompression.");
@@ -3233,7 +3235,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testBadSessionEventHandler() throws Exception {
+    void testBadSessionEventHandler() throws Exception {
         // 1) Bring up the broker.
         // 2) Create a Session with a special SessionEventHandler that throws
         // 3) Invoke session 'startAsync' and verify incoming StartStatus event
@@ -3308,7 +3310,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueFlushRestored() throws BMQException, IOException {
+    void testQueueFlushRestored() throws BMQException, IOException {
 
         logger.info("==============================================");
         logger.info("BEGIN Testing SessionIT queue flush restored.");
@@ -3440,7 +3442,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueFlushDown() throws Exception {
+    void testQueueFlushDown() throws Exception {
 
         logger.info("==============================================");
         logger.info("BEGIN Testing SessionIT queue flush down.");
@@ -3665,7 +3667,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testQueueClose() throws BMQException, IOException {
+    void queueClose() throws BMQException, IOException {
 
         logger.info("=======================================");
         logger.info("BEGIN Testing SessionIT testQueueClose.");
@@ -3750,17 +3752,17 @@ public class SessionIT {
      *   <li>start broker simulator in auto mode
      *   <li>create session
      *   <li>start session
-     *   <li>create and open subqueues asyncronously
+     *   <li>create and open subqueues asynchronously
      *   <li>check that proper events were handled by user-defined user handler
      *   <li>check that proper requests were sent
-     *   <li>close subqueues asyncronously
+     *   <li>close subqueues asynchronously
      *   <li>check that proper events were handled by user-defined user handler
      *   <li>check that proper requests were sent
      *   <li>stop session
      * </ul>
      */
     @Test
-    public void openCloseMultipleSubqueuesTest() throws BMQException {
+    void openCloseMultipleSubqueuesTest() throws BMQException {
         logger.info("=======================================================");
         logger.info("BEGIN Testing SessionIT openCloseMultipleSubqueuesTest.");
         logger.info("=======================================================");
@@ -4088,7 +4090,7 @@ public class SessionIT {
     }
 
     @Test
-    public void testCompleteHealthTransitions() throws IOException {
+    void testCompleteHealthTransitions() throws IOException {
         // Test complete health transitions when monitor provides null state
         // during first session start. Since null values are ignored, default
         // health state (Healthy) should be used instead.
@@ -4148,7 +4150,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void testIncompleteHealthTransitions() {
+    void testIncompleteHealthTransitions() {
         logger.info("========================================================");
         logger.info("BEGIN Testing SessionIT testIncompleteHealthTransitions.");
         logger.info("========================================================");
@@ -4390,7 +4392,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void testHealthChangesOnConnectionLost() {
+    void testHealthChangesOnConnectionLost() {
         logger.info("=========================================================");
         logger.info("BEGIN Testing SessionIT testHealthChangesOnConnectionLost");
         logger.info("=========================================================");
@@ -4553,7 +4555,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void configureSuspendedQueue() {
+    void configureSuspendedQueue() {
         logger.info("================================================");
         logger.info("BEGIN Testing SessionIT configureSuspendedQueue.");
         logger.info("================================================");
@@ -4736,7 +4738,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void reconfigureHostHealthSensitivity() {
+    void reconfigureHostHealthSensitivity() {
         logger.info("=========================================================");
         logger.info("BEGIN Testing SessionIT reconfigureHostHealthSensitivity.");
         logger.info("=========================================================");
@@ -4971,7 +4973,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void reconfigureHostHealthSensitivityErrors() {
+    void reconfigureHostHealthSensitivityErrors() {
         logger.info("===============================================================");
         logger.info("BEGIN Testing SessionIT reconfigureHostHealthSensitivityErrors.");
         logger.info("===============================================================");
@@ -5284,7 +5286,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void putBlockUnblock() throws IOException {
+    void putBlockUnblock() throws IOException {
         logger.info("========================================");
         logger.info("BEGIN Testing SessionIT putBlockUnblock.");
         logger.info("========================================");
@@ -5483,7 +5485,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void errorHealthResponse() {
+    void errorHealthResponse() {
         logger.info("============================================");
         logger.info("BEGIN Testing SessionIT errorHealthResponse.");
         logger.info("============================================");
@@ -5795,7 +5797,7 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    public void deferHealthRequestOnPendingStandalone() {
+    void deferHealthRequestOnPendingStandalone() {
         logger.info("==============================================================");
         logger.info("BEGIN Testing SessionIT deferHealthRequestOnPendingStandalone.");
         logger.info("==============================================================");

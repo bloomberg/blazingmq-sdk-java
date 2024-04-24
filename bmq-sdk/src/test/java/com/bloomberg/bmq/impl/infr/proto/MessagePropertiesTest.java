@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
@@ -29,16 +29,16 @@ import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessagePropertiesTest {
+class MessagePropertiesTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testWithPattern() throws IOException {
+    void testWithPattern() throws IOException {
         class TestData {
             final MessagesTestSamples.SampleFileMetadata sampleFile;
             final boolean streamInOld;
@@ -172,7 +172,7 @@ public class MessagePropertiesTest {
     }
 
     @Test
-    public void testStreamOut() throws IOException {
+    void testStreamOut() throws IOException {
         for (boolean isOldStyleProperties : new boolean[] {false, true}) {
             final boolean BOOL_VAL = true;
             final byte BYTE_VAL = 2;
@@ -295,7 +295,7 @@ public class MessagePropertiesTest {
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         MessagePropertiesImpl props = new MessagePropertiesImpl();
         props.setPropertyAsInt32("myProp", 123);
 
@@ -311,7 +311,7 @@ public class MessagePropertiesTest {
     }
 
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         final boolean BOOL_VAL = true;
         final byte BYTE_VAL = 2;
         final short SHORT_VAL = 12;
@@ -441,7 +441,7 @@ public class MessagePropertiesTest {
     }
 
     @Test
-    public void testToString() throws IOException {
+    void testToString() throws IOException {
         final boolean BOOL_VAL = true;
         final byte BYTE_VAL = 2;
         final short SHORT_VAL = 12;

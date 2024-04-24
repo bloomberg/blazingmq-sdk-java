@@ -15,13 +15,13 @@
  */
 package com.bloomberg.bmq.impl.infr.net;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.impl.infr.net.intf.ChannelStatusHandler;
@@ -52,7 +52,8 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -383,7 +384,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testReadWriteSync() {
+    void testReadWriteSync() {
         logger.info("=======================================================");
         logger.info("Testing NettyTcpConnection read/write in sync mode.");
         logger.info("=======================================================");
@@ -391,7 +392,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testReadWriteAsync() {
+    void testReadWriteAsync() {
         logger.info("=======================================================");
         logger.info("Testing NettyTcpConnection read/write in async mode.");
         logger.info("=======================================================");
@@ -449,7 +450,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testConnectDisconnectNoServerAsync() {
+    void testConnectDisconnectNoServerAsync() {
         logger.info("============================================================");
         logger.info("Testing NettyTcpConnection without server in async mode.");
         logger.info("============================================================");
@@ -457,7 +458,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testConnectDisconnectNoServerSync() {
+    void testConnectDisconnectNoServerSync() {
         logger.info("===========================================================");
         logger.info("Testing NettyTcpConnection without server in sync mode.");
         logger.info("===========================================================");
@@ -509,7 +510,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testConnectDisconnectWithServerAsync() {
+    void testConnectDisconnectWithServerAsync() {
         logger.info("=========================================================");
         logger.info("Testing NettyTcpConnection with server in async mode.");
         logger.info("=========================================================");
@@ -517,7 +518,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testConnectDisconnectWithServerSync() {
+    void testConnectDisconnectWithServerSync() {
         logger.info("========================================================");
         logger.info("Testing NettyTcpConnection with server in sync mode.");
         logger.info("========================================================");
@@ -525,7 +526,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testConnectDisconnectWithIntermittentServer() {
+    void testConnectDisconnectWithIntermittentServer() {
         logger.info("=======================================================");
         logger.info("Testing NettyTcpConnection with intermittent server.");
         logger.info("=======================================================");
@@ -578,7 +579,7 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testDisconnectWhileConnectionInProgress() {
+    void testDisconnectWhileConnectionInProgress() {
 
         logger.info("==========================================");
         logger.info("Testing NettyTcpConnection disconnect.");
@@ -631,7 +632,8 @@ public class NettyTcpConnectionTest {
         assertEquals(0, obj.linger());
     }
 
-    // @Test
+    @Test
+    @Disabled
     public void testChannelWaterMark() {
 
         // ====================================================================
@@ -737,8 +739,9 @@ public class NettyTcpConnectionTest {
         assertEquals(0, obj.linger());
     }
 
-    // @Test
-    public void testChannelWritable() {
+    @Test
+    @Disabled
+    void testChannelWritable() {
 
         // ====================================================================
         // DISABLED_TEST
@@ -826,8 +829,9 @@ public class NettyTcpConnectionTest {
         assertEquals(0, obj.linger());
     }
 
-    // @Test
-    public void testChannelWaterMarkSlowServer() {
+    @Test
+    @Disabled
+    void testChannelWaterMarkSlowServer() {
 
         // ====================================================================
         // DISABLED_TEST
@@ -930,10 +934,10 @@ public class NettyTcpConnectionTest {
     }
 
     @Test
-    public void testCompositeBuffer() {
-        // 1) In a child thread put 4 strigns into netty ByteBufs and add them into
+    void testCompositeBuffer() {
+        // 1) In a child thread put 4 strings into netty ByteBufs and add them into
         // CompositeByteBuf.
-        // 2) Store interal NIO buffers, clean related ByteBufs
+        // 2) Store internal NIO buffers, clean related ByteBufs
         // 3) In a main thread check content of the NIO buffers.
 
         logger.info("=============================================");

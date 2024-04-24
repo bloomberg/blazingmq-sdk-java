@@ -15,14 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
@@ -34,7 +34,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class ApplicationDataTest {
     static final double THRESHOLD = 0.0001;
 
     @Test
-    public void testEmpty() throws IOException {
+    void testEmpty() throws IOException {
         ApplicationData appData = new ApplicationData();
 
         assertEquals(0, appData.payloadSize());
@@ -61,7 +61,7 @@ public class ApplicationDataTest {
     }
 
     @Test
-    public void testStreamOut() throws IOException {
+    void testStreamOut() throws IOException {
         for (ByteBuffer[] payload :
                 new ByteBuffer[][] {null, generatePayload(0), generatePayload(1024)})
             for (MessagePropertiesImpl props :
@@ -82,7 +82,7 @@ public class ApplicationDataTest {
     }
 
     @Test
-    public void testStreamIn() throws IOException {
+    void testStreamIn() throws IOException {
         for (ByteBuffer[] payload :
                 new ByteBuffer[][] {null, generatePayload(0), generatePayload(1024)})
             for (MessagePropertiesImpl props :
@@ -103,7 +103,7 @@ public class ApplicationDataTest {
     }
 
     @Test
-    public void testStreamInInvalidCompression() throws IOException {
+    void testStreamInInvalidCompression() throws IOException {
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
         ByteBuffer[] payload = generatePayload(1024);

@@ -15,26 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ExpressionValidatorTest {
-    private String inputExpression;
-    private Boolean expectedResult;
-    private String expectedErrorMessage;
-
-    public ExpressionValidatorTest(
-            String inputExpression, Boolean expectedResult, String expectedErrorMessage) {
-        this.inputExpression = inputExpression;
-        this.expectedResult = expectedResult;
-        this.expectedErrorMessage = expectedErrorMessage;
-    }
 
     private static String makeTooManyOperators() {
         int numOperators = ExpressionValidator.MAX_OPERATORS + 1;
@@ -44,7 +32,6 @@ public class ExpressionValidatorTest {
         return builder.toString();
     }
 
-    @Parameterized.Parameters
     public static Collection<Object[]> testArguments() {
         return Arrays.asList(
                 new Object[][] {
@@ -345,8 +332,11 @@ public class ExpressionValidatorTest {
                 });
     }
 
-    @Test
-    public void testExpressionValidator() throws java.io.IOException {
+    @MethodSource("testArguments")
+    @ParameterizedTest
+    public void testExpressionValidator(
+            String inputExpression, Boolean expectedResult, String expectedErrorMessage)
+            throws java.io.IOException {
         try (java.io.Reader expression = new java.io.StringReader(inputExpression)) {
             ValidationResult result = ExpressionValidator.validate(expression);
             assertEquals(result.isSuccess(), expectedResult);

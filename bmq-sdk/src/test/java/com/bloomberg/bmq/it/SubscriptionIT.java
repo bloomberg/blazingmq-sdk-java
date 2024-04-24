@@ -15,10 +15,33 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.bloomberg.bmq.*;
+import com.bloomberg.bmq.AbstractSession;
+import com.bloomberg.bmq.AckMessage;
+import com.bloomberg.bmq.AckMessageHandler;
+import com.bloomberg.bmq.BMQException;
+import com.bloomberg.bmq.CompressionAlgorithm;
+import com.bloomberg.bmq.CorrelationId;
+import com.bloomberg.bmq.MessageProperties;
+import com.bloomberg.bmq.PushMessage;
+import com.bloomberg.bmq.PushMessageHandler;
+import com.bloomberg.bmq.PutMessage;
 import com.bloomberg.bmq.Queue;
+import com.bloomberg.bmq.QueueControlEvent;
+import com.bloomberg.bmq.QueueEventHandler;
+import com.bloomberg.bmq.QueueFlags;
+import com.bloomberg.bmq.QueueOptions;
+import com.bloomberg.bmq.Session;
+import com.bloomberg.bmq.SessionEvent;
+import com.bloomberg.bmq.SessionEventHandler;
+import com.bloomberg.bmq.SessionOptions;
+import com.bloomberg.bmq.Subscription;
+import com.bloomberg.bmq.Uri;
 import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
@@ -27,15 +50,19 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubscriptionIT {
+class SubscriptionIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -70,7 +97,7 @@ public class SubscriptionIT {
         }
 
         public void configure(QueueOptions options) {
-            assertTrue("Trying to configure not-opened queue", queue.isOpen());
+            assertTrue(queue.isOpen(), "Trying to configure not-opened queue");
 
             this.options = options;
 
@@ -280,7 +307,7 @@ public class SubscriptionIT {
         }
 
         public void openQueue(Uri uri) {
-            assertNull("Expect 'queue' to be null", queue);
+            assertNull(queue, "Expect 'queue' to be null");
 
             queue =
                     session.getQueue(
@@ -349,7 +376,7 @@ public class SubscriptionIT {
     }
 
     @Test
-    public void testBreathing() throws BMQException, IOException {
+    void testBreathing() throws BMQException, IOException {
         logger.info("=============================================");
         logger.info("BEGIN Testing SubscriptionIT testBreathing.");
         logger.info("=============================================");
@@ -357,7 +384,7 @@ public class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            Assert.assertFalse(broker.isOldStyleMessageProperties());
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -413,7 +440,7 @@ public class SubscriptionIT {
     }
 
     @Test
-    public void testFanout() throws BMQException, IOException {
+    void testFanout() throws BMQException, IOException {
         logger.info("=============================================");
         logger.info("BEGIN Testing SubscriptionIT testFanout.");
         logger.info("=============================================");
@@ -423,7 +450,7 @@ public class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            Assert.assertFalse(broker.isOldStyleMessageProperties());
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -482,7 +509,7 @@ public class SubscriptionIT {
     }
 
     @Test
-    public void testReuseQueueOptions() throws BMQException, IOException {
+    void testReuseQueueOptions() throws BMQException, IOException {
         logger.info("=============================================");
         logger.info("BEGIN Testing SubscriptionIT testReuseQueueOptions.");
         logger.info("=============================================");
@@ -492,7 +519,7 @@ public class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            Assert.assertFalse(broker.isOldStyleMessageProperties());
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -552,7 +579,7 @@ public class SubscriptionIT {
     }
 
     @Test
-    public void testUpdateSubscription() throws BMQException, IOException {
+    void testUpdateSubscription() throws BMQException, IOException {
         logger.info("=============================================");
         logger.info("BEGIN Testing SubscriptionIT testUpdateSubscription.");
         logger.info("=============================================");
@@ -562,7 +589,7 @@ public class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            Assert.assertFalse(broker.isOldStyleMessageProperties());
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -641,7 +668,7 @@ public class SubscriptionIT {
     }
 
     @Test
-    public void testStress() throws BMQException, IOException {
+    void testStress() throws BMQException, IOException {
         logger.info("=============================================");
         logger.info("BEGIN Testing SubscriptionIT testStress.");
         logger.info("=============================================");
@@ -654,7 +681,7 @@ public class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            Assert.assertFalse(broker.isOldStyleMessageProperties());
+            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 

@@ -15,12 +15,12 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
@@ -33,16 +33,16 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushMessageIteratorTest {
+class PushMessageIteratorTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testPatternWithOptions() throws IOException {
+    void testPatternWithOptions() throws IOException {
         ByteBuffer buf =
                 TestHelpers.readFile(MessagesTestSamples.PUSH_WITH_SUBQUEUE_IDS_MSG.filePath());
 
@@ -99,7 +99,7 @@ public class PushMessageIteratorTest {
     }
 
     @Test
-    public void testWithPattern() throws IOException {
+    void testWithPattern() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUSH_MULTI_MSG.filePath());
 
         PushEventImpl pushEvent = new PushEventImpl(new ByteBuffer[] {buf});
@@ -181,7 +181,7 @@ public class PushMessageIteratorTest {
     }
 
     @Test
-    public void testWithBuilder() throws IOException {
+    void testWithBuilder() throws IOException {
         final String PAYLOAD = "abcdefghijklmnopqrstuvwxyz";
         final int NUM_MSGS = 1000;
         final int FLAGS = PushHeaderFlags.setFlag(0, PushHeaderFlags.MESSAGE_PROPERTIES);
@@ -277,7 +277,7 @@ public class PushMessageIteratorTest {
     }
 
     @Test
-    public void testMultipleIterators() throws IOException {
+    void testMultipleIterators() throws IOException {
         // Verify that two message iterators in single thread mode don't affect each other.
         // 1. Using a pattern create PUSH event that contains 2 PUSH messages
         // 2. Create one message iterator and advance it with next()
@@ -302,7 +302,7 @@ public class PushMessageIteratorTest {
     }
 
     @Test
-    public void testMultipleCompressedMessages() throws IOException {
+    void testMultipleCompressedMessages() throws IOException {
         final PushEventBuilder builder = new PushEventBuilder();
 
         final byte[] bytes = new byte[Protocol.COMPRESSION_MIN_APPDATA_SIZE + 1];
@@ -363,7 +363,7 @@ public class PushMessageIteratorTest {
     }
 
     @Test
-    public void testUnknownCompression() throws IOException {
+    void testUnknownCompression() throws IOException {
         for (boolean isOldStyleProperties : new boolean[] {true, false}) {
             final byte[] bytes = new byte[Protocol.COMPRESSION_MIN_APPDATA_SIZE + 1];
 

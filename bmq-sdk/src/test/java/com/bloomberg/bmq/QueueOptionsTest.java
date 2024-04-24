@@ -15,21 +15,21 @@
  */
 package com.bloomberg.bmq;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueueOptionsTest {
+class QueueOptionsTest {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void breathingTest() {
+    void breathingTest() {
         // Create default options
         QueueOptions obj = QueueOptions.createDefault();
 
@@ -92,7 +92,7 @@ public class QueueOptionsTest {
     }
 
     @Test
-    public void mergeTest() {
+    void mergeTest() {
         QueueOptions baseOptions =
                 QueueOptions.builder()
                         .setConsumerPriority(2)

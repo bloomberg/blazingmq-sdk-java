@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.CorrelationId;
 import com.bloomberg.bmq.MessageProperties;
@@ -30,16 +30,16 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutMessageIteratorTest {
+class PutMessageIteratorTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testWithPattern() throws IOException {
+    void testWithPattern() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUT_MULTI_MSG.filePath());
 
         PutEventImpl putEvent = new PutEventImpl(new ByteBuffer[] {buf});
@@ -127,7 +127,7 @@ public class PutMessageIteratorTest {
     }
 
     @Test
-    public void testWithBuilder() throws IOException {
+    void testWithBuilder() throws IOException {
         final String PAYLOAD = "abcdefghijklmnopqrstuvwxyz";
         final int NUM_MSGS = 1000;
         final int FLAGS = PutHeaderFlags.setFlag(0, PutHeaderFlags.ACK_REQUESTED);
@@ -194,7 +194,7 @@ public class PutMessageIteratorTest {
     }
 
     @Test
-    public void testMultipleIterators() throws IOException {
+    void testMultipleIterators() throws IOException {
         // Verify that two message iterators in single thread mode don't affect each other.
         // 1. Using a pattern create PUT event that contains 2 PUT messages
         // 2. Create one message iterator and advance it with next()

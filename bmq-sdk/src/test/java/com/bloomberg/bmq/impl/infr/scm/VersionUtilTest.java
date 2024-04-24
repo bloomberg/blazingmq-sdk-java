@@ -15,32 +15,32 @@
  */
 package com.bloomberg.bmq.impl.infr.scm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.invoke.MethodHandles;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class VersionUtilTest {
+class VersionUtilTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testJarVersion() {
+    void testJarVersion() {
         String ver = VersionUtil.getJarVersion();
         assertNull(ver);
     }
 
     @Test
-    public void testSdkVersion() {
+    void testSdkVersion() {
         int ver = VersionUtil.getSdkVersion();
         assertEquals(999999, ver); // the default version
     }
 
     @Test
-    public void testVersionStringToInt() {
+    void testVersionStringToInt() {
         assertEquals(999999, VersionUtil.versionStringToInt("0.0"));
         assertEquals(999999, VersionUtil.versionStringToInt("0"));
         assertEquals(999999, VersionUtil.versionStringToInt("0"));

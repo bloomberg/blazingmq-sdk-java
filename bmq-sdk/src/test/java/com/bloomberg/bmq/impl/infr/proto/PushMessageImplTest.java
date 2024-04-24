@@ -15,14 +15,14 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.impl.QueueId;
@@ -35,16 +35,16 @@ import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushMessageImplTest {
+class PushMessageImplTest {
     static final int HEADER_WORDS = PushHeader.HEADER_SIZE_FOR_SCHEMA_ID / Protocol.WORD_SIZE;
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testStreamIn() throws Exception {
+    void testStreamIn() throws Exception {
         final MessagePropertiesImpl validProps = generateProps();
 
         final ByteBuffer[][] payloads =
@@ -79,7 +79,7 @@ public class PushMessageImplTest {
     }
 
     @Test
-    public void testStreamOut() throws Exception {
+    void testStreamOut() throws Exception {
         final MessagePropertiesImpl validProps = generateProps();
 
         final ByteBuffer[][] payloads =
@@ -116,7 +116,7 @@ public class PushMessageImplTest {
     }
 
     @Test
-    public void testSubQueueIds() throws IOException {
+    void testSubQueueIds() throws IOException {
         byte[] options =
                 new byte[] {
                     0b00001100, 0b01000000, 0b00000000, 0b00000101, // header
@@ -137,7 +137,7 @@ public class PushMessageImplTest {
     }
 
     @Test
-    public void testSubQueueIdsOld() throws IOException {
+    void testSubQueueIdsOld() throws IOException {
         byte[] options =
                 new byte[] {
                     0b00000100, 0b00000000, 0b00000000, 0b00000011, // header
@@ -156,7 +156,7 @@ public class PushMessageImplTest {
     }
 
     @Test
-    public void testSubQueueIdsBoth() throws IOException {
+    void testSubQueueIdsBoth() throws IOException {
         byte[] options =
                 new byte[] {
                     // New option
@@ -182,7 +182,7 @@ public class PushMessageImplTest {
     }
 
     @Test
-    public void testStreamInUnknownCompression() throws IOException {
+    void testStreamInUnknownCompression() throws IOException {
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
         ByteBuffer[] payload = generatePayload(1024);
 

@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
@@ -24,16 +24,16 @@ import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushEventImplBuilderTest {
+class PushEventImplBuilderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testPackPushMessage() throws IOException {
+    void testPackPushMessage() throws IOException {
         for (boolean isOldStyleProperties : new boolean[] {true, false}) {
             PushMessageImpl pushMsg = new PushMessageImpl();
             PushEventBuilder builder = new PushEventBuilder();
@@ -86,7 +86,7 @@ public class PushEventImplBuilderTest {
     }
 
     @Test
-    public void testBuildPushMessage() throws IOException {
+    void testBuildPushMessage() throws IOException {
         final String PAYLOAD = "abcdefghijklmnopqrstuvwxyz";
         final String GUID = "ABCDEF0123456789ABCDEF0123456789";
 

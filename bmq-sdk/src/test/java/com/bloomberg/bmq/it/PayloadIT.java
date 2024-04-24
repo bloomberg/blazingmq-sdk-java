@@ -15,9 +15,9 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.Uri;
@@ -28,16 +28,16 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PayloadIT {
+class PayloadIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testPayloadNetty() throws IOException {
+    void testPayloadNetty() throws IOException {
         // This is a complex test where a test payload is sent via Producer and
         // is received via Consumer.  It is expected that the incoming payload
         // should contain the initial message together with two message

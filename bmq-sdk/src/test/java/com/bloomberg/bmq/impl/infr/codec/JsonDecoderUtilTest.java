@@ -15,12 +15,12 @@
  */
 package com.bloomberg.bmq.impl.infr.codec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
@@ -41,16 +41,16 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonDecoderUtilTest {
+class JsonDecoderUtilTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testDecodeClientIdentity() throws IOException {
+    void testDecodeClientIdentity() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.CLIENT_IDENTITY_JSON.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -87,7 +87,7 @@ public class JsonDecoderUtilTest {
     }
 
     @Test
-    public void testDecodeBrokerResponse() throws IOException {
+    void testDecodeBrokerResponse() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.BROKER_RESPONSE_JSON.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -131,7 +131,7 @@ public class JsonDecoderUtilTest {
     }
 
     @Test
-    public void testDecodeOpenQueue() throws IOException {
+    void testDecodeOpenQueue() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.OPEN_QUEUE_JSON.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -166,7 +166,7 @@ public class JsonDecoderUtilTest {
     }
 
     @Test
-    public void testDecodeOpenQueueResponse() throws IOException {
+    void testDecodeOpenQueueResponse() throws IOException {
         ByteBuffer buf =
                 TestHelpers.readFile(MessagesTestSamples.OPEN_QUEUE_RESPONSE_JSON.filePath());
 
@@ -206,7 +206,7 @@ public class JsonDecoderUtilTest {
     }
 
     @Test
-    public void testDecodeStatus() throws IOException {
+    void testDecodeStatus() throws IOException {
         ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.STATUS_MSG_JSON.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
@@ -232,7 +232,7 @@ public class JsonDecoderUtilTest {
     }
 
     @Test
-    public void testDecodeFromJsonFail() {
+    void testDecodeFromJsonFail() {
         JsonDecoderUtil.decodeFromJson("\"test_string\"", String.class);
         try {
             JsonDecoderUtil.decodeFromJson("\"test_string", String.class);

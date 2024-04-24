@@ -15,10 +15,10 @@
  */
 package com.bloomberg.bmq.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.QueueFlags;
 import com.bloomberg.bmq.Uri;
@@ -55,6 +55,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Map;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -311,7 +313,7 @@ public class PlainConsumerIT {
             MessagePropertiesImpl props = pushMsg.appData().properties();
             if (props != null) {
                 // We expect 2 properties in the message.
-                assertEquals(props.numProperties(), 2);
+                assertEquals(2, props.numProperties());
 
                 // Note that per contract, order of message properties is
                 // undefined.
@@ -528,9 +530,8 @@ public class PlainConsumerIT {
         return msg;
     }
 
-    // Disable this test because it uses plain sockets and read BMQ
-    // events unreliably
-    // @Test
+    @Test
+    @Disabled("Disable this test because it uses plain sockets and read BMQ events unreliably")
     public void testConsumer() throws IOException, InterruptedException {
 
         logger.info("====================================================================");

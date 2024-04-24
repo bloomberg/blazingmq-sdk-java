@@ -15,8 +15,8 @@
  */
 package com.bloomberg.bmq.impl.infr.stat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.eq;
@@ -35,18 +35,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatsTest {
+class StatsTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         Consumer<String> emptyConsumer = s -> {};
 
         try {
@@ -81,11 +81,11 @@ public class StatsTest {
                         any(Runnable.class), anyInt(), anyInt(), any(TimeUnit.class));
     }
 
-    // Non-generic interface to avoid compilator warnings
+    // Non-generic interface to avoid compilation warnings
     private interface StringConsumer extends Consumer<String> {}
 
     @Test
-    public void testDump() {
+    void testDump() {
         ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
         ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
 
