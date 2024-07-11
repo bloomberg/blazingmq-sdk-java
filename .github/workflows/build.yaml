@@ -50,7 +50,7 @@ jobs:
 
     - name: Get cached BlazingMQ docker image
       id: cache-restore
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: blazingmq_image.tar.gz
         key: ${{ steps.get-sha.outputs.blazingmq_sha }}
@@ -72,7 +72,7 @@ jobs:
     - name: Cache built BlazingMQ docker image
       id: cache-save
       if: steps.cache-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: blazingmq_image.tar.gz
         key: ${{ steps.get-sha.outputs.blazingmq_sha }}
