@@ -94,6 +94,6 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v3
       with:
-        name: broker_logs
+        name: broker_logs_${{ matrix.java }}
         path: /tmp/bmq-broker/broker_logs.tar.gz
         retention-days: 5
