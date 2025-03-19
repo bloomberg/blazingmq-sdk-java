@@ -77,7 +77,7 @@ jobs:
         path: blazingmq_image.tar.gz
         key: ${{ steps.get-sha.outputs.blazingmq_sha }}
 
-    - name: Build IT image
+    - name:  Build IT image
       working-directory: bmq-sdk/src/test/docker
       run: docker build --tag bmq-broker-java-it --build-arg "image=bmqbrkr:latest" .
 
