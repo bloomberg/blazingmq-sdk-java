@@ -92,7 +92,7 @@ jobs:
 
     - name: Upload broker logs as artifacts
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: broker_logs_${{ matrix.java }}
         path: /tmp/bmq-broker/broker_logs.tar.gz
