@@ -66,19 +66,27 @@ $ mvn clean -Dmaven.test.skip=true -Dspotbugs.skip=true install
 
 ### Build and Run `bmq-examples` Producer Example
 
+Prerequisites:
+- BlazingMQ backend is built and is available.
+- `bmq-sdk` JAR is installed locally.
+
+Java SDK producers/consumers can be tested with the local BlazingMQ broker.
+For Linux build, first start the local broker:
+```sh
+cd $BLAZINGMQ_DIR/build/Linux/src/applications/bmqbrkr
+./run
+```
+
+Secondly, start sample producer, that will connect to the local broker, open a queue, post messages and exits:
 ```sh
 $ cd bmq-examples
 $ mvn clean compile
-$ mvn exec:java -Dexec.mainClass="com.bloomberg.bmq.examples.Producer"
+$ mvn exec:java -Dexec.mainClass="com.bloomberg.bmq.examples.SimpleProducer"
 ```
-
-Above command expects that `bmq-sdk` JAR is installed locally.  Also note that
-BlazingMQ backend must be running for producer/consumer examples to run
-successfully.
 
 ### Building BlazingMQ Backend
 
-Detailed instructions to build BlazingMQ backend (BlazingMQ message brokers,
+Detailed instructions on how to build BlazingMQ backend (BlazingMQ message brokers,
 etc) can be found [here](https://www.github.com/bloomberg/blazingmq).
 
 ### Supported JDKs
@@ -166,7 +174,7 @@ in the project, please contact us at opensource@bloomberg.net.
 ## Security Vulnerability Reporting
 
 If you believe you have identified a security vulnerability in this project,
-please send an email to the project team at opensource@bloomberg.net, detailing
+please email the project team at opensource@bloomberg.net, detailing
 the suspected issue and any methods you've found to reproduce it.
 
 Please do NOT open an issue in the GitHub repository, as we'd prefer to keep

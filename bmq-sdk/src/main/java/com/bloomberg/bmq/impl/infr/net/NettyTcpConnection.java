@@ -80,7 +80,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
      * <p>Other goals are to inject server responses and as well as to keep the threading model same
      * in the test code. The best candidate is {@link io.netty.channel.embedded.EmbeddedChannel}
      * class that lets us inject responses. The main problem with given class is the fact that it is
-     * "threadless" and unfortunately does not allow us to inject custom eventloop. But we can
+     * "threadless" and unfortunately does not allow us to inject custom event loop. But we can
      * inject it in our channel adapter and execute every embedded channel routine in IO thread. So,
      * it helps to achieve thread safety for plain embedded channel class and at the same time,
      * reproduce the threading model for tested class.
@@ -200,7 +200,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     private boolean wasOnceConnected;
     private int numRemainingInitialTries;
     private ConnectionOptions options;
-    private NetResolver hostResolver;
+    private final NetResolver hostResolver;
     private ReadCompletionStatus readBytesStatus;
     private EventLoopGroup eventLoop;
     private Bootstrap bootstrap;
@@ -210,7 +210,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     private DisconnectCallback disconnectCallback;
     private ChannelStatusHandler channelStatusHandler;
     private Semaphore channelWaterMarkSema;
-    private ClientChannelAdapter clientChannelAdapter;
+    private final ClientChannelAdapter clientChannelAdapter;
     private final long lingerTimeout;
 
     static {
@@ -476,7 +476,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             disconnectCallback = disconnectCb;
 
             // If the callback is not null, then we are going to do full
-            // disconnect procedure. Otherwise we just drop the channel and
+            // disconnect procedure. Otherwise, we just drop the channel and
             // schedule reconnecting (see 'channelCloseFutureComplete' method).
             if (disconnectCb != null) {
                 state = ChannelState.DISCONNECTING;

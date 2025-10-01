@@ -23,7 +23,7 @@ public enum EventType {
     PUSH(4),
     ACK(5);
 
-    private int id;
+    private final int id;
 
     EventType(int id) {
         this.id = id;

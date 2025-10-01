@@ -72,7 +72,7 @@ public final class VersionUtil {
         logger.info("BlazingMQ SDK Jar ImplementationVersion: [{}]", implVersion);
 
         if (implVersion == null) {
-            // When loaded outside of a JAR, just return a default value of
+            // When loaded outside a JAR, just return a default value of
             // 999999 , which is what we return in C++ when program is built
             // from the master instead of using 'libbmq'.
             return DEFAULT_VERSION;
