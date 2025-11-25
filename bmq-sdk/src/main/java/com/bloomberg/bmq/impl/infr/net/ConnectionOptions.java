@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2022-2025 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public final class ConnectionOptions {
     private Duration startRetryInterval = DEFAULT_START_RETRY_INTERVAL;
     private WriteBufferWaterMark writeWaterMark = new WriteBufferWaterMark();
     private AuthnCredentialCb authnCredentialCb = null;
+    private String userAgentPrefix = "";
 
     public ConnectionOptions() {}
 
@@ -48,6 +49,7 @@ public final class ConnectionOptions {
         brokerUri = sesOpts.brokerUri();
         writeWaterMark = sesOpts.writeBufferWaterMark();
         authnCredentialCb = sesOpts.authnCredentialCb();
+        userAgentPrefix = sesOpts.userAgentPrefix();
     }
 
     public ConnectionOptions setBrokerUri(URI value) {
@@ -83,6 +85,17 @@ public final class ConnectionOptions {
         return this;
     }
 
+    public ConnectionOptions setUserAgentPrefix(String value) {
+        Argument.expectNonNull(value, "user agent prefix");
+        Argument.expectCondition(
+                value.codePoints().allMatch(c -> c < 128 && !Character.isISOControl(c)),
+                "user agent prefix must be printable ASCII");
+        Argument.expectCondition(
+                value.length() < 128, "user agent prefix must be shorter than 128 characters");
+        userAgentPrefix = value;
+        return this;
+    }
+
     public URI brokerUri() {
         return brokerUri;
     }
@@ -110,5 +123,9 @@ public final class ConnectionOptions {
     public ConnectionOptions setAuthnCredentialCb(AuthnCredentialCb value) {
         authnCredentialCb = value;
         return this;
+    }
+
+    public String userAgentPrefix() {
+        return userAgentPrefix;
     }
 }

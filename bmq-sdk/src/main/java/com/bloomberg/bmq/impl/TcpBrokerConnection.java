@@ -603,9 +603,13 @@ public class TcpBrokerConnection
     }
 
     private String constructUserAgent() {
+        String prefix = "";
+        if (connectionOptions.userAgentPrefix().length() > 0) {
+            prefix = connectionOptions.userAgentPrefix() + " ";
+        }
         String javaVersion = "java" + SystemUtil.getJavaVersionString();
         String sdkVersion = VersionUtil.getJarVersion();
-        return "com.bloomberg.bmq(" + javaVersion + "):" + sdkVersion;
+        return prefix + "com.bloomberg.bmq(" + javaVersion + "):" + sdkVersion;
     }
 
     private WriteStatus negotiate() throws IOException {

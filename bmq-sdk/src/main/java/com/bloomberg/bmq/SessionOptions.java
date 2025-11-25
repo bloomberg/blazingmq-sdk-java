@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2022-2025 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,10 @@ import javax.annotation.concurrent.Immutable;
  *       HostHealthMonitor} interface responsible for notifying the session when the health of the
  *       host machine has changed. A {@code hostHealthMonitor} must be specified in oder for queues
  *       opened through the session to suspend on unhealthy hosts.
+ *   <li>{@code userAgentPrefix}: String to include in the user agent for broker telemetry. This
+ *       string must only contain printable characters and must be less than 128 characters long.
+ *       This is provided for libraries that are wrapping this SDK. Applications directly using the
+ *       SDK are encouraged <strong>NOT</strong> to set this value.
  * </ul>
  *
  * <H2>Thread Safety</H2>
@@ -237,6 +241,7 @@ public final class SessionOptions {
     private final HostHealthMonitor hostHealthMonitor;
 
     private final AuthnCredentialCb authnCredentialCb;
+    private final String userAgentPrefix;
 
     private SessionOptions() {
         brokerUri = DEFAULT_URI;
@@ -250,6 +255,7 @@ public final class SessionOptions {
         closeQueueTimeout = QUEUE_OPERATION_TIMEOUT;
         hostHealthMonitor = null;
         authnCredentialCb = null;
+        userAgentPrefix = "";
     }
 
     private SessionOptions(Builder builder) {
@@ -264,6 +270,7 @@ public final class SessionOptions {
         closeQueueTimeout = builder.closeQueueTimeout;
         hostHealthMonitor = builder.hostHealthMonitor;
         authnCredentialCb = builder.authnCredentialCb;
+        userAgentPrefix = builder.userAgentPrefix;
     }
 
     /**
@@ -418,6 +425,16 @@ public final class SessionOptions {
         return authnCredentialCb;
     }
 
+    /**
+     * Returns the string that will be prefixed to the user agent used by {@link
+     * com.bloomberg.bmq.Session} to identify itself to the broker.
+     *
+     * @return String user agent string prefix
+     */
+    public String userAgentPrefix() {
+        return userAgentPrefix;
+    }
+
     /** Helper class to create a {@code SesssionOptions} object with custom settings. */
     public static class Builder {
         private URI brokerUri;
@@ -433,6 +450,8 @@ public final class SessionOptions {
 
         private HostHealthMonitor hostHealthMonitor;
         private AuthnCredentialCb authnCredentialCb;
+
+        private String userAgentPrefix;
 
         /**
          * Creates a {@code SesssionOptions} object based on this {@code Builder} properties.
@@ -455,6 +474,7 @@ public final class SessionOptions {
             closeQueueTimeout = options.closeQueueTimeout;
             hostHealthMonitor = options.hostHealthMonitor;
             authnCredentialCb = options.authnCredentialCb;
+            userAgentPrefix = options.userAgentPrefix;
         }
 
         /**
@@ -607,6 +627,30 @@ public final class SessionOptions {
          */
         public Builder setAuthnCredentialCb(AuthnCredentialCb value) {
             authnCredentialCb = Argument.expectNonNull(value, "authnCredentialCb");
+            return this;
+        }
+
+        /**
+         * Sets the user agent prefix. This string is prefixed to a user agent constructed by the
+         * SDK. This is intended ONLY for other libraries that wrap this SDK to identify themselves
+         * for broker telemetry. Applications that are directly using this SDK are encouraged not to
+         * set this.
+         *
+         * @param value String user agent prefix
+         * @return Builder this object
+         * @throws NullPointerException if the specified value is null
+         * @throws IllegalArgumentException in case the specified value contains non-ASCII
+         *     characters, contains non-printable characters (i.e., control characters), or is
+         *     longer than 127 characters.
+         */
+        public Builder setUserAgentPrefix(String value) {
+            Argument.expectNonNull(value, "user agent prefix");
+            Argument.expectCondition(
+                    value.codePoints().allMatch(c -> c < 128 && !Character.isISOControl(c)),
+                    "user agent prefix must be printable ASCII");
+            Argument.expectCondition(
+                    value.length() < 128, "user agent prefix must be shorter than 128 characters");
+            userAgentPrefix = value;
             return this;
         }
     }
