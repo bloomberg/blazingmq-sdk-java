@@ -75,12 +75,12 @@ public class MessagesTestSamples {
     public static final SampleFileMetadata BROKER_RESPONSE_JSON =
             new SampleFileMetadata(
                     "/data/msg_control_nego_client_broker_response_623ff064-7d51-4bd8-988d-826ccfd458a8.bin",
-                    396);
+                    412);
     public static final SampleFileMetadata CLIENT_IDENTITY =
             new SampleFileMetadata("/data/msg_control_nego_client_04042018.bin", 68);
     public static final SampleFileMetadata CLIENT_IDENTITY_JSON =
             new SampleFileMetadata(
-                    "/data/msg_control_nego_client_a326573a-2c1e-42a2-afdc-da184456c118.bin", 248);
+                    "/data/msg_control_nego_client_a326573a-2c1e-42a2-afdc-da184456c118.bin", 260);
     public static final SampleFileMetadata ACK_MSG =
             new SampleFileMetadata("/data/msg_ack_20072018.bin", 252);
     public static final SampleFileMetadata CONFIRM_MSG =
