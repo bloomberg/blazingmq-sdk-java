@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public class SystemUtil {
 
+    static final int test_filed = 1;
+
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public enum JavaVersion {
