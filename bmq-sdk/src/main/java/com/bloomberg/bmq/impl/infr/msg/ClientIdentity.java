@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2022-2025 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ public class ClientIdentity {
     private String clusterName;
     private Integer clusterNodeId;
     private ClientLanguage sdkLanguage;
+    private String userAgent;
 
     public ClientIdentity() {
         init();
@@ -48,6 +49,7 @@ public class ClientIdentity {
         clusterName = "";
         clusterNodeId = -1;
         sdkLanguage = ClientLanguage.E_UNKNOWN;
+        userAgent = "";
     }
 
     public Integer protocolVersion() {
@@ -136,6 +138,14 @@ public class ClientIdentity {
 
     public void setSdkLanguage(ClientLanguage value) {
         sdkLanguage = value;
+    }
+
+    public String userAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String value) {
+        userAgent = value;
     }
 
     public Object createNewInstance() {
