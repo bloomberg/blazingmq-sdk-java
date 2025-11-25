@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2022-2025 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -598,7 +598,14 @@ public class TcpBrokerConnection
         clientIdentity.setClusterName("");
         clientIdentity.setClusterNodeId(-1);
         clientIdentity.setSdkLanguage(ClientLanguage.E_JAVA);
+        clientIdentity.setUserAgent(constructUserAgent());
         return negoMsgChoice;
+    }
+
+    private String constructUserAgent() {
+        String javaVersion = "java" + SystemUtil.getJavaVersionString();
+        String sdkVersion = VersionUtil.getJarVersion();
+        return "com.bloomberg.bmq(" + javaVersion + "):" + sdkVersion;
     }
 
     private WriteStatus negotiate() throws IOException {
