@@ -58,7 +58,7 @@ public class NegotiationMessageChoice {
         return brokerResponse;
     }
 
-    public void init() {
+    public final void init() {
         clientIdentity = null;
         brokerResponse = null;
     }

@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-public class ByteMessageProperty extends MessageProperty {
+public final class ByteMessageProperty extends MessageProperty {
 
     public ByteMessageProperty() {
         super(PropertyType.BYTE, Byte.SIZE);

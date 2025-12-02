@@ -25,7 +25,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OptionHeader implements Streamable {
+public final class OptionHeader implements Streamable {
     // This class represents the header for an option.  In a typical
     // implementation usage, every Option class will start by an
     // 'OptionHeader' member.

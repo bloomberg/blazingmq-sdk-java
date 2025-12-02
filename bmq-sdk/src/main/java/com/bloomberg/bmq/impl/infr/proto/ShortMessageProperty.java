@@ -17,7 +17,7 @@ package com.bloomberg.bmq.impl.infr.proto;
 
 import java.nio.ByteBuffer;
 
-public class ShortMessageProperty extends MessageProperty {
+public final class ShortMessageProperty extends MessageProperty {
 
     public ShortMessageProperty() {
         super(PropertyType.SHORT, Short.SIZE);

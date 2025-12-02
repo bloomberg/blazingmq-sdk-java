@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PutMessageIterator extends MessageIterator implements Iterator<PutMessageImpl> {
+public final class PutMessageIterator extends MessageIterator implements Iterator<PutMessageImpl> {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
