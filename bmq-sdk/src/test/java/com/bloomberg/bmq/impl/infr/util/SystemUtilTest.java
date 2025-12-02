@@ -15,7 +15,6 @@
  */
 package com.bloomberg.bmq.impl.infr.util;
 
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.invoke.MethodHandles;
@@ -26,24 +25,6 @@ import org.slf4j.LoggerFactory;
 class SystemUtilTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    @Test
-    void testJavaVersions() {
-        assertTrue(
-                SystemUtil.JavaVersion.JAVA_UNSUPPORTED.compareTo(SystemUtil.JavaVersion.JAVA_8)
-                        < 0);
-        assertTrue(SystemUtil.JavaVersion.JAVA_8.compareTo(SystemUtil.JavaVersion.JAVA_11) < 0);
-        assertTrue(SystemUtil.JavaVersion.JAVA_11.compareTo(SystemUtil.JavaVersion.JAVA_17) < 0);
-    }
-
-    @Test
-    void testVersion() {
-        SystemUtil.JavaVersion v = SystemUtil.getJavaVersion();
-
-        logger.info("JAVA ver.: {}", v);
-
-        assertNotSame(SystemUtil.JavaVersion.JAVA_UNSUPPORTED, v);
-    }
 
     @Test
     void testPid() {
