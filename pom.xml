@@ -531,6 +531,42 @@ limitations under the License. -->
 
   <profiles>
     <profile>
+      <id>JDK9-and-above</id>
+      <activation>
+        <!-- This is a general profile which is activated for JDK9 or newer.
+             If you need to support specific JDK, create new profile or update this one e.g. for JDK17
+             set the xml element below to 17. See version range spec for more information:
+             https://maven.apache.org/enforcer/enforcer-rules/versionRanges.html -->
+        <jdk>[9,18)</jdk>
+      </activation>
+      <properties>
+        <!-- By default, compile everything to Java 8 (better to set this explicitly rather than use default value).
+             If necessary, change release parameter to greater value.
+             For instance, set release to 17 in order to enable Java 17 features
+             and generate bytecode compatible with JVM17 and newer -->
+        <maven.compiler.release>8</maven.compiler.release>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>JDK18-and-above</id>
+      <activation>
+        <!-- This is a general profile which is activated for JDK9 or newer.
+             If you need to support specific JDK, create new profile or update this one e.g. for JDK17
+             set the xml element below to 17. See version range spec for more information:
+             https://maven.apache.org/enforcer/enforcer-rules/versionRanges.html -->
+        <jdk>[18,)</jdk>
+      </activation>
+      <properties>
+        <!-- By default, compile everything to Java 8 (better to set this explicitly rather than use default value).
+             If necessary, change release parameter to greater value.
+             For instance, set release to 17 in order to enable Java 17 features
+             and generate bytecode compatible with JVM17 and newer -->
+        <maven.compiler.release>9</maven.compiler.release>
+      </properties>
+    </profile>
+
+    <profile>
       <id>ossrh</id>
       <properties>
         <!-- Un-skip deploy during a Central Portal publish so the parent POM and
