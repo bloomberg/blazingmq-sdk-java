@@ -45,7 +45,7 @@ public class PushMessageImpl implements Streamable {
         reset();
     }
 
-    public void reset() {
+    public final void reset() {
         header = new PushHeader();
         appData = new ApplicationData();
         options = new Options();

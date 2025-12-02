@@ -187,7 +187,7 @@ public class ControlMessageChoice {
         return disconnectResponse;
     }
 
-    public void init() {
+    public final void init() {
         configureQueueStream = null;
         configureQueueStreamResponse = null;
         configureStream = null;
