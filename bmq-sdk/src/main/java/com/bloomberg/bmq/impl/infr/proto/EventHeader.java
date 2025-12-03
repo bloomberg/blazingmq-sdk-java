@@ -24,7 +24,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventHeader {
+public final class EventHeader {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     // This class represents the header for all the events received by the

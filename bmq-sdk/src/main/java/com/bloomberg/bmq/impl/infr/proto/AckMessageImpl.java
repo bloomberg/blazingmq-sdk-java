@@ -25,7 +25,7 @@ import com.bloomberg.bmq.impl.infr.proto.intf.Streamable;
 import com.bloomberg.bmq.impl.infr.util.BitUtil;
 import java.io.IOException;
 
-public class AckMessageImpl implements Streamable {
+public final class AckMessageImpl implements Streamable {
     // This class defines the (repeated) payload following the 'AckHeader'
     // struct.
 

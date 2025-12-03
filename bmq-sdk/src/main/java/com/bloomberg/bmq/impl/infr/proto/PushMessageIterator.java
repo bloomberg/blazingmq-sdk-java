@@ -28,6 +28,7 @@ public final class PushMessageIterator extends MessageIterator
     private PushMessageImpl message;
     private PushMessageImpl nextMessage;
 
+    @SuppressWarnings("this-escape") // fetchNextMessage() is `final` and calls no non-final methods
     public PushMessageIterator(EventImpl ev) {
         super(ev);
         message = null;

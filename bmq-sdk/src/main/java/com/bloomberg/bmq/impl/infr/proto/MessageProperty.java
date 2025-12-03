@@ -34,7 +34,7 @@ public abstract class MessageProperty {
         propertyName = name;
     }
 
-    public void setPropertyValue(byte[] val) {
+    public final void setPropertyValue(byte[] val) {
         Argument.expectNonNull(val, "val");
         Argument.expectNotGreater(val.length, maxValueSize, "property length");
         propertyValue = Arrays.copyOf(val, val.length);

@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-public class AuthenticationMessage {
+public final class AuthenticationMessage {
 
     private AuthenticationRequest authenticationRequest;
     private AuthenticationResponse authenticationResponse;
@@ -28,28 +28,28 @@ public class AuthenticationMessage {
         return new AuthenticationMessage();
     }
 
-    public final void reset() {
+    public void reset() {
         init();
     }
 
-    public final void makeAuthenticationRequest(String mechanism, String data) {
+    public void makeAuthenticationRequest(String mechanism, String data) {
         reset();
         authenticationRequest = new AuthenticationRequest(mechanism, data);
     }
 
-    public final boolean isAuthenticationRequestValue() {
+    public boolean isAuthenticationRequestValue() {
         return authenticationRequest != null;
     }
 
-    public final boolean isAuthenticationResponseValue() {
+    public boolean isAuthenticationResponseValue() {
         return authenticationResponse != null;
     }
 
-    public final AuthenticationRequest authenticationRequest() {
+    public AuthenticationRequest authenticationRequest() {
         return authenticationRequest;
     }
 
-    public final AuthenticationResponse authenticationResponse() {
+    public AuthenticationResponse authenticationResponse() {
         return authenticationResponse;
     }
 
@@ -58,7 +58,7 @@ public class AuthenticationMessage {
         authenticationResponse = null;
     }
 
-    public final void reset(AuthenticationMessage copied) {
+    public void reset(AuthenticationMessage copied) {
         authenticationRequest = copied.authenticationRequest;
         authenticationResponse = copied.authenticationResponse;
     }

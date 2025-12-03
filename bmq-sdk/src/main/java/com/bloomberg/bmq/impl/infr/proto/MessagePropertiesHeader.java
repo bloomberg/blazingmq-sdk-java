@@ -21,7 +21,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class MessagePropertiesHeader {
+public final class MessagePropertiesHeader {
     // This class represents the header for message properties area in a PUT
     // or PUSH message.  This header will be followed by one or more message
     // properties.
