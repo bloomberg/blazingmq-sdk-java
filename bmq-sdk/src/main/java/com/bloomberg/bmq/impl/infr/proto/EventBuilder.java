@@ -29,7 +29,7 @@ public abstract class EventBuilder {
         reset(type);
     }
 
-    public void reset(EventType type) {
+    public final void reset(EventType type) {
         eventHeader = new EventHeader();
         eventHeader.setType(type);
         msgCount = 0;
