@@ -25,12 +25,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -73,6 +73,7 @@ public class BmqBrokerTestServer implements BmqBroker {
 
     Process process;
     Path tmpFolder;
+    Path configPath;
     File outputFile;
     int pid = DEFAULT_INVALID_PID;
     int waitingTime = DEFAULT_WAITING_TIME;
@@ -80,6 +81,7 @@ public class BmqBrokerTestServer implements BmqBroker {
     String defaultTier;
     boolean dropTmpFolder = false;
     boolean dumpBrokerOutput = false;
+    boolean isInitialized = false;
 
     private static long getPidOfProcess(Process p) {
         try {
@@ -123,41 +125,81 @@ public class BmqBrokerTestServer implements BmqBroker {
         return new BmqBrokerTestServer(so);
     }
 
+    private static int findFreePort() throws IOException {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        }
+    }
+
     private void init(int waitTime) throws IOException, InterruptedException {
         final String envPath = BmqBroker.brokerDir();
+
+        if (envPath.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Empty 'it.brokerDir' provided, no path to the broker");
+        }
 
         // Cleanup from previous run. Delete named pipe if it's there
         File np = new File(envPath + "/bmqbrkr.ctl");
         if (np.exists()) {
             logger.info("Deleting orphan bmqbrkr.ctl");
-            np.delete();
+            if (!np.delete()) {
+                logger.error("Failed to remove orphan bmqbrkr.ctl: {}", np.getPath());
+            }
         }
 
-        // Since we run multiple tests at the same time starting instances
-        // of BlazingMQ broker in the same location (BMQ_PREFIX),
-        // we need to create a tmp folder for storage, log and stat files
-        tmpFolder = makeTempDir(envPath, "localBMQ_");
+        // Only perform initial setup once (port selection, config creation)
+        // On restart, reuse existing port and configuration
+        if (!isInitialized) {
+            // Create temporary directory for this broker instance
+            tmpFolder = makeTempDir(envPath, "localBMQ_");
+            logger.info("BlazingMQ Broker tmp directory: [{}]", tmpFolder);
 
-        ProcessBuilder pb = new ProcessBuilder("./run");
+            // Find a free port and update session options
+            int port = findFreePort();
+            sessionOptions =
+                    SessionOptions.builder()
+                            .setBrokerUri(URI.create("tcp://localhost:" + port))
+                            .build();
+            logger.info("BlazingMQ Broker using port: {}", port);
 
-        final Path storagePath = tmpFolder.resolve("storage");
+            // Load base configuration and customize paths
+            BmqBrokerConfiguration config = BmqBrokerConfiguration.createFromDefaultPath();
 
-        Map<String, String> env = pb.environment();
-        env.put("BMQ_PREFIX", envPath);
-        env.put("BMQ_STORAGE", storagePath.toString());
-        logger.info("BlazingMQ Broker storage directory: {}", storagePath);
+            // Set port in both broker config and cluster node endpoint
+            config.setTcpPort(port);
+            config.setNodeEndpointPort(port);
 
-        outputFile = new File(tmpFolder.resolve("output").toString());
+            // Set paths to temporary directory
+            Path logsPath = tmpFolder.resolve("logs");
+            Path storagePath = tmpFolder.resolve("storage");
+            Path archivePath = tmpFolder.resolve("archive");
+            Files.createDirectories(logsPath);
+            Files.createDirectories(storagePath);
+            Files.createDirectories(archivePath);
 
-        // Common environment vars
-        env.put("BMQ_PORT", String.valueOf(sessionOptions.brokerUri().getPort()));
-        env.put("BMQ_HOSTTAGS_FILE", "/bb/bin/bbcpu.lst");
-        env.put("PYTHONPATH", envPath + "/python");
+            config.setLogFileName(logsPath.resolve("logs.%T.%p").toString());
+            config.setStatsFile(logsPath.resolve("stat.%T.%p").toString());
+            config.setPartitionLocation(storagePath.toString());
+            config.setArchiveLocation(archivePath.toString());
 
+            // Deploy configuration to temporary directory
+            configPath = tmpFolder.resolve("config");
+            config.saveTo(configPath);
+            logger.info("BlazingMQ Broker config deployed to: {}", configPath);
+
+            outputFile = new File(tmpFolder.resolve("output").toString());
+
+            isInitialized = true;
+        } else {
+            logger.info("Restarting broker on existing port: {}", sessionOptions.brokerUri());
+        }
+
+        // Launch broker with config path as command line argument
+        ProcessBuilder pb = new ProcessBuilder("./bmqbrkr.tsk", configPath.toString());
         pb.directory(new File(envPath));
 
-        logger.info("BlazingMQ Broker BMQ_PREFIX: [{}]", env.get("BMQ_PREFIX"));
-        logger.info("BlazingMQ Broker tmp directory: [{}]", tmpFolder);
+        logger.info("BlazingMQ Broker working directory: [{}]", envPath);
         logger.info("BlazingMQ Broker output file: [{}]", outputFile.getCanonicalPath());
 
         pb.redirectErrorStream(true);
@@ -171,7 +213,16 @@ public class BmqBrokerTestServer implements BmqBroker {
         if (!process.isAlive()) {
             logger.error(
                     "Failed to start broker process after waiting for [{}] seconds.", waitTime);
-            throw new IllegalStateException("Failed to start broker process");
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Failed to start broker process, rc = ")
+                    .append(process.exitValue())
+                    .append(", dir = [ ")
+                    .append(envPath)
+                    .append(" ], cmd = [ ")
+                    .append(String.join(" ", pb.command()))
+                    .append(" ],");
+            throw new IllegalStateException(sb.toString());
         }
 
         pid = (int) getPidOfProcess(process);

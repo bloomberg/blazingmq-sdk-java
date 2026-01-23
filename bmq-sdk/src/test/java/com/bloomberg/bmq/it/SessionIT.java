@@ -18,6 +18,7 @@ package com.bloomberg.bmq.it;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -494,9 +495,8 @@ public class SessionIT {
             ResultCodes.GenericCode result,
             Queue queue) {
         assertNotNull(event);
-        assertTrue(event instanceof QueueControlEvent);
 
-        QueueControlEvent queueControlEvent = (QueueControlEvent) event;
+        QueueControlEvent queueControlEvent = assertInstanceOf(QueueControlEvent.class, event);
         assertEquals(queue, queueControlEvent.queue());
         assertEquals(eventType, queueControlEvent.type());
         assertEquals(result, queueControlEvent.result());

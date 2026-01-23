@@ -19,6 +19,7 @@ import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
@@ -50,6 +51,8 @@ public class BmqBrokerContainer implements BmqBroker {
     private static final String CONTAINER_TMP_LOGS = "/tmp/logs";
     private static final String IMAGE_NAME = "bmq-broker-java-it";
     private static final String OUTPUT_FILENAME = "output.log";
+    private static final long MAX_CONTAINER_WAIT_TIME_MS = 5000;
+    private static final long CONTAINER_HEALTH_CHECK_DT_MS = 100;
 
     private final SessionOptions sessionOptions;
     private final DockerClient client;
@@ -182,15 +185,31 @@ public class BmqBrokerContainer implements BmqBroker {
 
     @Override
     public void start() {
-        logger.info("Start '{}' container", containerName);
+        logger.info("Starting container '{}'...", containerName);
         client.startContainerCmd(containerId).exec();
 
         try {
-            Thread.sleep(5000);
+            for (long totalTimeMs = 0;
+                    totalTimeMs < MAX_CONTAINER_WAIT_TIME_MS;
+                    totalTimeMs += CONTAINER_HEALTH_CHECK_DT_MS) {
+                Thread.sleep(CONTAINER_HEALTH_CHECK_DT_MS);
+
+                InspectContainerResponse resp = client.inspectContainerCmd(containerId).exec();
+                if (!resp.getState().getRunning()) {
+                    logger.error(
+                            "Container '{}' is not running, status = '{}'",
+                            containerId,
+                            resp.getState().getStatus());
+                    throw new RuntimeException(
+                            String.format("Failed to start container '{}'", containerId));
+                }
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return;
         }
+
+        logger.info("Container '{}' is running", containerId);
 
         // For BlazingMQ broker running in container default tier should be the 'lcl-{guest
         // hostname}'

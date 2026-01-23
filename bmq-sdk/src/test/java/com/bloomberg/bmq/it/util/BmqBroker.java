@@ -128,7 +128,7 @@ public interface BmqBroker extends TestTcpServer {
     }
 
     static boolean dockerized() {
-        return dockerImage() != null;
+        return brokerDir() == null && dockerImage() != null;
     }
 
     static String brokerDir() {
@@ -136,6 +136,6 @@ public interface BmqBroker extends TestTcpServer {
     }
 
     static String dockerImage() {
-        return System.getProperty("it.dockerImage");
+        return System.getProperty("it.dockerImage", "bmq-broker-java-it");
     }
 }

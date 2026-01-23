@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -185,7 +186,7 @@ class BrokerSessionTest {
 
             logger.info("Verify session event: {}", event);
 
-            assertTrue(event instanceof BrokerSessionEvent);
+            assertInstanceOf(BrokerSessionEvent.class, event);
 
             assertEquals(type, ((BrokerSessionEvent) event).getEventType());
         }
