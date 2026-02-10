@@ -13,6 +13,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  get_dependencies:
+    name: "Dependencies"
+    uses: ./.github/workflows/dependencies.yaml
+
   build_and_test:
     name: "Build & UTs: JDK ${{ matrix.Java }}"
     runs-on: ubuntu-latest
@@ -30,52 +34,28 @@ jobs:
 
   integration_test:
     name: "ITs: JDK ${{ matrix.Java }}"
+    needs: get_dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [ '8', '11', '17' ]
     steps:
     - uses: actions/checkout@v3
+
     - uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
-    - name: Checkout BlazingMQ
-      run:  git clone https://github.com/bloomberg/blazingmq
-
-    - name: Get latest BlazingMQ commit SHA
-      id: get-sha
-      working-directory: blazingmq
-      run: echo "blazingmq_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Get cached BlazingMQ docker image
       id: cache-restore
       uses: actions/cache/restore@v4
       with:
         path: blazingmq_image.tar.gz
-        key: ${{ steps.get-sha.outputs.blazingmq_sha }}
-
-    # Pull docker image instead
-    - name: Build base BlazingMQ docker image
-      if: steps.cache-restore.outputs.cache-hit != 'true'
-      working-directory: blazingmq
-      run: docker compose -f docker/single-node/docker-compose.yaml build
+        key: ${{ needs.get_dependencies.outputs.cache_key }}
 
     - name: Load base BlazingMQ docker image from cache
-      if: steps.cache-restore.outputs.cache-hit == 'true'
       run: docker load < blazingmq_image.tar.gz
-
-    - name: Save built BlazingMQ docker image
-      if: steps.cache-restore.outputs.cache-hit != 'true'
-      run: docker save bmqbrkr:latest | gzip > blazingmq_image.tar.gz
-
-    - name: Cache built BlazingMQ docker image
-      id: cache-save
-      if: steps.cache-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: blazingmq_image.tar.gz
-        key: ${{ steps.get-sha.outputs.blazingmq_sha }}
 
     - name: Build IT image
       working-directory: bmq-sdk/src/test/docker

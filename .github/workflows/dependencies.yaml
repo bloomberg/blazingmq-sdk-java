@@ -1,0 +1,58 @@
+name: Dependencies
+
+on:
+  workflow_call:
+    outputs:
+      cache_key:
+        description: "GH Actions Cache key associated with the built dependencies"
+        value: ${{ jobs.build_dependencies.outputs.cache_key }}
+  schedule:
+    # Rebuild dependencies cache from the "main" branch at the beginning of a new day,
+    # so it is accessible from other branches' PRs
+    - cron: "10 0 * * *"
+
+concurrency:
+  group: global
+  cancel-in-progress: false
+
+jobs:
+  build_dependencies:
+    name: Build broker image
+    runs-on: ubuntu-latest
+    outputs:
+      cache_key: ${{ steps.get-cache-key.outputs.cache_key }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout BlazingMQ
+        run:  git clone https://github.com/bloomberg/blazingmq
+
+      - name: Generate dependencies cache key
+        id: get-cache-key
+        run: |
+          echo "cache_key=deps-`date +%y-%m-%d`" >> $GITHUB_OUTPUT
+
+      - name: Cache lookup
+        uses: actions/cache/restore@v4
+        id: cache-lookup
+        with:
+          path: blazingmq_image.tar.gz
+          key: ${{ steps.get-cache-key.outputs.cache_key }}
+          lookup-only: true
+
+      # TODO: pull docker image from the registry once we support it
+      - name: Build base BlazingMQ docker image
+        if: steps.cache-lookup.outputs.cache-hit != 'true'
+        working-directory: blazingmq
+        run: docker compose -f docker/single-node/docker-compose.yaml build
+
+      - name: Save built BlazingMQ docker image
+        if: steps.cache-lookup.outputs.cache-hit != 'true'
+        run: docker save bmqbrkr:latest | gzip > blazingmq_image.tar.gz
+
+      - name: Save cache
+        if: steps.cache-lookup.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: blazingmq_image.tar.gz
+          key: ${{ steps.get-cache-key.outputs.cache_key }}
