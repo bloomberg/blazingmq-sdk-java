@@ -241,9 +241,7 @@ public class BrokerSessionIT {
      */
     @Test
     void openConfigureCloseQueueAsyncTest() {
-        logger.info("=================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueAsyncTest.");
-        logger.info("=================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT openConfigureCloseQueueAsyncTest");
 
         final Semaphore testSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
@@ -349,9 +347,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("===============================================================");
-            logger.info("END Testing BrokerSessionIT openConfigureCloseQueueAsyncTest.");
-            logger.info("===============================================================");
+            logger.info("#TEST_END BrokerSessionIT openConfigureCloseQueueAsyncTest");
         }
     }
 
@@ -372,9 +368,7 @@ public class BrokerSessionIT {
      */
     @Test
     void openConfigureCloseQueueTest() {
-        logger.info("============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueTest.");
-        logger.info("============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT openConfigureCloseQueueTest");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -450,9 +444,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("==========================================================");
-            logger.info("END Testing BrokerSessionIT openConfigureCloseQueueTest.");
-            logger.info("==========================================================");
+            logger.info("#TEST_END BrokerSessionIT openConfigureCloseQueueTest");
         }
     }
 
@@ -473,9 +465,7 @@ public class BrokerSessionIT {
      */
     @Test
     void pushMessageTest() throws IOException {
-        logger.info("============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openConfigureCloseQueueTest.");
-        logger.info("============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT pushMessageTest");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -527,9 +517,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("==========================================================");
-            logger.info("END Testing BrokerSessionIT openConfigureCloseQueueTest.");
-            logger.info("==========================================================");
+            logger.info("#TEST_END BrokerSessionIT pushMessageTest");
         }
     }
 
@@ -549,9 +537,7 @@ public class BrokerSessionIT {
      */
     @Test
     void queueConfigureNotSupported() {
-        logger.info("===========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT queueConfigureNotSupported.");
-        logger.info("===========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT queueConfigureNotSupported");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -593,9 +579,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("=========================================================");
-            logger.info("END Testing BrokerSessionIT queueConfigureNotSupported.");
-            logger.info("=========================================================");
+            logger.info("#TEST_END BrokerSessionIT queueConfigureNotSupported");
         }
     }
 
@@ -615,9 +599,7 @@ public class BrokerSessionIT {
      */
     @Test
     void queueOpenAlreadyInProgress() {
-        logger.info("===========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT queueOpenAlreadyInProgress.");
-        logger.info("===========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT queueOpenAlreadyInProgress");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -655,9 +637,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("=========================================================");
-            logger.info("END Testing BrokerSessionIT queueOpenAlreadyInProgress.");
-            logger.info("=========================================================");
+            logger.info("#TEST_END BrokerSessionIT queueOpenAlreadyInProgress");
         }
     }
 
@@ -675,9 +655,7 @@ public class BrokerSessionIT {
     @Test
     void startSessionTimeoutTest() {
 
-        logger.info("========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT startSessionTimeoutTest.");
-        logger.info("========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT startSessionTimeoutTest");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.SILENT_MODE);
         server.start();
@@ -700,9 +678,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("======================================================");
-            logger.info("END Testing BrokerSessionIT startSessionTimeoutTest.");
-            logger.info("======================================================");
+            logger.info("#TEST_END BrokerSessionIT startSessionTimeoutTest");
         }
     }
 
@@ -721,9 +697,7 @@ public class BrokerSessionIT {
     @Test
     void openQueueTimeoutTest() {
 
-        logger.info("===================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openQueueTimeoutTest.");
-        logger.info("===================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT openQueueTimeoutTest");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
@@ -796,9 +770,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("=================================================");
-            logger.info("END Testing BrokerSessionIT openQueueTimeoutTest.");
-            logger.info("=================================================");
+            logger.info("#TEST_END BrokerSessionIT openQueueTimeoutTest");
         }
     }
 
@@ -817,9 +789,7 @@ public class BrokerSessionIT {
     @Test
     void openQueueConfigureTimeoutTest() {
 
-        logger.info("============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openQueueConfigureTimeoutTest.");
-        logger.info("============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT openQueueConfigureTimeoutTest");
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
@@ -896,9 +866,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("==========================================================");
-            logger.info("END Testing BrokerSessionIT openQueueConfigureTimeoutTest.");
-            logger.info("==========================================================");
+            logger.info("#TEST_END BrokerSessionIT openQueueConfigureTimeoutTest");
         }
     }
 
@@ -923,9 +891,7 @@ public class BrokerSessionIT {
     @Test
     void openQueueConfigureCanceledTest() {
 
-        logger.info("=============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openQueueConfigureCanceledTest.");
-        logger.info("=============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT openQueueConfigureCanceledTest");
 
         final Semaphore testSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1020,9 +986,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("===========================================================");
-            logger.info("END Testing BrokerSessionIT openQueueConfigureCanceledTest.");
-            logger.info("===========================================================");
+            logger.info("#TEST_END BrokerSessionIT openQueueConfigureCanceledTest");
         }
     }
 
@@ -1046,9 +1010,7 @@ public class BrokerSessionIT {
      */
     @Test
     void closeQueueConfigurationFailedTest() {
-        logger.info("==================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationFailedTest.");
-        logger.info("==================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueueConfigurationFailedTest");
 
         final Semaphore testSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1130,9 +1092,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("================================================================");
-            logger.info("END Testing BrokerSessionIT closeQueueConfigurationFailedTest.");
-            logger.info("================================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueueConfigurationFailedTest");
         }
     }
 
@@ -1156,9 +1116,7 @@ public class BrokerSessionIT {
      */
     @Test
     void closeQueueConfigurationTimeoutTest() {
-        logger.info("=================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationTimeoutTest.");
-        logger.info("=================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueueConfigurationTimeoutTest");
 
         final Semaphore testSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1249,9 +1207,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("===============================================================");
-            logger.info("END Testing BrokerSessionIT closeQueueConfigurationTimeoutTest.");
-            logger.info("===============================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueueConfigurationTimeoutTest");
         }
     }
 
@@ -1278,9 +1234,7 @@ public class BrokerSessionIT {
      */
     @Test
     void closeQueueConfigurationCanceledTest() {
-        logger.info("==================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueueConfigurationCanceledTest.");
-        logger.info("==================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueueConfigurationCanceledTest");
 
         final Semaphore testSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1383,9 +1337,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("================================================================");
-            logger.info("END Testing BrokerSessionIT closeQueueConfigurationCanceledTest.");
-            logger.info("================================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueueConfigurationCanceledTest");
         }
     }
 
@@ -1410,9 +1362,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sequenceTimeoutTest() {
-        logger.info("============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sequenceTimeoutTest.");
-        logger.info("============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sequenceTimeoutTest");
 
         final Semaphore testSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1479,9 +1429,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("============================================================");
-            logger.info("END Testing BrokerSessionIT sequenceTimeoutTest.");
-            logger.info("============================================================");
+            logger.info("#TEST_END BrokerSessionIT sequenceTimeoutTest");
         }
     }
 
@@ -1518,9 +1466,7 @@ public class BrokerSessionIT {
      */
     @Test
     void lateOpenQueueResponseTest() {
-        logger.info("============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT lateOpenQueueResponseTest.");
-        logger.info("============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT lateOpenQueueResponseTest");
 
         final Semaphore openQueueSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1644,9 +1590,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("============================================================");
-            logger.info("END Testing BrokerSessionIT lateOpenQueueResponseTest.");
-            logger.info("============================================================");
+            logger.info("#TEST_END BrokerSessionIT lateOpenQueueResponseTest");
         }
     }
 
@@ -1685,9 +1629,7 @@ public class BrokerSessionIT {
      */
     @Test
     void lateConfigureOpenQueueResponseTest() {
-        logger.info("===================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT lateConfigureOpenQueueResponseTest.");
-        logger.info("===================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT lateConfigureOpenQueueResponseTest");
 
         final Semaphore openQueueSema = new Semaphore(0);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
@@ -1818,9 +1760,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("=================================================================");
-            logger.info("END Testing BrokerSessionIT lateConfigureOpenQueueResponseTest.");
-            logger.info("=================================================================");
+            logger.info("#TEST_END BrokerSessionIT lateConfigureOpenQueueResponseTest");
         }
     }
 
@@ -1848,16 +1788,14 @@ public class BrokerSessionIT {
      */
     @Test
     void lateStandaloneConfigureResponseTest() {
-        logger.info("===================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT lateStandaloneConfigureResponseTest.");
-        logger.info("===================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT lateStandaloneConfigureResponseTest");
 
         final Semaphore openQueueSema = new Semaphore(0);
         final Semaphore configureQueueSema = new Semaphore(0);
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
-        final int FAILED_TO_APPLY_CUSTOMER_PRIORITY = 3;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
+        final int FAILED_TO_APPLY_CONSUMER_PRIORITY = 3;
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
 
@@ -1902,7 +1840,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
 
             // The response delay for standalone configure request is 2 seconds
@@ -1929,11 +1867,11 @@ public class BrokerSessionIT {
             server.pushItem(StatusCategory.E_SUCCESS);
             // To send recovery configure request to sync with a server we need
             // attempted QueueOptions be different from the applied one.
-            // Here is different customer priority.
+            // Here is different consumer priority.
             QueueOptions failedOptions =
                     QueueOptions.builder()
                             .merge(queueOptions)
-                            .setConsumerPriority(FAILED_TO_APPLY_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(FAILED_TO_APPLY_CONSUMER_PRIORITY)
                             .build();
             queue.configureAsync(failedOptions, SEQUENCE_TIMEOUT);
             TestTools.acquireSema(configureQueueSema);
@@ -1962,9 +1900,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("==================================================================");
-            logger.info("END Testing BrokerSessionIT lateStandaloneConfigureResponseTest.");
-            logger.info("=================================================================");
+            logger.info("#TEST_END BrokerSessionIT lateStandaloneConfigureResponseTest");
         }
     }
 
@@ -1992,15 +1928,13 @@ public class BrokerSessionIT {
      */
     @Test
     void lateCloseQueueConfigureResponseTest() {
-        logger.info("===================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT lateCloseQueueConfigureResponseTest.");
-        logger.info("===================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT lateCloseQueueConfigureResponseTest");
 
         final Semaphore openQueueSema = new Semaphore(0);
         final Semaphore closeQueueSema = new Semaphore(0);
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
 
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
@@ -2048,7 +1982,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
 
             // The response delay for configure request during close queue sequence is 2 seconds
@@ -2128,9 +2062,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("==================================================================");
-            logger.info("END Testing BrokerSessionIT lateCloseQueueConfigureResponseTest.");
-            logger.info("==================================================================");
+            logger.info("#TEST_END BrokerSessionIT lateCloseQueueConfigureResponseTest");
         }
     }
 
@@ -2172,7 +2104,7 @@ public class BrokerSessionIT {
         logger.info("BrokerSessionIT reOpenQueueTest for {} queues.", numberOfQueuesOpened);
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -2197,7 +2129,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
 
             Map<Integer, Boolean> expectedIds = new TreeMap<>();
@@ -2235,7 +2167,7 @@ public class BrokerSessionIT {
             TestTools.sleepForSeconds(3);
             // === Test timeline: ~3 sec after start
             server.start();
-            logger.error("Server started again");
+            logger.info("Server started again");
             // === Test timeline: ~6 sec after start
             TestTools.sleepForSeconds(3);
 
@@ -2322,7 +2254,7 @@ public class BrokerSessionIT {
 
                     assertEquals(MAX_UNCONFIRMED_MESSAGES, info.maxUnconfirmedMessages());
                     assertEquals(MAX_UNCONFIRMED_BYTES, info.maxUnconfirmedBytes());
-                    assertEquals(INITIAL_CUSTOMER_PRIORITY, info.consumerPriority());
+                    assertEquals(INITIAL_CONSUMER_PRIORITY, info.consumerPriority());
                     assertEquals(
                             StreamParameters.DEFAULT_APP_ID,
                             streamParameters.appId()); // todo maybe remove this check? or check if
@@ -2411,24 +2343,16 @@ public class BrokerSessionIT {
 
     @Test
     void stateRestoredWithoutQueuesTest() {
-        logger.info("===============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT stateRestoredWithoutQueuesTest.");
-        logger.info("===============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT stateRestoredWithoutQueuesTest");
         reOpenQueueTest(0);
-        logger.info("===============================================================");
-        logger.info("END Testing BrokerSessionIT stateRestoredWithoutQueuesTest.");
-        logger.info("===============================================================");
+        logger.info("#TEST_END BrokerSessionIT stateRestoredWithoutQueuesTest");
     }
 
     @Test
     void multipleQueuesReopenTest() {
-        logger.info("=========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT multipleQueuesReopenTest.");
-        logger.info("=========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT multipleQueuesReopenTest");
         reOpenQueueTest(10);
-        logger.info("=======================================================");
-        logger.info("END Testing BrokerSessionIT multipleQueuesReopenTest.");
-        logger.info("=======================================================");
+        logger.info("#TEST_END BrokerSessionIT multipleQueuesReopenTest");
     }
 
     /**
@@ -2449,13 +2373,11 @@ public class BrokerSessionIT {
      */
     @Test
     void closeQueueOnStoppedSession() {
-        logger.info("===========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueueOnStoppedSession.");
-        logger.info("===========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueueOnStoppedSession");
 
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -2480,7 +2402,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
             QueueHandle q1 = createQueue(session, createUri(), flags);
             q1.openAsync(queueOptions, SEQUENCE_TIMEOUT);
@@ -2511,9 +2433,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("=========================================================");
-            logger.info("END Testing BrokerSessionIT closeQueueOnStoppedSession.");
-            logger.info("=========================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueueOnStoppedSession");
         }
     }
 
@@ -2540,15 +2460,13 @@ public class BrokerSessionIT {
      */
     @Test
     void closeQueuePreconditionFailures() {
-        logger.info("===============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueuePreconditionFailures.");
-        logger.info("===============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueuePreconditionFailures");
 
         final Semaphore closeQueueSema = new Semaphore(0);
 
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
@@ -2573,7 +2491,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
             QueueHandle q1 = createQueue(session, createUri(), flags);
 
@@ -2656,9 +2574,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("=============================================================");
-            logger.info("END Testing BrokerSessionIT closeQueuePreconditionFailures.");
-            logger.info("=============================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueuePreconditionFailures");
         }
     }
 
@@ -2693,9 +2609,7 @@ public class BrokerSessionIT {
     @Disabled(
             "Temporarily disable this test until achieved more stable repeatability on slow hosts")
     public void closeQueueOnPendingConfigureRequest() {
-        logger.info("==================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueueOnPendingConfigureRequest.");
-        logger.info("==================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueueOnPendingConfigureRequest");
 
         logger.info("Step 1. Start broker simulator in manual mode");
 
@@ -2704,7 +2618,7 @@ public class BrokerSessionIT {
         // start test server in manual mode
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(5);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
         server.start();
@@ -2738,7 +2652,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .setSuspendsOnBadHostHealth(true)
                             .build();
             QueueHandle q1 = createQueue(session, createUri(), flags);
@@ -2767,7 +2681,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES - 100)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES - 10)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
 
             BmqFuture<ConfigureQueueCode> configureFuture =
@@ -2871,9 +2785,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("===================================================================");
-            logger.info("END Testing BrokerSessionIT closeQueueOnPendingConfigureRequest.");
-            logger.info("===================================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueueOnPendingConfigureRequest");
         }
     }
 
@@ -2895,9 +2807,7 @@ public class BrokerSessionIT {
      */
     @Test
     void closeQueueOnDeferredResumeRequest() {
-        logger.info("================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT closeQueueOnDeferredResumeRequest.");
-        logger.info("================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT closeQueueOnDeferredResumeRequest");
 
         int reqId = 0;
 
@@ -2985,9 +2895,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("==============================================================");
-            logger.info("END Testing BrokerSessionIT closeQueueOnDeferredResumeRequest.");
-            logger.info("==============================================================");
+            logger.info("#TEST_END BrokerSessionIT closeQueueOnDeferredResumeRequest");
         }
     }
 
@@ -3013,13 +2921,11 @@ public class BrokerSessionIT {
      */
     @Test
     void configureQueuePreconditionFailures() {
-        logger.info("===================================================================");
-        logger.info("BEGIN Testing BrokerSessionIT configureQueuePreconditionFailures.");
-        logger.info("===================================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT configureQueuePreconditionFailures");
 
         final int MAX_UNCONFIRMED_BYTES = 10000;
         final int MAX_UNCONFIRMED_MESSAGES = 1000;
-        final int INITIAL_CUSTOMER_PRIORITY = 2;
+        final int INITIAL_CONSUMER_PRIORITY = 2;
         final Duration SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_AUTO_MODE);
         server.start();
@@ -3044,7 +2950,7 @@ public class BrokerSessionIT {
                     QueueOptions.builder()
                             .setMaxUnconfirmedBytes(MAX_UNCONFIRMED_BYTES)
                             .setMaxUnconfirmedMessages(MAX_UNCONFIRMED_MESSAGES)
-                            .setConsumerPriority(INITIAL_CUSTOMER_PRIORITY)
+                            .setConsumerPriority(INITIAL_CONSUMER_PRIORITY)
                             .build();
             QueueImpl q1 = createQueue(session, createUri(), flags);
 
@@ -3121,9 +3027,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("=================================================================");
-            logger.info("END Testing BrokerSessionIT configureQueuePreconditionFailures.");
-            logger.info("=================================================================");
+            logger.info("#TEST_END BrokerSessionIT configureQueuePreconditionFailures");
         }
     }
 
@@ -3155,9 +3059,7 @@ public class BrokerSessionIT {
      */
     @Test
     void configureSuspendedQueue() throws ExecutionException, InterruptedException {
-        logger.info("======================================================");
-        logger.info("BEGIN Testing BrokerSessionIT configureSuspendedQueue.");
-        logger.info("======================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT configureSuspendedQueue");
 
         final Semaphore testSema = new Semaphore(0);
         final int MAX_UNCONFIRMED_BYTES = 5000000;
@@ -3473,9 +3375,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("====================================================");
-            logger.info("END Testing BrokerSessionIT configureSuspendedQueue.");
-            logger.info("====================================================");
+            logger.info("#TEST_END BrokerSessionIT configureSuspendedQueue");
         }
     }
 
@@ -3508,9 +3408,7 @@ public class BrokerSessionIT {
      */
     @Test
     void configureOptionsAndParameters() throws ExecutionException, InterruptedException {
-        logger.info("======================================================");
-        logger.info("BEGIN Testing BrokerSessionIT configureOptionsAndParameters.");
-        logger.info("======================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT configureOptionsAndParameters");
 
         final Semaphore testSema = new Semaphore(0);
         final int MAX_UNCONFIRMED_BYTES = 5000000;
@@ -3875,9 +3773,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("==========================================================");
-            logger.info("END Testing BrokerSessionIT configureOptionsAndParameters.");
-            logger.info("==========================================================");
+            logger.info("#TEST_END BrokerSessionIT configureOptionsAndParameters");
         }
     }
 
@@ -3901,9 +3797,7 @@ public class BrokerSessionIT {
      */
     @Test
     void queueOpenErrorTest() throws BMQException {
-        logger.info("================================================");
-        logger.info("BEGIN Testing BrokerSessionIT queueOpenErrorTest");
-        logger.info("================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT queueOpenErrorTest");
 
         final Semaphore testSema = new Semaphore(0);
 
@@ -4032,9 +3926,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("===============================================");
-            logger.info("END Testing BrokerSessionIT queueOpenErrorTest.");
-            logger.info("===============================================");
+            logger.info("#TEST_END BrokerSessionIT queueOpenErrorTest");
         }
     }
 
@@ -4053,9 +3945,7 @@ public class BrokerSessionIT {
      */
     @Test
     void openCloseMultipleSubqueuesTest() {
-        logger.info("============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT openCloseMultipleSubqueuesTest");
-        logger.info("============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT openCloseMultipleSubqueuesTest");
 
         // Start broker simulator
         logger.info("Start broker simulator in manual mode");
@@ -4553,9 +4443,7 @@ public class BrokerSessionIT {
             session.linger();
             server.stop();
 
-            logger.info("==========================================================");
-            logger.info("END Testing BrokerSessionIT openCloseMultipleSubqueuesTest");
-            logger.info("==========================================================");
+            logger.info("#TEST_END BrokerSessionIT openCloseMultipleSubqueuesTest");
         }
     }
 
@@ -4583,13 +4471,9 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopTest() throws ExecutionException, InterruptedException {
-        logger.info("==============================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopTest.");
-        logger.info("==============================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopTest");
 
-        final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(5);
         final Duration FUTURE_TIMEOUT = Duration.ofSeconds(6);
-        final Duration REQUEST_DELAY = Duration.ofSeconds(2);
 
         // Start test server
         logger.info("Start test server");
@@ -4767,9 +4651,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("============================================");
-            logger.info("END Testing BrokerSessionIT sessionStopTest.");
-            logger.info("============================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopTest");
         }
     }
 
@@ -4786,9 +4668,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopNullTimeoutTest() {
-        logger.info("=========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopNullTimeoutTest.");
-        logger.info("=========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopNullTimeoutTest");
 
         final Duration TIMEOUT = Duration.ofSeconds(5);
 
@@ -4836,9 +4716,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("=======================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopNullTimeoutTest.");
-            logger.info("=======================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopNullTimeoutTest");
         }
     }
 
@@ -4866,13 +4744,9 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopAsyncTest() throws IOException {
-        logger.info("===================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncTest.");
-        logger.info("===================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopAsyncTest");
 
-        final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(5);
         final Duration FUTURE_TIMEOUT = Duration.ofSeconds(6);
-        final Duration REQUEST_DELAY = Duration.ofSeconds(2);
 
         // Start test server
         logger.info("Start test server");
@@ -5037,9 +4911,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("=================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopAsyncTest.");
-            logger.info("=================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopAsyncTest");
         }
     }
 
@@ -5056,9 +4928,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopAsyncNullTimeoutTest() {
-        logger.info("==============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncNullTimeoutTest.");
-        logger.info("==============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopAsyncNullTimeoutTest");
 
         final Duration TIMEOUT = Duration.ofSeconds(5);
         final Semaphore stopSema = new Semaphore(0);
@@ -5121,9 +4991,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("============================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopAsyncNullTimeoutTest.");
-            logger.info("============================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopAsyncNullTimeoutTest");
         }
     }
 
@@ -5140,9 +5008,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopTimeoutTest() {
-        logger.info("=====================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopTimeoutTest.");
-        logger.info("=====================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopTimeoutTest");
 
         final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         final Duration REQUEST_DELAY_FAILURE = Duration.ofSeconds(2);
@@ -5204,9 +5070,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("===================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopTimeoutTest.");
-            logger.info("===================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopTimeoutTest");
         }
     }
 
@@ -5223,9 +5087,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopAsyncTimeoutTest() {
-        logger.info("==========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncTimeoutTest.");
-        logger.info("==========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopAsyncTimeoutTest");
 
         final Duration SHORT_SEQUENCE_TIMEOUT = Duration.ofSeconds(1);
         final Duration REQUEST_DELAY_FAILURE = Duration.ofSeconds(2);
@@ -5302,9 +5164,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("========================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopAsyncTimeoutTest.");
-            logger.info("========================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopAsyncTimeoutTest");
         }
     }
 
@@ -5322,9 +5182,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopInProgressTest() {
-        logger.info("========================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopInProgressTest.");
-        logger.info("========================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopInProgressTest");
 
         final Duration REQUEST_DELAY = Duration.ofSeconds(1);
 
@@ -5390,9 +5248,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("======================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopInProgressTest.");
-            logger.info("======================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopInProgressTest");
         }
     }
 
@@ -5411,9 +5267,7 @@ public class BrokerSessionIT {
      */
     @Test
     void sessionStopAsyncInProgressTest() {
-        logger.info("=============================================================");
-        logger.info("BEGIN Testing BrokerSessionIT sessionStopAsyncInProgressTest.");
-        logger.info("=============================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionStopAsyncInProgressTest");
 
         final Duration REQUEST_DELAY = Duration.ofSeconds(1);
 
@@ -5490,9 +5344,7 @@ public class BrokerSessionIT {
             assertEquals(GenericResult.SUCCESS, session.linger());
             server.stop();
 
-            logger.info("===========================================================");
-            logger.info("END Testing BrokerSessionIT sessionStopAsyncInProgressTest.");
-            logger.info("===========================================================");
+            logger.info("#TEST_END BrokerSessionIT sessionStopAsyncInProgressTest");
         }
     }
 
@@ -5513,9 +5365,7 @@ public class BrokerSessionIT {
      */
     @Test
     void inboundWatermarksTest() throws TimeoutException, InterruptedException {
-        logger.info("====================================================");
-        logger.info("BEGIN Testing BrokerSessionIT inboundWatermarksTest.");
-        logger.info("====================================================");
+        logger.info("#TEST_BEGIN BrokerSessionIT inboundWatermarksTest");
 
         final int EVENT_TIMEOUT = 15;
 
@@ -5650,16 +5500,13 @@ public class BrokerSessionIT {
 
             // verify that there are no more inbound events
             assertNull(events.poll());
-            assertNull(events.poll());
             assertEquals(0, session.inboundBufferSize());
 
         } finally {
             // close the session
             session.linger();
 
-            logger.info("==================================================");
-            logger.info("END Testing BrokerSessionIT inboundWatermarksTest.");
-            logger.info("==================================================");
+            logger.info("#TEST_END BrokerSessionIT inboundWatermarksTest");
         }
     }
 }
