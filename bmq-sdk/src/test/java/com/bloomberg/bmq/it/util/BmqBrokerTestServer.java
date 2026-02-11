@@ -139,15 +139,6 @@ public class BmqBrokerTestServer implements BmqBroker {
                     "Empty 'it.brokerDir' provided, no path to the broker");
         }
 
-        // Cleanup from previous run. Delete named pipe if it's there
-        File np = new File(envPath + "/bmqbrkr.ctl");
-        if (np.exists()) {
-            logger.info("Deleting orphan bmqbrkr.ctl");
-            if (!np.delete()) {
-                logger.error("Failed to remove orphan bmqbrkr.ctl: {}", np.getPath());
-            }
-        }
-
         // Only perform initial setup once (port selection, config creation)
         // On restart, reuse existing port and configuration
         if (!isInitialized) {
@@ -193,13 +184,24 @@ public class BmqBrokerTestServer implements BmqBroker {
             isInitialized = true;
         } else {
             logger.info("Restarting broker on existing port: {}", sessionOptions.brokerUri());
+
+            // Cleanup control pipe from previous run in temp directory
+            File np = tmpFolder.resolve("bmqbrkr.ctl").toFile();
+            if (np.exists()) {
+                logger.info("Deleting orphan bmqbrkr.ctl from {}", np.getPath());
+                if (!np.delete()) {
+                    logger.error("Failed to remove orphan bmqbrkr.ctl: {}", np.getPath());
+                }
+            }
         }
 
         // Launch broker with config path as command line argument
-        ProcessBuilder pb = new ProcessBuilder("./bmqbrkr.tsk", configPath.toString());
-        pb.directory(new File(envPath));
+        // Use absolute path to executable and run from tmpFolder to isolate control pipe
+        String brokerExe = envPath + "/bmqbrkr.tsk";
+        ProcessBuilder pb = new ProcessBuilder(brokerExe, configPath.toString());
+        pb.directory(tmpFolder.toFile());
 
-        logger.info("BlazingMQ Broker working directory: [{}]", envPath);
+        logger.info("BlazingMQ Broker working directory: [{}]", tmpFolder);
         logger.info("BlazingMQ Broker output file: [{}]", outputFile.getCanonicalPath());
 
         pb.redirectErrorStream(true);
@@ -218,7 +220,7 @@ public class BmqBrokerTestServer implements BmqBroker {
             sb.append("Failed to start broker process, rc = ")
                     .append(process.exitValue())
                     .append(", dir = [ ")
-                    .append(envPath)
+                    .append(tmpFolder)
                     .append(" ], cmd = [ ")
                     .append(String.join(" ", pb.command()))
                     .append(" ],");
