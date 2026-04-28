@@ -155,7 +155,7 @@ class SessionStressIT {
                 logger.error("Interrupted: ", e);
             }
             if (event == null) {
-                logger.error("No incoming events");
+                logger.warn("No incoming events");
                 state = TransferState.DONE;
             }
             if (event instanceof PushMessage) {
@@ -377,12 +377,12 @@ class SessionStressIT {
                 throw new BMQException("Unexpected PUSH messages: " + pushMessages.size());
             }
 
-            logger.error("Validation complete. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Validation OK. Memory used: {} MB", TestTools.getUsedMemoryMB());
         }
 
         void validateFanoutMode() throws BMQException {
 
-            logger.error("Begin validation. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Begin validation. Memory used: {} MB", TestTools.getUsedMemoryMB());
 
             final int NUM_MESSAGES = ackMessages.size();
 
@@ -466,7 +466,7 @@ class SessionStressIT {
                 throw new BMQException("Unexpected PUSH messages: " + pushMessages.size());
             }
 
-            logger.error("Validation complete. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Validation OK. Memory used: {} MB", TestTools.getUsedMemoryMB());
         }
 
         String createPayload(int msgSize, String filler) {
