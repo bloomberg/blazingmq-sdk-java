@@ -65,6 +65,7 @@ class SessionStressIT {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     static final Duration TEST_REQUEST_TIMEOUT = Duration.ofSeconds(20);
+    static final Duration PROGRESS_LOG_INTERVAL = Duration.ofSeconds(10);
 
     static class TransferValidator {
 
@@ -236,8 +237,21 @@ class SessionStressIT {
             messagePayloadSize = payloadSize;
             this.algorithm = algorithm;
 
+            long lastLogTime = System.currentTimeMillis();
+
             TransferState state = TransferState.SENDING_PUT;
             while (state != TransferState.DONE) {
+                long now = System.currentTimeMillis();
+                if (now - lastLogTime >= PROGRESS_LOG_INTERVAL.toMillis()) {
+                    logger.info(
+                            "Progress: PUTs {}/{}, ACKs {}, PUSHes {}/{}",
+                            putMessages.size(),
+                            numMsgs,
+                            ackMessages.size(),
+                            pushMessages.size(),
+                            numberOfPushMessages);
+                    lastLogTime = now;
+                }
                 switch (state) {
                     case SENDING_PUT:
                         if (pushMessages.size() > VALIDATION_THRESHOLD) {
