@@ -237,7 +237,7 @@ class BrokerSessionStressIT {
 
         public void validate() {
 
-            logger.error("Begin validation. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Begin validation. Memory used: {} MB", TestTools.getUsedMemoryMB());
 
             final int NUM_MESSAGES = pushMessages.size();
 
@@ -294,7 +294,7 @@ class BrokerSessionStressIT {
             assertTrue(numMsg >= 0);
             assertEquals(0, pushMessages.size());
 
-            logger.error("Validation complete. Memory used: {}", TestTools.getUsedMemoryMB());
+            logger.info("Validation OK. Memory used: {} MB", TestTools.getUsedMemoryMB());
         }
 
         String createPayload(int msgSize, String filler) {
@@ -486,20 +486,20 @@ class BrokerSessionStressIT {
                 BrokerSession.createInstance(
                         broker.sessionOptions(), connectionFactory, service, (Event ev) -> {});
         try {
-            logger.error("Memory usage 1: {}", TestTools.getUsedMemoryMB());
+            logger.info("Memory usage 1: {} MB", TestTools.getUsedMemoryMB());
 
             // Cycle with created session.
             for (int i = 0; i < NUM_CYCLES; i++) {
                 startStopSession(session);
             }
 
-            logger.error("Memory usage 2: {}", TestTools.getUsedMemoryMB());
+            logger.info("Memory usage 2: {} MB", TestTools.getUsedMemoryMB());
 
             // Cycle that creates a new session on each iteration.
             for (int i = 0; i < NUM_CYCLES; i++) {
                 startStopSession(broker.sessionOptions());
             }
-            logger.error("Memory usage 3: {}", TestTools.getUsedMemoryMB());
+            logger.info("Memory usage 3: {} MB", TestTools.getUsedMemoryMB());
 
             broker.setDropTmpFolder();
 

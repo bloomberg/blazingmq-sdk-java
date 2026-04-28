@@ -1,4 +1,4 @@
-ARG image
+ARG image=ghcr.io/bloomberg/blazingmq:latest
 FROM ${image}
 
 ENV BMQ_DOCKER_TMPDIR=/tmp/bmq-broker
