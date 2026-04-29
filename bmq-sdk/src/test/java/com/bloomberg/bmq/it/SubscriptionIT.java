@@ -46,7 +46,6 @@ import com.bloomberg.bmq.it.util.BmqBroker;
 import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -155,9 +154,9 @@ class SubscriptionIT {
             openedQueues = new HashMap<>();
         }
 
-        public static Consumer createStarted(String brokerUri) {
+        public static Consumer createStarted(SessionOptions sessionOptions) {
             Consumer consumer = new Consumer();
-            consumer.start(brokerUri);
+            consumer.start(sessionOptions);
             return consumer;
         }
 
@@ -179,13 +178,10 @@ class SubscriptionIT {
             openedQueues.get(msg.queue().uri()).enqueueMessage(msg);
         }
 
-        private void start(String brokerUri) {
+        private void start(SessionOptions sessionOptions) {
             logger.info("#CONSUMER starting session...");
 
-            session =
-                    new Session(
-                            SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build(),
-                            this); // SessionEventHandler
+            session = new Session(sessionOptions, this);
             session.start(DEFAULT_TIMEOUT);
 
             logger.info("#CONSUMER session started");
@@ -268,9 +264,9 @@ class SubscriptionIT {
             // Empty
         }
 
-        public static Producer createStarted(String brokerUri) {
+        public static Producer createStarted(SessionOptions sessionOptions) {
             Producer producer = new Producer();
-            producer.start(brokerUri);
+            producer.start(sessionOptions);
             return producer;
         }
 
@@ -294,13 +290,10 @@ class SubscriptionIT {
             correlationIds.remove(corrId);
         }
 
-        public void start(String brokerUri) {
+        public void start(SessionOptions sessionOptions) {
             logger.info("#PRODUCER starting session...");
 
-            session =
-                    new Session(
-                            SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build(),
-                            this); // SessionEventHandler
+            session = new Session(sessionOptions, this);
             session.start(DEFAULT_TIMEOUT);
 
             logger.info("#PRODUCER session started");
@@ -390,10 +383,8 @@ class SubscriptionIT {
 
             logger.info("Step 2: Start producer/consumer");
 
-            Consumer consumer =
-                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
-            Producer producer =
-                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Consumer consumer = Consumer.createStarted(broker.sessionOptions());
+            Producer producer = Producer.createStarted(broker.sessionOptions());
 
             logger.info("Step 3: Open consumer, queue with subscriptions");
             Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
@@ -456,10 +447,8 @@ class SubscriptionIT {
 
             logger.info("Step 2: Start producer");
             Uri producerUri = BmqBroker.Domains.Fanout.generateQueueUri();
-            Producer producer =
-                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
-            Consumer consumer =
-                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Producer producer = Producer.createStarted(broker.sessionOptions());
+            Consumer consumer = Consumer.createStarted(broker.sessionOptions());
 
             logger.info("Step 3: Start and open fanout consumers");
 
@@ -525,10 +514,8 @@ class SubscriptionIT {
 
             logger.info("Step 2: Start producer");
             Uri producerUri = BmqBroker.Domains.Fanout.generateQueueUri();
-            Producer producer =
-                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
-            Consumer consumer =
-                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Producer producer = Producer.createStarted(broker.sessionOptions());
+            Consumer consumer = Consumer.createStarted(broker.sessionOptions());
 
             logger.info("Step 3: Build the common QueueOptions");
 
@@ -595,10 +582,8 @@ class SubscriptionIT {
 
             logger.info("Step 2: Start producer/consumer");
 
-            Consumer consumer =
-                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
-            Producer producer =
-                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Consumer consumer = Consumer.createStarted(broker.sessionOptions());
+            Producer producer = Producer.createStarted(broker.sessionOptions());
 
             logger.info("Step 3: Open consumer, queue with subscriptions");
             Uri uri = BmqBroker.Domains.Priority.generateQueueUri();
@@ -687,10 +672,8 @@ class SubscriptionIT {
 
             logger.info("Step 2: Start producer/consumer");
 
-            Consumer consumer =
-                    Consumer.createStarted(broker.sessionOptions().brokerUri().toString());
-            Producer producer =
-                    Producer.createStarted(broker.sessionOptions().brokerUri().toString());
+            Consumer consumer = Consumer.createStarted(broker.sessionOptions());
+            Producer producer = Producer.createStarted(broker.sessionOptions());
 
             logger.info("Step 3: Open producer");
             producer.openQueue(uri);

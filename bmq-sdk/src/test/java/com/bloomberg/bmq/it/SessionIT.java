@@ -2677,8 +2677,7 @@ public class SessionIT {
         BmqBroker broker = BmqBroker.createStartedBroker();
 
         // 2) Start the session
-        SessionOptions opts =
-                SessionOptions.builder().setBrokerUri(broker.sessionOptions().brokerUri()).build();
+        SessionOptions opts = broker.sessionOptions();
 
         TestSession session = new TestSession(opts);
 
