@@ -52,7 +52,7 @@ public final class BrokerSessionEvent extends SessionEvent<BrokerSessionEvent.Ty
 
     private static final int TYPE_ID = UniqId.getNumber();
 
-    public final void dispatch(BrokerSessionEventHandler handler) {
+    public void dispatch(BrokerSessionEventHandler handler) {
         getEventType().dispatch(handler, this);
     }
 

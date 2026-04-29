@@ -437,6 +437,11 @@ public class TcpBrokerConnection
     private class EventHandler implements ProtocolEventTcpReader.EventHandler {
 
         public void handleEvent(EventType eventType, ByteBuffer[] bbuf) {
+            if (eventType == null) {
+                logger.warn("Received null event type with buffer size: {}, skipping", bbuf.length);
+                return;
+            }
+
             logger.debug("Handle EventImpl {} with size: {}", eventType, bbuf.length);
             EventImpl reportedEvent;
             switch (eventType) {

@@ -42,7 +42,7 @@ public class SubscriptionExpression {
         Argument.expectNonNull(expression, "expression");
         this.expression = Optional.of(expression);
         this.version =
-                Optional.of((expression.length() > 0) ? Version.e_VERSION_1 : Version.e_UNDEFINED);
+                Optional.of((!expression.isEmpty()) ? Version.e_VERSION_1 : Version.e_UNDEFINED);
     }
 
     public SubscriptionExpression() {
