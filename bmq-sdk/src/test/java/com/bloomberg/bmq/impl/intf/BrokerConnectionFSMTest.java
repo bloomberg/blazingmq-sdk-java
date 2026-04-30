@@ -148,7 +148,7 @@ public class BrokerConnectionFSMTest {
                     assertEquals(States.DISCONNECTING_CHANNEL, newState);
                     break;
                 case CHANNEL_STATUS_UP:
-                    assertEquals(States.NEGOTIATING, newState);
+                    assertEquals(States.AUTHENTICATING, newState);
                     break;
                 case DISCONNECT_CHANNEL_SUCCESS: // fallthrough
                 case DISCONNECT_CHANNEL_FAILURE:
@@ -175,7 +175,7 @@ public class BrokerConnectionFSMTest {
                     assertEquals(States.DISCONNECTING_CHANNEL, newState);
                     break;
                 case CHANNEL_STATUS_UP:
-                    assertEquals(States.NEGOTIATING, newState);
+                    assertEquals(States.AUTHENTICATING, newState);
                     break;
                 case CHANNEL_STATUS_DOWN:
                     assertEquals(States.CONNECTION_LOST, newState);
@@ -183,6 +183,34 @@ public class BrokerConnectionFSMTest {
                 case CONNECT_STATUS_FAILURE: // fallthrough
                 case CONNECT_STATUS_CANCELLED:
                     assertEquals(States.STOPPED, newState);
+                    break;
+                default:
+                    if (newState != initState) {
+                        logger.error(
+                                "Unexpected transition: {} | {} -> {}", initState, i, newState);
+                        fail();
+                    }
+            }
+        }
+    }
+
+    private void testAuthenticating() {
+        // Check transitions from the AUTHENTICATING state
+        States initState = States.AUTHENTICATING;
+        int[] transitions = BrokerConnectionFSMTest.transitions[initState.ordinal()];
+        for (Inputs i : Inputs.values()) {
+            States newState = getState(initState, i);
+            switch (i) {
+                case STOP_REQUEST: // fallthrough
+                case AUTHENTICATION_FAILURE: // fallthrough
+                case AUTHENTICATION_TIMEOUT:
+                    assertEquals(States.DISCONNECTING_CHANNEL, newState);
+                    break;
+                case AUTHENTICATION_RESPONSE:
+                    assertEquals(States.NEGOTIATING, newState);
+                    break;
+                case CHANNEL_STATUS_DOWN:
+                    assertEquals(States.CONNECTION_LOST, newState);
                     break;
                 default:
                     if (newState != initState) {
@@ -257,6 +285,9 @@ public class BrokerConnectionFSMTest {
                     break;
                 case CONNECTING:
                     testConnecting();
+                    break;
+                case AUTHENTICATING:
+                    testAuthenticating();
                     break;
                 case NEGOTIATING:
                     testNegotiating();

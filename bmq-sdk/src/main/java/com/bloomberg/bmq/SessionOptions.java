@@ -196,6 +196,26 @@ public final class SessionOptions {
         }
     }
 
+    /**
+     * Function type used to obtain authentication credentials for authenticating with the broker.
+     *
+     * <p>The function should return an {@link AuthnCredentialResult} containing either an {@link
+     * AuthnCredential} on success, or an error message on failure.
+     *
+     * <p>If not set on {@code SessionOptions}, the session will not authenticate with the broker.
+     */
+    @FunctionalInterface
+    public interface AuthnCredentialCb {
+
+        /**
+         * Returns authentication credentials or an error.
+         *
+         * @return an {@link AuthnCredentialResult} containing credentials on success, or an error
+         *     message on failure
+         */
+        AuthnCredentialResult get();
+    }
+
     private static final URI DEFAULT_URI = URI.create("tcp://localhost:30114");
     private static final Duration DEFAULT_START_TIMEOUT = Duration.ofSeconds(65);
     private static final Duration DEFAULT_STOP_TIMEOUT = Duration.ofSeconds(30);
@@ -215,6 +235,8 @@ public final class SessionOptions {
 
     private final HostHealthMonitor hostHealthMonitor;
 
+    private final AuthnCredentialCb authnCredentialCb;
+
     private SessionOptions() {
         brokerUri = DEFAULT_URI;
         startTimeout = DEFAULT_START_TIMEOUT;
@@ -226,6 +248,7 @@ public final class SessionOptions {
         configureQueueTimeout = QUEUE_OPERATION_TIMEOUT;
         closeQueueTimeout = QUEUE_OPERATION_TIMEOUT;
         hostHealthMonitor = null;
+        authnCredentialCb = null;
     }
 
     private SessionOptions(Builder builder) {
@@ -239,6 +262,7 @@ public final class SessionOptions {
         configureQueueTimeout = builder.configureQueueTimeout;
         closeQueueTimeout = builder.closeQueueTimeout;
         hostHealthMonitor = builder.hostHealthMonitor;
+        authnCredentialCb = builder.authnCredentialCb;
     }
 
     /**
@@ -383,6 +407,16 @@ public final class SessionOptions {
         return hostHealthMonitor;
     }
 
+    /**
+     * Returns the callback invoked to obtain authentication credentials for authenticating with the
+     * broker. Default value is null, meaning the session will not authenticate.
+     *
+     * @return authentication credential callback, or null if not set
+     */
+    public AuthnCredentialCb authnCredentialCb() {
+        return authnCredentialCb;
+    }
+
     /** Helper class to create a {@code SesssionOptions} object with custom settings. */
     public static class Builder {
         private URI brokerUri;
@@ -397,6 +431,8 @@ public final class SessionOptions {
         private Duration closeQueueTimeout;
 
         private HostHealthMonitor hostHealthMonitor;
+        private AuthnCredentialCb authnCredentialCb;
+
         /**
          * Creates a {@code SesssionOptions} object based on this {@code Builder} properties.
          *
@@ -417,6 +453,7 @@ public final class SessionOptions {
             configureQueueTimeout = options.configureQueueTimeout;
             closeQueueTimeout = options.closeQueueTimeout;
             hostHealthMonitor = options.hostHealthMonitor;
+            authnCredentialCb = options.authnCredentialCb;
         }
 
         /**
@@ -556,6 +593,19 @@ public final class SessionOptions {
          */
         public Builder setHostHealthMonitor(HostHealthMonitor value) {
             hostHealthMonitor = Argument.expectNonNull(value, "host health monitor");
+            return this;
+        }
+
+        /**
+         * Sets the callback invoked to obtain authentication credentials for authenticating with
+         * the broker. If not set, the session will not authenticate with the broker.
+         *
+         * @param value authentication credential callback
+         * @return Builder this object
+         * @throws NullPointerException if the specified value is null
+         */
+        public Builder setAuthnCredentialCb(AuthnCredentialCb value) {
+            authnCredentialCb = Argument.expectNonNull(value, "authnCredentialCb");
             return this;
         }
     }

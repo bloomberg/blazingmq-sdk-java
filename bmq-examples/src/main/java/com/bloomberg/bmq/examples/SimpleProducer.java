@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.examples;
 
 import com.bloomberg.bmq.AbstractSession;
+import com.bloomberg.bmq.AuthnCredentialResult;
 import com.bloomberg.bmq.PutMessage;
 import com.bloomberg.bmq.Queue;
 import com.bloomberg.bmq.QueueFlags;
@@ -72,7 +73,11 @@ public class SimpleProducer {
         }
 
         final SessionOptions sessionOptions =
-                SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build();
+                SessionOptions.builder()
+                        .setBrokerUri(URI.create(brokerUri))
+                        .setAuthnCredentialCb(
+                                () -> AuthnCredentialResult.success("ANONYMOUS", new byte[0]))
+                        .build();
         final AbstractSession session = new Session(sessionOptions, event -> {});
 
         try {

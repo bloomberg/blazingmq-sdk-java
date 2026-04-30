@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2026 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bloomberg.bmq.impl.infr.proto;
+package com.bloomberg.bmq.impl.infr.msg;
 
-public enum EventType {
-    UNDEFINED(0),
-    CONTROL(1),
-    PUT(2),
-    CONFIRM(3),
-    PUSH(4),
-    ACK(5),
-    AUTHENTICATION(15);
+public class AuthenticationResponse {
 
-    private int id;
+    private Status status;
+    private Integer lifetimeMs;
 
-    EventType(int id) {
-        this.id = id;
+    public Status status() {
+        return status;
     }
 
-    public int toInt() {
-        return id;
-    }
-
-    public static EventType fromInt(int i) {
-        for (EventType t : EventType.values()) {
-            if (t.toInt() == i) return t;
-        }
-        return null;
+    public Integer lifetimeMs() {
+        return lifetimeMs;
     }
 }
