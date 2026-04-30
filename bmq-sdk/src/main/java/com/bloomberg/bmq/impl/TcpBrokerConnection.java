@@ -15,7 +15,12 @@
  */
 package com.bloomberg.bmq.impl;
 
+import com.bloomberg.bmq.AuthnCredential;
+import com.bloomberg.bmq.AuthnCredentialResult;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
+import com.bloomberg.bmq.SessionOptions.AuthnCredentialCb;
+import com.bloomberg.bmq.impl.infr.msg.AuthenticationMessage;
+import com.bloomberg.bmq.impl.infr.msg.AuthenticationResponse;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
 import com.bloomberg.bmq.impl.infr.msg.ClientIdentity;
 import com.bloomberg.bmq.impl.infr.msg.ClientLanguage;
@@ -34,6 +39,8 @@ import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.ReadCallback;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.WriteStatus;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.proto.AckEventImpl;
+import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventBuilder;
+import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.ControlEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.EventImpl;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
@@ -98,6 +105,7 @@ public class TcpBrokerConnection
     private volatile boolean isOldStyleMessageProperties = false;
 
     private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> onAuthenticationTimeoutFuture;
     private ScheduledFuture<?> onNegotiationTimeoutFuture;
     private Duration negotiationTimeout;
     private ClientIdentity brokerIdentity;
@@ -107,6 +115,7 @@ public class TcpBrokerConnection
 
     private AtomicBoolean isLingered = new AtomicBoolean(false);
     private final int sessionId = counter.incrementAndGet();
+    private final AuthnCredentialCb authnCredentialCb;
     private NegotiationMessageChoice negotiationMsg;
 
     public static BrokerConnection createInstance(
@@ -147,6 +156,7 @@ public class TcpBrokerConnection
         this.sessionStatusHandler =
                 Argument.expectNonNull(sessionStatusHandler, "sessionStatusHandler");
 
+        authnCredentialCb = options.authnCredentialCb();
         connection.setChannelStatusHandler(this);
         startCallback = null;
         stopCallback = null;
@@ -209,6 +219,112 @@ public class TcpBrokerConnection
         if (rc != GenericResult.SUCCESS) {
             addFsmInput(Inputs.CONNECT_STATUS_FAILURE);
         }
+    }
+
+    @Override
+    public void doAuthentication() {
+        if (authnCredentialCb == null) {
+            // No authentication configured -- skip straight to negotiation
+            addFsmInput(Inputs.AUTHENTICATION_RESPONSE);
+            return;
+        }
+
+        // Set up authentication timeout
+        onAuthenticationTimeoutFuture =
+                scheduler.schedule(
+                        () -> {
+                            logger.error("Authentication timed out");
+                            addFsmInput(Inputs.AUTHENTICATION_TIMEOUT);
+                        },
+                        negotiationTimeout.toNanos(),
+                        TimeUnit.NANOSECONDS);
+
+        // Invoke the callback to get credentials
+        AuthnCredentialResult result;
+        try {
+            result = authnCredentialCb.get();
+        } catch (Exception e) {
+            logger.error("Authentication credential callback threw: ", e);
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            return;
+        }
+
+        if (!result.isSuccess()) {
+            logger.error("Authentication credential callback failed: {}", result.error());
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            return;
+        }
+
+        AuthnCredential credential = result.credential();
+
+        // Build and send the AuthenticationMessage
+        try {
+            WriteStatus rc = authenticate(credential);
+            if (rc != WriteStatus.SUCCESS) {
+                logger.error("Failed to send authentication message");
+                addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            }
+        } catch (IOException e) {
+            logger.error("Failed to authenticate: ", e);
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+        }
+    }
+
+    private WriteStatus authenticate(AuthnCredential credential) throws IOException {
+        byte[] data = credential.data();
+        String encodedData =
+                data != null ? java.util.Base64.getEncoder().encodeToString(data) : null;
+
+        AuthenticationMessage authnMsg = new AuthenticationMessage();
+        authnMsg.makeAuthenticationRequest(credential.mechanism(), encodedData);
+
+        AuthenticationEventBuilder authnBuilder = new AuthenticationEventBuilder();
+        authnBuilder.setMessage(authnMsg);
+
+        logger.info("Sending authentication message (mechanism: {})", credential.mechanism());
+        return connection.write(authnBuilder.build());
+    }
+
+    @Override
+    public void handleAuthenticationResponse() {
+        if (onAuthenticationTimeoutFuture.isDone()) {
+            logger.warn("Authentication timeout expired");
+            return;
+        }
+        EventImpl bmqEv = bmqEvents.poll();
+        if (bmqEv == null) {
+            logger.error("No BlazingMQ events");
+            return;
+        }
+        if (bmqEv.type() != EventType.AUTHENTICATION) {
+            logger.error("Unexpected BlazingMQ event: {}", bmqEv);
+            return;
+        }
+        AuthenticationMessage authnMsg = ((AuthenticationEventImpl) bmqEv).authenticationChoice();
+        if (authnMsg == null) {
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            return;
+        }
+        logger.debug("Broker authentication response decoded:\n {}", authnMsg);
+        onAuthenticationTimeoutFuture.cancel(false);
+        if (validateAuthenticationResponse(authnMsg.authenticationResponse())) {
+            addFsmInput(Inputs.AUTHENTICATION_RESPONSE);
+        } else {
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+        }
+    }
+
+    private boolean validateAuthenticationResponse(AuthenticationResponse resp) {
+        if (resp != null
+                && resp.status() != null
+                && resp.status().category() == StatusCategory.E_SUCCESS) {
+            if (resp.lifetimeMs() != null) {
+                logger.info("Authentication session lifetime: {} ms", resp.lifetimeMs());
+            }
+            return true;
+        }
+        logger.error("Authentication response is invalid");
+        return false;
     }
 
     @Override
@@ -327,6 +443,9 @@ public class TcpBrokerConnection
 
     @Override
     public void handleStop() {
+        if (onAuthenticationTimeoutFuture != null && !onAuthenticationTimeoutFuture.isDone()) {
+            onAuthenticationTimeoutFuture.cancel(false);
+        }
         if (onNegotiationTimeoutFuture != null && !onNegotiationTimeoutFuture.isDone()) {
             onNegotiationTimeoutFuture.cancel(false);
         }
@@ -442,6 +561,9 @@ public class TcpBrokerConnection
             switch (eventType) {
                 case CONTROL:
                     reportedEvent = new ControlEventImpl(bbuf);
+                    break;
+                case AUTHENTICATION:
+                    reportedEvent = new AuthenticationEventImpl(bbuf);
                     break;
                 case PUSH:
                     reportedEvent = new PushEventImpl(bbuf);

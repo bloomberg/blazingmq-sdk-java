@@ -239,9 +239,9 @@ public class EventHeader {
         bbos.writeByte(reserved);
     }
 
-    public void setControlEventEncodingType(EncodingType type) {
+    public void setEncodingType(EncodingType type) {
         Argument.expectCondition(type != EncodingType.UNKNOWN, "Unexpected encoding type");
-        if (this.type() != EventType.CONTROL) {
+        if (this.type() != EventType.CONTROL && this.type() != EventType.AUTHENTICATION) {
             throw new IllegalStateException("Unexpected call");
         }
 

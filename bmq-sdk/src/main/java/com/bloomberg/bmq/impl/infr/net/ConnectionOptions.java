@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.impl.infr.net;
 
 import com.bloomberg.bmq.SessionOptions;
+import com.bloomberg.bmq.SessionOptions.AuthnCredentialCb;
 import com.bloomberg.bmq.SessionOptions.WriteBufferWaterMark;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.lang.invoke.MethodHandles;
@@ -39,12 +40,14 @@ public final class ConnectionOptions {
     private int startNumRetries = DEFAULT_START_NUM_RETRIES;
     private Duration startRetryInterval = DEFAULT_START_RETRY_INTERVAL;
     private WriteBufferWaterMark writeWaterMark = new WriteBufferWaterMark();
+    private AuthnCredentialCb authnCredentialCb = null;
 
     public ConnectionOptions() {}
 
     public ConnectionOptions(SessionOptions sesOpts) {
         brokerUri = sesOpts.brokerUri();
         writeWaterMark = sesOpts.writeBufferWaterMark();
+        authnCredentialCb = sesOpts.authnCredentialCb();
     }
 
     public ConnectionOptions setBrokerUri(URI value) {
@@ -98,5 +101,14 @@ public final class ConnectionOptions {
 
     public WriteBufferWaterMark writeBufferWaterMark() {
         return writeWaterMark;
+    }
+
+    public AuthnCredentialCb authnCredentialCb() {
+        return authnCredentialCb;
+    }
+
+    public ConnectionOptions setAuthnCredentialCb(AuthnCredentialCb value) {
+        authnCredentialCb = value;
+        return this;
     }
 }

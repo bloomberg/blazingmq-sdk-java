@@ -113,7 +113,7 @@ class EventImplHeaderTest {
 
         header.setLength(72);
         header.setType(EventType.CONTROL);
-        header.setControlEventEncodingType(EncodingType.JSON);
+        header.setEncodingType(EncodingType.JSON);
 
         ByteBufferOutputStream bbos = new ByteBufferOutputStream(1024);
         // Specifying a large enough size for the output stream so that
