@@ -32,7 +32,7 @@ public class Crc32c {
         // Warn if Java version > 1.8 is used.
         // The warning record is logged only in situation if SDK was built with
         // JDK8 but is used with newer one e.g. JDK11
-        if (SystemUtil.getJavaVersion().compareTo(SystemUtil.JavaVersion.JAVA_8) > 0) {
+        if (!SystemUtil.isJava8()) {
             logger.warn("*** [NOTE] Starting from JDK9 switch to java.util.zip.CRC32C ***");
         }
     }

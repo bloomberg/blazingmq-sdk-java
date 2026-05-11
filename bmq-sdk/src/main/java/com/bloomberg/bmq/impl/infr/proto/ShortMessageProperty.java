@@ -23,6 +23,7 @@ public class ShortMessageProperty extends MessageProperty {
         super(PropertyType.SHORT, Short.SIZE);
     }
 
+    @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
     public ShortMessageProperty(short val) {
         this();
         ByteBuffer buffer = ByteBuffer.allocate(Short.BYTES);

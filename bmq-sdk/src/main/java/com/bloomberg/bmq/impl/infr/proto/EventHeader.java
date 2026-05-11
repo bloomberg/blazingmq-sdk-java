@@ -24,7 +24,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventHeader {
+public final class EventHeader {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     // This class represents the header for all the events received by the
@@ -252,7 +252,7 @@ public class EventHeader {
 
         byte typeAsByte = (byte) (type.toInt());
         // Set those bits to represent 'type'
-        typeSpecificUpdate |= (typeAsByte << CONTROL_EVENT_ENCODING_START_IDX);
+        typeSpecificUpdate |= (byte) (typeAsByte << CONTROL_EVENT_ENCODING_START_IDX);
 
         setTypeSpecific(typeSpecificUpdate);
     }

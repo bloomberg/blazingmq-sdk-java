@@ -21,7 +21,7 @@ import com.bloomberg.bmq.impl.infr.proto.intf.Streamable;
 import com.bloomberg.bmq.impl.infr.util.BitUtil;
 import java.io.IOException;
 
-public class ConfirmHeader implements Streamable {
+public final class ConfirmHeader implements Streamable {
     // This class represents header for a 'CONFIRM' event.  A 'CONFIRM' event
     // is the event sent by a client to the broker to signify it's done
     // processing a specific message and the broker can dispose of it.

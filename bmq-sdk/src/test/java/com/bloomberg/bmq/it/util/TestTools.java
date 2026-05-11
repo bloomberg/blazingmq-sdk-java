@@ -146,10 +146,9 @@ public class TestTools {
         for (ByteBuffer b : bbuf) {
             bb.put(b);
         }
+        bb.flip();
 
-        // 'flip()' might return 'Buffer' interface objects in some JDKs,
-        // need to specify concrete class
-        return (ByteBuffer) bb.flip();
+        return bb;
     }
 
     public static PutMessageImpl preparePutMessage(String payload, boolean isOldStyleProperties)

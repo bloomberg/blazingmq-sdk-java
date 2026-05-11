@@ -23,6 +23,7 @@ public class Int64MessageProperty extends MessageProperty {
         super(PropertyType.INT64, Long.SIZE);
     }
 
+    @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
     public Int64MessageProperty(long val) {
         this();
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);

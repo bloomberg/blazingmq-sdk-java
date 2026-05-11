@@ -216,7 +216,7 @@ public class MessagePropertiesImpl implements MessageProperties {
         }
 
         // Read padding bytes
-        final long numPaddingBytes = input.readByte();
+        final byte numPaddingBytes = input.readByte();
 
         // Skip padding bytes
         if (input.skip(numPaddingBytes - 1) != numPaddingBytes - 1) {

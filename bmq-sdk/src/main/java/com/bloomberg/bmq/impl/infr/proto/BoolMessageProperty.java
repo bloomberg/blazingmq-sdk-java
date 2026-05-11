@@ -21,6 +21,7 @@ public class BoolMessageProperty extends MessageProperty {
         super(PropertyType.BOOL, Byte.SIZE);
     }
 
+    @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
     public BoolMessageProperty(boolean val) {
         this();
         byte[] b = {(byte) (val ? 1 : 0)};

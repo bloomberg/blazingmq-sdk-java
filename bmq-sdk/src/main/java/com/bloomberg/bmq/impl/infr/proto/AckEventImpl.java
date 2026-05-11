@@ -26,6 +26,9 @@ public class AckEventImpl extends EventImpl {
     final AckHeader header;
     final Collection<AckMessageImpl> messages = new ArrayList<>();
 
+    @SuppressWarnings(
+            "this-escape") // passing `this` to `AckMessageIterator` is necessary to fully construct
+    // `this`
     public AckEventImpl(ByteBuffer[] bbuf) {
         super(EventType.ACK, bbuf);
         AckMessageIterator it = new AckMessageIterator(this);

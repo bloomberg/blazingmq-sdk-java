@@ -22,7 +22,7 @@ import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.util.BitUtil;
 import java.io.IOException;
 
-public class PutHeader {
+public final class PutHeader {
     // This class represents the header for a 'PUT' event.  A 'PUT' event is
     // the event sent by a client to the broker to post message on queue(s).
 

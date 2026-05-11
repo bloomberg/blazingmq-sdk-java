@@ -21,6 +21,7 @@ public class ByteMessageProperty extends MessageProperty {
         super(PropertyType.BYTE, Byte.SIZE);
     }
 
+    @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
     public ByteMessageProperty(byte val) {
         this();
         byte[] b = {val};

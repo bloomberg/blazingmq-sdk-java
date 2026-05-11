@@ -28,6 +28,7 @@ public class StringMessageProperty extends MessageProperty {
         super(PropertyType.STRING, MessagePropertyHeader.MAX_PROPERTY_VALUE_LENGTH);
     }
 
+    @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
     public StringMessageProperty(String val) {
         this();
         setPropertyValue(val.getBytes(StandardCharsets.US_ASCII));

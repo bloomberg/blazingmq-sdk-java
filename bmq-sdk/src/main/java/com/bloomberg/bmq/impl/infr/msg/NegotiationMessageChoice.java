@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-public class NegotiationMessageChoice {
+public final class NegotiationMessageChoice {
 
     private ClientIdentity clientIdentity;
     private BrokerResponse brokerResponse;
@@ -28,33 +28,33 @@ public class NegotiationMessageChoice {
         return new NegotiationMessageChoice();
     }
 
-    public final void reset() {
+    public void reset() {
         init();
     }
 
-    public final void makeClientIdentity() {
+    public void makeClientIdentity() {
         reset();
         clientIdentity = new ClientIdentity();
     }
 
-    public final void makeBrokerResponse() {
+    public void makeBrokerResponse() {
         reset();
         brokerResponse = new BrokerResponse();
     }
 
-    public final boolean isClientIdentityValue() {
+    public boolean isClientIdentityValue() {
         return clientIdentity != null;
     }
 
-    public final boolean isBrokerResponseValue() {
+    public boolean isBrokerResponseValue() {
         return brokerResponse != null;
     }
 
-    public final ClientIdentity clientIdentity() {
+    public ClientIdentity clientIdentity() {
         return clientIdentity;
     }
 
-    public final BrokerResponse brokerResponse() {
+    public BrokerResponse brokerResponse() {
         return brokerResponse;
     }
 
@@ -63,7 +63,7 @@ public class NegotiationMessageChoice {
         brokerResponse = null;
     }
 
-    public final void reset(NegotiationMessageChoice copied) {
+    public void reset(NegotiationMessageChoice copied) {
         clientIdentity = copied.clientIdentity;
         brokerResponse = copied.brokerResponse;
     }

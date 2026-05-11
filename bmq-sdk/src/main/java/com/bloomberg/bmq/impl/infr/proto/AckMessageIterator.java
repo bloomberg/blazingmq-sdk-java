@@ -28,6 +28,8 @@ public class AckMessageIterator extends MessageIterator implements Iterator<AckM
 
     private AckHeader header;
 
+    @SuppressWarnings(
+            "this-escape") // isValid() and event() are `final` and call no non-final methods
     public AckMessageIterator(EventImpl ev) {
         super(ev);
         if (isValid()) {
