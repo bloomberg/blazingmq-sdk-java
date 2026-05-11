@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-public class BoolMessageProperty extends MessageProperty {
+public final class BoolMessageProperty extends MessageProperty {
 
     public BoolMessageProperty() {
         super(PropertyType.BOOL, Byte.SIZE);

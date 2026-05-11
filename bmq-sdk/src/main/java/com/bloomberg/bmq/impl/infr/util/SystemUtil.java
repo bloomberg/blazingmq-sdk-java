@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2022-2025 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class SystemUtil {
         JavaVersion result = JavaVersion.JAVA_UNSUPPORTED;
 
         try {
-            String version = System.getProperty("java.version");
+            String version = getJavaVersionString();
 
             result =
                     Arrays.stream(JavaVersion.values())
@@ -61,6 +61,10 @@ public class SystemUtil {
         }
 
         return result;
+    }
+
+    public static String getJavaVersionString() {
+        return System.getProperty("java.version");
     }
 
     public static int getProcessId() {

@@ -82,7 +82,10 @@ public class TestHelpers {
                 v1 = in1.read();
                 v2 = in2.read();
                 assertTrue(v1 >= 0);
-                assertEquals(v1, v2);
+                assertEquals(
+                        v1,
+                        v2,
+                        "Found mismatch at byte " + i + ": " + (char) v1 + ", " + (char) v2);
             }
         }
     }

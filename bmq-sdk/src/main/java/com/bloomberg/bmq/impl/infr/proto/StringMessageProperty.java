@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StringMessageProperty extends MessageProperty {
+public final class StringMessageProperty extends MessageProperty {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

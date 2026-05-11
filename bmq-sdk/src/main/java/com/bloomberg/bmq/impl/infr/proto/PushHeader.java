@@ -24,7 +24,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushHeader {
+public final class PushHeader {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     // This struct represents the header for a 'PUSH' event.  A 'PUSH' event is

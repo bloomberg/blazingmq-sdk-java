@@ -20,7 +20,8 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushMessageIterator extends MessageIterator implements Iterator<PushMessageImpl> {
+public final class PushMessageIterator extends MessageIterator
+        implements Iterator<PushMessageImpl> {
 
     static Logger logger = LoggerFactory.getLogger(PushMessageIterator.class);
 

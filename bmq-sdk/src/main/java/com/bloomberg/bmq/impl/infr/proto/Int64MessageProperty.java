@@ -17,7 +17,7 @@ package com.bloomberg.bmq.impl.infr.proto;
 
 import java.nio.ByteBuffer;
 
-public class Int64MessageProperty extends MessageProperty {
+public final class Int64MessageProperty extends MessageProperty {
 
     public Int64MessageProperty() {
         super(PropertyType.INT64, Long.SIZE);

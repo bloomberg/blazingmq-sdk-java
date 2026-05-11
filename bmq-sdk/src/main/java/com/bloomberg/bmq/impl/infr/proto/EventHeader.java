@@ -252,7 +252,7 @@ public class EventHeader {
 
         byte typeAsByte = (byte) (type.toInt());
         // Set those bits to represent 'type'
-        typeSpecificUpdate |= (typeAsByte << CONTROL_EVENT_ENCODING_START_IDX);
+        typeSpecificUpdate |= (byte) (typeAsByte << CONTROL_EVENT_ENCODING_START_IDX);
 
         setTypeSpecific(typeSpecificUpdate);
     }

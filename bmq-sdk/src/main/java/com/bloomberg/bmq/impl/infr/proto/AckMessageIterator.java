@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AckMessageIterator extends MessageIterator implements Iterator<AckMessageImpl> {
+public final class AckMessageIterator extends MessageIterator implements Iterator<AckMessageImpl> {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

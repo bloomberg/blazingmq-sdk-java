@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-public class BinaryMessageProperty extends MessageProperty {
+public final class BinaryMessageProperty extends MessageProperty {
 
     public BinaryMessageProperty() {
         super(PropertyType.BINARY, MessagePropertyHeader.MAX_PROPERTY_VALUE_LENGTH);

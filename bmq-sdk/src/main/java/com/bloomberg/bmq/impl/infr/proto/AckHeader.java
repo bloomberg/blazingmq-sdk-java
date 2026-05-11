@@ -24,7 +24,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AckHeader implements Streamable {
+public final class AckHeader implements Streamable {
     // This class represents header for an 'ACK' event.  An 'ACK' event is the
     // event sent by the broker to a client in response to a post message on
     // queue.  Such event is optional, depending on flags used at queue open.

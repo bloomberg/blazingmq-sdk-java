@@ -105,23 +105,23 @@ public class AckMessageImpl implements Streamable {
         setQueueId(queueId);
     }
 
-    public void setStatus(ResultCodes.AckResult status) {
+    public final void setStatus(ResultCodes.AckResult status) {
         int value = ResultCodeUtils.intFromAckResult(status);
         statusAndCorrelationId =
                 (statusAndCorrelationId & CORRID_MASK) | (value << STATUS_START_IDX);
     }
 
-    public void setCorrelationId(CorrelationIdImpl value) {
+    public final void setCorrelationId(CorrelationIdImpl value) {
         int id = value.toInt();
         statusAndCorrelationId = (statusAndCorrelationId & STATUS_MASK) | (id & CORRID_MASK);
         correlationId = value;
     }
 
-    public void setQueueId(int value) {
+    public final void setQueueId(int value) {
         queueId = value;
     }
 
-    public void setMessageGUID(final MessageGUID value) {
+    public final void setMessageGUID(final MessageGUID value) {
         value.toBinary(messageGUID);
     }
 
