@@ -53,7 +53,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build IT image
+    - name:  Build IT image
       working-directory: bmq-sdk/src/test/docker
       run: docker build --tag bmq-broker-java-it --build-arg "image=ghcr.io/bloomberg/blazingmq:latest" .
 
