@@ -209,9 +209,30 @@ public class BmqBrokerTestServer implements BmqBroker {
 
         logger.info("BlazingMQ Broker run command:\n{}", String.join(" ", pb.command()));
         process = pb.start();
-        if (waitTime > 0) {
-            process.waitFor(waitTime, TimeUnit.SECONDS);
+
+        // Wait until the broker is ready, signaled by "is available" message in the
+        // broker's log.
+        long deadline = System.currentTimeMillis() + waitTime * 1000L;
+        boolean ready = false;
+        while (System.currentTimeMillis() < deadline) {
+            if (!process.isAlive()) {
+                break;
+            }
+            if (outputFile.exists()
+                    && new String(Files.readAllBytes(outputFile.toPath()))
+                            .contains("is available")) {
+                ready = true;
+                break;
+            }
+            Thread.sleep(100);
         }
+
+        if (ready) {
+            logger.info(
+                    "Broker became available after {} ms",
+                    waitTime * 1000L - (deadline - System.currentTimeMillis()));
+        }
+
         if (!process.isAlive()) {
             logger.error(
                     "Failed to start broker process after waiting for [{}] seconds.", waitTime);
