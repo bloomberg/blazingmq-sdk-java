@@ -17,6 +17,7 @@ package com.bloomberg.bmq.it.util;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.ProtocolEventTcpReader;
+import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
 import com.bloomberg.bmq.impl.infr.msg.ClientIdentity;
 import com.bloomberg.bmq.impl.infr.msg.ConfigureStream;
@@ -30,6 +31,7 @@ import com.bloomberg.bmq.impl.infr.msg.Status;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection;
 import com.bloomberg.bmq.impl.infr.proto.ControlEventImpl;
+import com.bloomberg.bmq.impl.infr.proto.EventHeader;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
 import com.bloomberg.bmq.impl.infr.proto.Protocol;
 import com.bloomberg.bmq.impl.infr.proto.PushEventBuilder;
@@ -267,7 +269,8 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
         }
 
         public void handleEvent(EventType eventType, ByteBuffer[] bbuf) {
-            logger.info("Handle EventImpl with size: {}", bbuf.length);
+            logger.info("Handle event {} with size: {}", eventType, bbuf.length);
+            receivedEventTypes.add(eventType);
             if (eventType == EventType.CONTROL) {
                 ControlEventImpl controlEvent = new ControlEventImpl(bbuf);
                 ControlMessageChoice controlMessageChoice = controlEvent.tryControlChoice();
@@ -282,8 +285,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
                     logger.error("Control message parsing failed.");
                 }
             } else {
-                logger.error("Unexpected type of event {}", eventType);
-                echo(readBuffer);
+                logger.info("Non-control event received: {}", eventType);
             }
         }
 
@@ -317,6 +319,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
     private Semaphore startSema = new Semaphore(0);
     private LinkedBlockingQueue<ControlMessageChoice> receivedRequests =
             new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<EventType> receivedEventTypes = new LinkedBlockingQueue<>();
 
     public BmqBrokerSimulator(Mode serverMode) {
         this(SystemUtil.getEphemeralPort(), serverMode);
@@ -353,6 +356,14 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
         builder.packMessage(pushMsg, isOldStyleMessageProperties());
 
         write(builder.build());
+    }
+
+    public void writeHeartbeatRequest() throws IOException {
+        EventHeader header = new EventHeader();
+        header.setType(EventType.HEARTBEAT_REQ);
+        ByteBufferOutputStream bbos = new ByteBufferOutputStream(EventHeader.HEADER_SIZE);
+        header.streamOut(bbos);
+        write(bbos.reset());
     }
 
     public void writeDisconnectResponse(int rId) {
@@ -456,6 +467,19 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
         ControlMessageChoice res = null;
         try {
             res = receivedRequests.poll(sec, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Interrupted: ", e);
+            Thread.currentThread().interrupt();
+        }
+        return res;
+    }
+
+    public EventType nextEventType(int sec) {
+        Argument.expectPositive(sec, "sec");
+
+        EventType res = null;
+        try {
+            res = receivedEventTypes.poll(sec, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             logger.error("Interrupted: ", e);
             Thread.currentThread().interrupt();

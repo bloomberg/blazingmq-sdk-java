@@ -1378,4 +1378,63 @@ class TcpBrokerConnectionIT {
             logger.info("=========================================================");
         }
     }
+
+    @Test
+    void testHeartbeat() throws IOException {
+        logger.info("===========================================================");
+        logger.info("BEGIN Testing TcpBrokerConnectionIT heartbeat.");
+        logger.info("===========================================================");
+        // Verify that the SDK responds to heartbeat requests from the broker.
+        // Steps:
+        // 1) Bring up the simulator.
+        // 2) Connect the SDK and wait for SESSION_UP.
+        // 3) Send a heartbeat request from the simulator.
+        // 4) Verify the simulator receives a heartbeat response.
+        // 5) Send a push event and verify the SDK still processes it.
+        // 6) Stop the session and the server.
+
+        final int NUM_RETRIES = 1;
+
+        ConnectionOptions opts = new ConnectionOptions();
+        opts.setStartNumRetries(NUM_RETRIES).setBrokerUri(getServerUri());
+
+        TestSession session = new TestSession(opts);
+
+        BmqBrokerSimulator server =
+                new BmqBrokerSimulator(opts.brokerUri().getPort(), Mode.BMQ_AUTO_MODE);
+        server.start();
+
+        sleepForSeconds(1);
+
+        try {
+            session.start();
+
+            assertEquals(StartStatus.SUCCESS, session.startStatus(15));
+            assertEquals(SessionStatus.SESSION_UP, session.sessionStatus());
+
+            // 3) Drain the negotiation CONTROL event.
+            assertEquals(EventType.CONTROL, server.nextEventType(5));
+
+            // 4) Send heartbeat request from the simulator.
+            server.writeHeartbeatRequest();
+
+            // 5) Verify the simulator receives a heartbeat response.
+            assertEquals(EventType.HEARTBEAT_RSP, server.nextEventType(5));
+
+            // 5) Verify the session still works after heartbeat exchange.
+            server.writePushRequest(1);
+            assertNotNull(session.getPush());
+        } finally {
+            session.stop();
+            assertEquals(SessionStatus.SESSION_DOWN, session.sessionStatus());
+            assertEquals(StopStatus.SUCCESS, session.stopStatus());
+            assertEquals(GenericResult.SUCCESS, session.linger());
+
+            server.stop();
+
+            logger.info("=========================================================");
+            logger.info("END Testing TcpBrokerConnectionIT heartbeat.");
+            logger.info("=========================================================");
+        }
+    }
 }

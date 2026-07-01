@@ -22,9 +22,11 @@ public enum EventType {
     CONFIRM(3),
     PUSH(4),
     ACK(5),
+    HEARTBEAT_REQ(11),
+    HEARTBEAT_RSP(12),
     AUTHENTICATION(15);
 
-    private int id;
+    private final int id;
 
     EventType(int id) {
         this.id = id;

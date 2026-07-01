@@ -18,6 +18,7 @@ package com.bloomberg.bmq.impl;
 import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.SessionOptions.AuthnCredentialCb;
+import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.msg.AuthenticationMessage;
 import com.bloomberg.bmq.impl.infr.msg.AuthenticationResponse;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
@@ -41,6 +42,7 @@ import com.bloomberg.bmq.impl.infr.proto.AckEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.ControlEventImpl;
+import com.bloomberg.bmq.impl.infr.proto.EventHeader;
 import com.bloomberg.bmq.impl.infr.proto.EventImpl;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
 import com.bloomberg.bmq.impl.infr.proto.Protocol;
@@ -86,6 +88,7 @@ public class TcpBrokerConnection
 
     private static final String MPS_EX_FEATURE = "MPS:MESSAGE_PROPERTIES_EX";
     static final long REAUTH_RETRY_INTERVAL_MS = 10_000;
+    private static final byte[] HEARTBEAT_RSP_BYTES = createHeartbeatRspBytes();
     private static AtomicInteger counter = new AtomicInteger(0);
 
     private final EventsStats eventsStats; // thread-safe
@@ -195,6 +198,7 @@ public class TcpBrokerConnection
 
     @SuppressWarnings("squid:S2142")
     private GenericResult addBmqEvent(EventImpl ev) {
+        logger.debug("Incoming Event: {}", ev);
         GenericResult res = GenericResult.REFUSED;
         try {
             bmqEvents.put(ev);
@@ -655,32 +659,55 @@ public class TcpBrokerConnection
         return isValid;
     }
 
+    private static byte[] createHeartbeatRspBytes() {
+        try {
+            EventHeader header = new EventHeader();
+            header.setType(EventType.HEARTBEAT_RSP);
+            ByteBufferOutputStream bbos = new ByteBufferOutputStream(EventHeader.HEADER_SIZE);
+            header.streamOut(bbos);
+            ByteBuffer[] bufs = bbos.reset();
+            byte[] bytes = new byte[EventHeader.HEADER_SIZE];
+            int offset = 0;
+            for (ByteBuffer buf : bufs) {
+                int len = buf.remaining();
+                buf.get(bytes, offset, len);
+                offset += len;
+            }
+            return bytes;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create heartbeat response bytes", e);
+        }
+    }
+
     private class EventHandler implements ProtocolEventTcpReader.EventHandler {
 
         public void handleEvent(EventType eventType, ByteBuffer[] bbuf) {
-            logger.debug("Handle EventImpl {} with size: {}", eventType, bbuf.length);
-            EventImpl reportedEvent;
+            logger.debug("Handle event {} with size: {}", eventType, bbuf.length);
             switch (eventType) {
                 case CONTROL:
-                    reportedEvent = new ControlEventImpl(bbuf);
+                    addBmqEvent(new ControlEventImpl(bbuf));
                     break;
                 case AUTHENTICATION:
-                    reportedEvent = new AuthenticationEventImpl(bbuf);
+                    addBmqEvent(new AuthenticationEventImpl(bbuf));
                     break;
                 case PUSH:
-                    reportedEvent = new PushEventImpl(bbuf);
+                    addBmqEvent(new PushEventImpl(bbuf));
                     break;
                 case ACK:
-                    reportedEvent = new AckEventImpl(bbuf);
+                    addBmqEvent(new AckEventImpl(bbuf));
+                    break;
+                case HEARTBEAT_REQ:
+                    // Write directly from the I/O thread to minimize latency.
+                    // Netty write is thread-safe; lost response is acceptable.
+                    logger.debug("Received heartbeat request, sending response");
+                    connection.write(new ByteBuffer[] {ByteBuffer.wrap(HEARTBEAT_RSP_BYTES)});
+                    break;
+                case HEARTBEAT_RSP:
+                    logger.debug("Received heartbeat response");
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected event type: " + eventType);
             }
-
-            // Todo: cache iteration over event data
-            logger.debug("Incoming Event: {}", reportedEvent);
-
-            addBmqEvent(reportedEvent);
         }
     }
 
