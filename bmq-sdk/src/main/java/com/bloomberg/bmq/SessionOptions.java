@@ -199,8 +199,8 @@ public final class SessionOptions {
     /**
      * Function type used to obtain authentication credentials for authenticating with the broker.
      *
-     * <p>The function should return an {@link AuthnCredentialResult} containing either an {@link
-     * AuthnCredential} on success, or an error message on failure.
+     * <p>The function should return an {@link AuthnCredential} on success, or throw an exception on
+     * failure.
      *
      * <p>If not set on {@code SessionOptions}, the session will not authenticate with the broker.
      */
@@ -208,12 +208,13 @@ public final class SessionOptions {
     public interface AuthnCredentialCb {
 
         /**
-         * Returns authentication credentials or an error.
+         * Returns authentication credentials.
          *
-         * @return an {@link AuthnCredentialResult} containing credentials on success, or an error
-         *     message on failure
+         * @return an {@link AuthnCredential} containing credentials for authenticating with the
+         *     broker
+         * @throws Exception if credentials cannot be obtained
          */
-        AuthnCredentialResult get();
+        AuthnCredential get() throws Exception;
     }
 
     private static final URI DEFAULT_URI = URI.create("tcp://localhost:30114");

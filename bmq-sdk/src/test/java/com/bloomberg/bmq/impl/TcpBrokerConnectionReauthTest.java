@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.bloomberg.bmq.AuthnCredentialResult;
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.SessionOptions.AuthnCredentialCb;
 import com.bloomberg.bmq.impl.infr.msg.AuthenticationMessage;
@@ -199,7 +199,12 @@ class TcpBrokerConnectionReauthTest {
 
     @Test
     void testReauthScheduledAfterSuccessfulAuth() throws Exception {
-        AuthnCredentialCb cb = () -> AuthnCredentialResult.success("OAUTH2", "token".getBytes());
+        AuthnCredentialCb cb =
+                () ->
+                        AuthnCredential.builder()
+                                .setMechanism("OAUTH2")
+                                .setData("token".getBytes())
+                                .build();
         TcpBrokerConnection connection = createConnection(cb);
         TestTcpConnection testConn = connectionFactory.getTestConnection();
 
@@ -217,7 +222,12 @@ class TcpBrokerConnectionReauthTest {
 
     @Test
     void testNoReauthScheduledWithoutLifetime() throws Exception {
-        AuthnCredentialCb cb = () -> AuthnCredentialResult.success("OAUTH2", "token".getBytes());
+        AuthnCredentialCb cb =
+                () ->
+                        AuthnCredential.builder()
+                                .setMechanism("OAUTH2")
+                                .setData("token".getBytes())
+                                .build();
         TcpBrokerConnection connection = createConnection(cb);
         TestTcpConnection testConn = connectionFactory.getTestConnection();
 
@@ -256,7 +266,12 @@ class TcpBrokerConnectionReauthTest {
 
     @Test
     void testReauthSuccessReschedules() throws Exception {
-        AuthnCredentialCb cb = () -> AuthnCredentialResult.success("OAUTH2", "token".getBytes());
+        AuthnCredentialCb cb =
+                () ->
+                        AuthnCredential.builder()
+                                .setMechanism("OAUTH2")
+                                .setData("token".getBytes())
+                                .build();
         TcpBrokerConnection connection = createConnection(cb);
         TestTcpConnection testConn = connectionFactory.getTestConnection();
 
@@ -293,7 +308,10 @@ class TcpBrokerConnectionReauthTest {
         AuthnCredentialCb cb =
                 () -> {
                     callCount.incrementAndGet();
-                    return AuthnCredentialResult.success("OAUTH2", "token".getBytes());
+                    return AuthnCredential.builder()
+                            .setMechanism("OAUTH2")
+                            .setData("token".getBytes())
+                            .build();
                 };
         TcpBrokerConnection connection = createConnection(cb);
         TestTcpConnection testConn = connectionFactory.getTestConnection();
@@ -330,9 +348,12 @@ class TcpBrokerConnectionReauthTest {
         AuthnCredentialCb cb =
                 () -> {
                     if (callCount.incrementAndGet() > 1) {
-                        return AuthnCredentialResult.error("token expired");
+                        throw new RuntimeException("token expired");
                     }
-                    return AuthnCredentialResult.success("OAUTH2", "token".getBytes());
+                    return AuthnCredential.builder()
+                            .setMechanism("OAUTH2")
+                            .setData("token".getBytes())
+                            .build();
                 };
         TcpBrokerConnection connection = createConnection(cb);
         TestTcpConnection testConn = connectionFactory.getTestConnection();
@@ -356,7 +377,12 @@ class TcpBrokerConnectionReauthTest {
 
     @Test
     void testReauthCancelledOnChannelDown() throws Exception {
-        AuthnCredentialCb cb = () -> AuthnCredentialResult.success("OAUTH2", "token".getBytes());
+        AuthnCredentialCb cb =
+                () ->
+                        AuthnCredential.builder()
+                                .setMechanism("OAUTH2")
+                                .setData("token".getBytes())
+                                .build();
         TcpBrokerConnection connection = createConnection(cb);
         TestTcpConnection testConn = connectionFactory.getTestConnection();
 

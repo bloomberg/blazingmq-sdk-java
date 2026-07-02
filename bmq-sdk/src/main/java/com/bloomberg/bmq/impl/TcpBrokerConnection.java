@@ -16,7 +16,6 @@
 package com.bloomberg.bmq.impl;
 
 import com.bloomberg.bmq.AuthnCredential;
-import com.bloomberg.bmq.AuthnCredentialResult;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.SessionOptions.AuthnCredentialCb;
 import com.bloomberg.bmq.impl.infr.msg.AuthenticationMessage;
@@ -245,22 +244,14 @@ public class TcpBrokerConnection
                         TimeUnit.NANOSECONDS);
 
         // Invoke the callback to get credentials
-        AuthnCredentialResult result;
+        AuthnCredential credential;
         try {
-            result = authnCredentialCb.get();
+            credential = authnCredentialCb.get();
         } catch (Exception e) {
-            logger.error("Authentication credential callback threw: ", e);
+            logger.error("Authentication credential callback failed: ", e);
             addFsmInput(Inputs.AUTHENTICATION_FAILURE);
             return;
         }
-
-        if (!result.isSuccess()) {
-            logger.error("Authentication credential callback failed: {}", result.error());
-            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
-            return;
-        }
-
-        AuthnCredential credential = result.credential();
 
         // Build and send the AuthenticationMessage
         try {
@@ -379,22 +370,14 @@ public class TcpBrokerConnection
                         negotiationTimeout.toNanos(),
                         TimeUnit.NANOSECONDS);
 
-        AuthnCredentialResult result;
+        AuthnCredential credential;
         try {
-            result = authnCredentialCb.get();
+            credential = authnCredentialCb.get();
         } catch (Exception e) {
-            logger.error("Reauthentication credential callback threw: ", e);
+            logger.error("Reauthentication credential callback failed: ", e);
             failReauthentication();
             return;
         }
-
-        if (!result.isSuccess()) {
-            logger.error("Reauthentication credential callback failed: {}", result.error());
-            failReauthentication();
-            return;
-        }
-
-        AuthnCredential credential = result.credential();
 
         try {
             WriteStatus rc = authenticate(credential);

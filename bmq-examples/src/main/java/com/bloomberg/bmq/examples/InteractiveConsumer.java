@@ -16,7 +16,7 @@
 package com.bloomberg.bmq.examples;
 
 import com.bloomberg.bmq.AbstractSession;
-import com.bloomberg.bmq.AuthnCredentialResult;
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.MessageProperty;
 import com.bloomberg.bmq.PushMessage;
@@ -183,8 +183,10 @@ public class InteractiveConsumer
                                 .setBrokerUri(URI.create(brokerUri))
                                 .setAuthnCredentialCb(
                                         () ->
-                                                AuthnCredentialResult.success(
-                                                        "ANONYMOUS", new byte[0]))
+                                                AuthnCredential.builder()
+                                                        .setMechanism("ANONYMOUS")
+                                                        .setData(new byte[0])
+                                                        .build())
                                 .build(),
                         this); // SessionEventHandler
 
