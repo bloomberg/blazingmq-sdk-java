@@ -15,7 +15,11 @@
  */
 package com.bloomberg.bmq.impl;
 
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
+import com.bloomberg.bmq.SessionOptions.AuthnCredentialCb;
+import com.bloomberg.bmq.impl.infr.msg.AuthenticationMessage;
+import com.bloomberg.bmq.impl.infr.msg.AuthenticationResponse;
 import com.bloomberg.bmq.impl.infr.msg.BrokerResponse;
 import com.bloomberg.bmq.impl.infr.msg.ClientIdentity;
 import com.bloomberg.bmq.impl.infr.msg.ClientLanguage;
@@ -34,6 +38,8 @@ import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.ReadCallback;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.WriteStatus;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnectionFactory;
 import com.bloomberg.bmq.impl.infr.proto.AckEventImpl;
+import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventBuilder;
+import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.ControlEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.EventImpl;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
@@ -79,6 +85,7 @@ public class TcpBrokerConnection
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String MPS_EX_FEATURE = "MPS:MESSAGE_PROPERTIES_EX";
+    static final long REAUTH_RETRY_INTERVAL_MS = 10_000;
     private static AtomicInteger counter = new AtomicInteger(0);
 
     private final EventsStats eventsStats; // thread-safe
@@ -98,7 +105,10 @@ public class TcpBrokerConnection
     private volatile boolean isOldStyleMessageProperties = false;
 
     private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> onAuthenticationTimeoutFuture;
     private ScheduledFuture<?> onNegotiationTimeoutFuture;
+    private ScheduledFuture<?> reauthenticationFuture;
+    private ScheduledFuture<?> onReauthenticationTimeoutFuture;
     private Duration negotiationTimeout;
     private ClientIdentity brokerIdentity;
     private ProtocolEventTcpReader protocolEventTcpReader;
@@ -107,7 +117,10 @@ public class TcpBrokerConnection
 
     private AtomicBoolean isLingered = new AtomicBoolean(false);
     private final int sessionId = counter.incrementAndGet();
+    private final AuthnCredentialCb authnCredentialCb;
     private NegotiationMessageChoice negotiationMsg;
+    private boolean isReauthenticating = false;
+    private long credentialLifetimeMs = 0;
 
     public static BrokerConnection createInstance(
             ConnectionOptions options,
@@ -147,6 +160,7 @@ public class TcpBrokerConnection
         this.sessionStatusHandler =
                 Argument.expectNonNull(sessionStatusHandler, "sessionStatusHandler");
 
+        authnCredentialCb = options.authnCredentialCb();
         connection.setChannelStatusHandler(this);
         startCallback = null;
         stopCallback = null;
@@ -208,6 +222,204 @@ public class TcpBrokerConnection
         GenericResult rc = connect();
         if (rc != GenericResult.SUCCESS) {
             addFsmInput(Inputs.CONNECT_STATUS_FAILURE);
+        }
+    }
+
+    @Override
+    public void doAuthentication() {
+        if (authnCredentialCb == null) {
+            // No authentication configured -- skip straight to negotiation
+            addFsmInput(Inputs.AUTHENTICATION_RESPONSE);
+            return;
+        }
+
+        // Set up authentication timeout
+        onAuthenticationTimeoutFuture =
+                scheduler.schedule(
+                        () -> {
+                            logger.error("Authentication timed out");
+                            addFsmInput(Inputs.AUTHENTICATION_TIMEOUT);
+                        },
+                        negotiationTimeout.toNanos(),
+                        TimeUnit.NANOSECONDS);
+
+        // Invoke the callback to get credentials
+        AuthnCredential credential;
+        try {
+            credential = authnCredentialCb.get();
+        } catch (Exception e) {
+            logger.error("Authentication credential callback failed: ", e);
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            return;
+        }
+
+        // Build and send the AuthenticationMessage
+        try {
+            WriteStatus rc = authenticate(credential);
+            if (rc != WriteStatus.SUCCESS) {
+                logger.error("Failed to send authentication message");
+                addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            }
+        } catch (IOException e) {
+            logger.error("Failed to authenticate: ", e);
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+        }
+    }
+
+    private WriteStatus authenticate(AuthnCredential credential) throws IOException {
+        byte[] data = credential.data();
+        String encodedData =
+                data != null ? java.util.Base64.getEncoder().encodeToString(data) : null;
+
+        AuthenticationMessage authnMsg = new AuthenticationMessage();
+        authnMsg.makeAuthenticationRequest(credential.mechanism(), encodedData);
+
+        AuthenticationEventBuilder authnBuilder = new AuthenticationEventBuilder();
+        authnBuilder.setMessage(authnMsg);
+
+        logger.info("Sending authentication message (mechanism: {})", credential.mechanism());
+        return connection.write(authnBuilder.build());
+    }
+
+    @Override
+    public void handleAuthenticationResponse() {
+        if (onAuthenticationTimeoutFuture.isDone()) {
+            logger.warn("Authentication timeout expired");
+            return;
+        }
+        EventImpl bmqEv = bmqEvents.poll();
+        if (bmqEv == null) {
+            logger.error("No BlazingMQ events");
+            return;
+        }
+        if (bmqEv.type() != EventType.AUTHENTICATION) {
+            logger.error("Unexpected BlazingMQ event: {}", bmqEv);
+            return;
+        }
+        AuthenticationMessage authnMsg = ((AuthenticationEventImpl) bmqEv).authenticationChoice();
+        if (authnMsg == null) {
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+            return;
+        }
+        logger.debug("Broker authentication response decoded:\n {}", authnMsg);
+        onAuthenticationTimeoutFuture.cancel(false);
+        if (validateAuthenticationResponse(authnMsg.authenticationResponse())) {
+            addFsmInput(Inputs.AUTHENTICATION_RESPONSE);
+        } else {
+            addFsmInput(Inputs.AUTHENTICATION_FAILURE);
+        }
+    }
+
+    private boolean validateAuthenticationResponse(AuthenticationResponse resp) {
+        if (resp != null
+                && resp.status() != null
+                && resp.status().category() == StatusCategory.E_SUCCESS) {
+            if (resp.lifetimeMs() != null) {
+                credentialLifetimeMs = resp.lifetimeMs();
+                logger.info("Authentication session lifetime: {} ms", credentialLifetimeMs);
+                scheduleReauthentication();
+            }
+            return true;
+        }
+        logger.error("Authentication response is invalid");
+        return false;
+    }
+
+    private void cancelFuture(ScheduledFuture<?> future) {
+        if (future != null && !future.isDone()) {
+            future.cancel(false);
+        }
+    }
+
+    private void scheduleReauthentication() {
+        cancelFuture(reauthenticationFuture);
+        long delayMs = credentialLifetimeMs * 80 / 100;
+        logger.info("Scheduling reauthentication in {} ms", delayMs);
+        reauthenticationFuture =
+                scheduler.schedule(this::doReauthentication, delayMs, TimeUnit.MILLISECONDS);
+    }
+
+    private void scheduleReauthenticationRetry() {
+        cancelFuture(reauthenticationFuture);
+        logger.info("Scheduling reauthentication retry in {} ms", REAUTH_RETRY_INTERVAL_MS);
+        reauthenticationFuture =
+                scheduler.schedule(
+                        this::doReauthentication, REAUTH_RETRY_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void failReauthentication() {
+        isReauthenticating = false;
+        cancelFuture(onReauthenticationTimeoutFuture);
+        scheduleReauthenticationRetry();
+    }
+
+    private void doReauthentication() {
+        if (authnCredentialCb == null) {
+            return;
+        }
+
+        isReauthenticating = true;
+
+        onReauthenticationTimeoutFuture =
+                scheduler.schedule(
+                        () -> {
+                            logger.error("Reauthentication timed out");
+                            isReauthenticating = false;
+                            scheduleReauthenticationRetry();
+                        },
+                        negotiationTimeout.toNanos(),
+                        TimeUnit.NANOSECONDS);
+
+        AuthnCredential credential;
+        try {
+            credential = authnCredentialCb.get();
+        } catch (Exception e) {
+            logger.error("Reauthentication credential callback failed: ", e);
+            failReauthentication();
+            return;
+        }
+
+        try {
+            WriteStatus rc = authenticate(credential);
+            if (rc != WriteStatus.SUCCESS) {
+                logger.error("Failed to send reauthentication message");
+                failReauthentication();
+                return;
+            }
+        } catch (IOException e) {
+            logger.error("Failed to reauthenticate: ", e);
+            failReauthentication();
+            return;
+        }
+    }
+
+    private void handleReauthenticationResponse(EventImpl bmqEv) {
+        AuthenticationMessage authnMsg = ((AuthenticationEventImpl) bmqEv).authenticationChoice();
+        cancelFuture(onReauthenticationTimeoutFuture);
+        isReauthenticating = false;
+
+        if (authnMsg == null) {
+            logger.warn("Reauthentication response is null, scheduling retry");
+            scheduleReauthenticationRetry();
+            return;
+        }
+
+        logger.debug("Broker reauthentication response decoded:\n {}", authnMsg);
+        AuthenticationResponse resp = authnMsg.authenticationResponse();
+        if (resp != null
+                && resp.status() != null
+                && resp.status().category() == StatusCategory.E_SUCCESS) {
+            if (resp.lifetimeMs() != null) {
+                credentialLifetimeMs = resp.lifetimeMs();
+                logger.info(
+                        "Reauthentication successful, new lifetime: {} ms", credentialLifetimeMs);
+                scheduleReauthentication();
+            } else {
+                logger.info("Reauthentication successful, no lifetime provided");
+            }
+        } else {
+            logger.warn("Reauthentication failed, scheduling retry");
+            scheduleReauthenticationRetry();
         }
     }
 
@@ -315,6 +527,11 @@ public class TcpBrokerConnection
             return;
         }
 
+        if (bmqEv.type() == EventType.AUTHENTICATION && isReauthenticating) {
+            handleReauthenticationResponse(bmqEv);
+            return;
+        }
+
         bmqEv.dispatch(sessionEventHandler);
         eventsStats.onEvent(bmqEv.type(), bmqEv.eventLength(), bmqEv.messageCount());
     }
@@ -323,13 +540,17 @@ public class TcpBrokerConnection
     public void handleChannelDown() {
         protocolEventTcpReader.reset();
         requestManager.cancelAllRequests();
+        cancelFuture(reauthenticationFuture);
+        cancelFuture(onReauthenticationTimeoutFuture);
+        isReauthenticating = false;
     }
 
     @Override
     public void handleStop() {
-        if (onNegotiationTimeoutFuture != null && !onNegotiationTimeoutFuture.isDone()) {
-            onNegotiationTimeoutFuture.cancel(false);
-        }
+        cancelFuture(onAuthenticationTimeoutFuture);
+        cancelFuture(onNegotiationTimeoutFuture);
+        cancelFuture(reauthenticationFuture);
+        cancelFuture(onReauthenticationTimeoutFuture);
     }
 
     @Override
@@ -442,6 +663,9 @@ public class TcpBrokerConnection
             switch (eventType) {
                 case CONTROL:
                     reportedEvent = new ControlEventImpl(bbuf);
+                    break;
+                case AUTHENTICATION:
+                    reportedEvent = new AuthenticationEventImpl(bbuf);
                     break;
                 case PUSH:
                     reportedEvent = new PushEventImpl(bbuf);

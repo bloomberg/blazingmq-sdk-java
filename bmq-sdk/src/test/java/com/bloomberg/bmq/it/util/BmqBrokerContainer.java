@@ -15,6 +15,7 @@
  */
 package com.bloomberg.bmq.it.util;
 
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.github.dockerjava.api.DockerClient;
@@ -81,7 +82,16 @@ public class BmqBrokerContainer implements BmqBroker {
                         .build();
 
         final URI uri = URI.create("tcp://localhost:" + port);
-        final SessionOptions opts = SessionOptions.builder().setBrokerUri(uri).build();
+        final SessionOptions opts =
+                SessionOptions.builder()
+                        .setBrokerUri(uri)
+                        .setAuthnCredentialCb(
+                                () ->
+                                        AuthnCredential.builder()
+                                                .setMechanism("ANONYMOUS")
+                                                .setData(new byte[0])
+                                                .build())
+                        .build();
 
         // hashCode() may be not unique across different jvm forks
         // so use port number here

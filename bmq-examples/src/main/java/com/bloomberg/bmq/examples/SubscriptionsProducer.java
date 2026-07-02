@@ -18,6 +18,7 @@ package com.bloomberg.bmq.examples;
 import com.bloomberg.bmq.AbstractSession;
 import com.bloomberg.bmq.AckMessage;
 import com.bloomberg.bmq.AckMessageHandler;
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.CompressionAlgorithm;
 import com.bloomberg.bmq.CorrelationId;
@@ -168,7 +169,15 @@ public class SubscriptionsProducer
 
         session =
                 new Session(
-                        SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build(),
+                        SessionOptions.builder()
+                                .setBrokerUri(URI.create(brokerUri))
+                                .setAuthnCredentialCb(
+                                        () ->
+                                                AuthnCredential.builder()
+                                                        .setMechanism("ANONYMOUS")
+                                                        .setData(new byte[0])
+                                                        .build())
+                                .build(),
                         this); // SessionEventHandler
 
         logger.info("Starting the session with a timeout of 15 seconds");

@@ -24,11 +24,12 @@ public interface BrokerConnectionFSM {
     enum States {
         CONNECTION_LOST, // s0
         CONNECTING, // s1
-        NEGOTIATING, // s2
-        CONNECTED, // s3
-        DISCONNECTING_BROKER, // s4
-        DISCONNECTING_CHANNEL, // s5
-        STOPPED; // s6
+        AUTHENTICATING, // s2
+        NEGOTIATING, // s3
+        CONNECTED, // s4
+        DISCONNECTING_BROKER, // s5
+        DISCONNECTING_CHANNEL, // s6
+        STOPPED; // s7
 
         public static States fromInt(int i) {
             for (States s : States.values()) {
@@ -55,7 +56,10 @@ public interface BrokerConnectionFSM {
         DISCONNECT_BROKER_TIMEOUT, // e13
         DISCONNECT_BROKER_RESPONSE, // e14
         DISCONNECT_BROKER_FAILURE, // e15
-        BMQ_EVENT; // e16
+        BMQ_EVENT, // e16
+        AUTHENTICATION_RESPONSE, // e17
+        AUTHENTICATION_FAILURE, // e18
+        AUTHENTICATION_TIMEOUT; // e19
 
         public static Inputs fromInt(int i) {
             for (Inputs e : Inputs.values()) {
@@ -68,11 +72,15 @@ public interface BrokerConnectionFSM {
     interface FSMWorker {
         void doConnect();
 
+        void doAuthentication();
+
         void doNegotiation();
 
         void doDisconnectChannel();
 
         void doDisconnectSession();
+
+        void handleAuthenticationResponse();
 
         void handleNegotiationResponse();
 

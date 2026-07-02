@@ -18,6 +18,7 @@ package com.bloomberg.bmq.it.util;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.bloomberg.bmq.impl.infr.util.SystemUtil;
@@ -120,7 +121,16 @@ public class BmqBrokerTestServer implements BmqBroker {
         Argument.expectPositive(port, "port");
 
         final URI uri = URI.create("tcp://localhost:" + port);
-        SessionOptions so = SessionOptions.builder().setBrokerUri(uri).build();
+        SessionOptions so =
+                SessionOptions.builder()
+                        .setBrokerUri(uri)
+                        .setAuthnCredentialCb(
+                                () ->
+                                        AuthnCredential.builder()
+                                                .setMechanism("ANONYMOUS")
+                                                .setData(new byte[0])
+                                                .build())
+                        .build();
 
         return new BmqBrokerTestServer(so);
     }
@@ -151,6 +161,12 @@ public class BmqBrokerTestServer implements BmqBroker {
             sessionOptions =
                     SessionOptions.builder()
                             .setBrokerUri(URI.create("tcp://localhost:" + port))
+                            .setAuthnCredentialCb(
+                                    () ->
+                                            AuthnCredential.builder()
+                                                    .setMechanism("ANONYMOUS")
+                                                    .setData(new byte[0])
+                                                    .build())
                             .build();
             logger.info("BlazingMQ Broker using port: {}", port);
 

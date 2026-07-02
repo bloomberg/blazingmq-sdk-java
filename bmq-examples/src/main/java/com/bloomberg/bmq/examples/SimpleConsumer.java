@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.examples;
 
 import com.bloomberg.bmq.AbstractSession;
+import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.PushMessage;
 import com.bloomberg.bmq.Queue;
 import com.bloomberg.bmq.QueueFlags;
@@ -97,7 +98,15 @@ public class SimpleConsumer {
         }
 
         final SessionOptions sessionOptions =
-                SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build();
+                SessionOptions.builder()
+                        .setBrokerUri(URI.create(brokerUri))
+                        .setAuthnCredentialCb(
+                                () ->
+                                        AuthnCredential.builder()
+                                                .setMechanism("ANONYMOUS")
+                                                .setData(new byte[0])
+                                                .build())
+                        .build();
         final AbstractSession session = new Session(sessionOptions, event -> {});
 
         final BlockingQueue<String> receivedMessages = new LinkedBlockingQueue<>();
