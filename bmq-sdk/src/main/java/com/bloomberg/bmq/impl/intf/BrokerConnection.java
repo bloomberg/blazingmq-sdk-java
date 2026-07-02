@@ -26,6 +26,7 @@ public interface BrokerConnection {
         NOT_SUPPORTED,
         SUCCESS,
         CONNECT_FAILURE,
+        AUTHENTICATION_FAILURE,
         NEGOTIATION_FAILURE,
         TIMEOUT,
         CANCELLED;

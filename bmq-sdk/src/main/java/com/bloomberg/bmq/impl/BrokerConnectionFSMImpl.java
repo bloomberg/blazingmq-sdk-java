@@ -63,11 +63,18 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
         void onDisconnectBrokerFailed();
 
         void onBmqEvent();
+
+        void onAuthenticationResponse();
+
+        void onAuthenticationFailed();
+
+        void onAuthenticationTimeout();
     }
 
     private State[] states = {
         new ConnectionLost(),
         new Connecting(),
+        new Authenticating(),
         new Negotiating(),
         new Connected(),
         new DisconnectingBroker(),
@@ -93,32 +100,38 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
        e14 DISCONNECT_BROKER_RESPONSE
        e15 DISCONNECT_BROKER_FAILURE
        e16 BMQ_EVENT
+       e17 AUTHENTICATION_RESPONSE
+       e18 AUTHENTICATION_FAILURE
+       e19 AUTHENTICATION_TIMEOUT
     */
 
     private static int[][] transitions = {
         // spotless:off
-        /*  e0  e1  e2  e3  e4  e5  e6  e7  e8  e9  e10 e11 e12 e13 e14 e15 e16
+        /*  e0  e1  e2  e3  e4  e5  e6  e7  e8  e9  e10 e11 e12 e13 e14 e15 e16 e17 e18 e19
          *
          * s0 CONNECTION_LOST */ {
-            0,  5,  0,  0,  0,  2,  0,  0,  0,  0,  0,  6,  6,  0,  0,  0,  0,
+            0,  6,  0,  0,  0,  2,  0,  0,  0,  0,  0,  7,  7,  0,  0,  0,  0,  0,  0,  0,
         },
         /* s1 CONNECTING */ {
-            1,  5,  1,  1,  1,  2,  1,  0,  1,  6,  6,  1,  1,  1,  1,  1,  1,
+            1,  6,  1,  1,  1,  2,  1,  0,  1,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,
         },
-        /* s2 NEGOTIATING */ {
-            2,  5,  3,  5,  5,  2,  2,  0,  2,  2,  2,  2,  2,  2,  2,  2,  2,
+        /* s2 AUTHENTICATING */ {
+            2,  6,  2,  2,  2,  2,  2,  0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  3,  6,  6,
         },
-        /* s3 CONNECTED */ {
-            3,  4,  3,  3,  3,  3,  3,  0,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+        /* s3 NEGOTIATING */ {
+            3,  6,  4,  6,  6,  3,  3,  0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
         },
-        /* s4 DISCONNECTING_BROKER */ {
-            4,  4,  4,  4,  4,  4,  4,  0,  4,  4,  4,  4,  4,  5,  5,  5,  4,
+        /* s4 CONNECTED */ {
+            4,  5,  4,  4,  4,  4,  4,  0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
         },
-        /* s5 DISCONNECTING_CHANNEL*/ {
-            5,  5,  5,  5,  5,  5,  5,  0,  5,  5,  5,  6,  6,  5,  5,  5,  5,
+        /* s5 DISCONNECTING_BROKER */ {
+            5,  5,  5,  5,  5,  5,  5,  0,  5,  5,  5,  5,  5,  6,  6,  6,  5,  5,  5,  5,
         },
-        /* s6 STOPPED*/ {
-            1,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
+        /* s6 DISCONNECTING_CHANNEL */ {
+            6,  6,  6,  6,  6,  6,  6,  0,  6,  6,  6,  7,  7,  6,  6,  6,  6,  6,  6,  6,
+        },
+        /* s7 STOPPED */ {
+            1,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
         }
         // spotless:on
     };
@@ -203,6 +216,15 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
                 break;
             case BMQ_EVENT:
                 currentState.onBmqEvent();
+                break;
+            case AUTHENTICATION_RESPONSE:
+                currentState.onAuthenticationResponse();
+                break;
+            case AUTHENTICATION_FAILURE:
+                currentState.onAuthenticationFailed();
+                break;
+            case AUTHENTICATION_TIMEOUT:
+                currentState.onAuthenticationTimeout();
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected input: " + inp);
@@ -321,6 +343,21 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
         }
 
         @Override
+        public void onAuthenticationResponse() {
+            logger.debug("{} Default action: onAuthenticationResponse", state);
+        }
+
+        @Override
+        public void onAuthenticationFailed() {
+            logger.debug("{} Default action: onAuthenticationFailed", state);
+        }
+
+        @Override
+        public void onAuthenticationTimeout() {
+            logger.debug("{} Default action: onAuthenticationTimeout", state);
+        }
+
+        @Override
         public String toString() {
             return state.toString();
         }
@@ -358,6 +395,15 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
                 fsmWorker.doDisconnectChannel();
             }
         }
+
+        @Override
+        public void onAuthenticationTimeout() {
+            logger.debug("onAuthenticationTimeout: {}", this);
+            if (!isOnceStarted) {
+                startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+                fsmWorker.doDisconnectChannel();
+            }
+        }
     }
 
     class Connecting extends State {
@@ -384,6 +430,45 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
         public void onConnectStatusFailed() {
             logger.debug("onConnectStatusFailed: {}", this);
             startErrorStatus = StartStatus.CONNECT_FAILURE;
+        }
+    }
+
+    class Authenticating extends State {
+
+        public Authenticating() {
+            super(States.AUTHENTICATING);
+        }
+
+        @Override
+        public void onEnter() {
+            logger.debug("onEnter: {}", this);
+            fsmWorker.doAuthentication();
+        }
+
+        @Override
+        public void onBmqEvent() {
+            logger.debug("onBmqEvent: {}", this);
+            fsmWorker.handleAuthenticationResponse();
+        }
+
+        @Override
+        public void onAuthenticationFailed() {
+            logger.debug("onAuthenticationFailed: {}", this);
+            startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+        }
+
+        @Override
+        public void onAuthenticationTimeout() {
+            logger.debug("onAuthenticationTimeout: {}", this);
+            startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+        }
+
+        @Override
+        public void onStopRequest() {
+            logger.debug("onStopRequest: {}", this);
+            if (!isOnceStarted) {
+                startErrorStatus = StartStatus.CANCELLED;
+            }
         }
     }
 

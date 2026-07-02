@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Bloomberg Finance L.P.
+ * Copyright 2026 Bloomberg Finance L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,18 @@
 package com.bloomberg.bmq.impl.infr.proto;
 
 import com.bloomberg.bmq.impl.infr.codec.JsonEncoderUtil;
+import com.bloomberg.bmq.impl.infr.msg.AuthenticationMessage;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.io.IOException;
 
-public class SchemaEventBuilder extends EventBuilder {
+public class AuthenticationEventBuilder extends EventBuilder {
 
-    public SchemaEventBuilder() {
-        super(EventType.CONTROL);
+    public AuthenticationEventBuilder() {
+        super(EventType.AUTHENTICATION);
     }
 
-    public void reset() {
-        super.reset(EventType.CONTROL);
-    }
-
-    public void setMessage(Object message) throws IOException {
-        reset();
+    public void setMessage(AuthenticationMessage message) throws IOException {
+        super.reset(EventType.AUTHENTICATION);
         JsonEncoderUtil.encode(bbos, Argument.expectNonNull(message, "message"));
         header().setEncodingType(EncodingType.JSON);
         final int payloadLen = bbos.size();

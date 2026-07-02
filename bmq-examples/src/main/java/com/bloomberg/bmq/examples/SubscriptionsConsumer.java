@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.examples;
 
 import com.bloomberg.bmq.AbstractSession;
+import com.bloomberg.bmq.AuthnCredentialResult;
 import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.MessageProperty;
 import com.bloomberg.bmq.PushMessage;
@@ -181,7 +182,13 @@ public class SubscriptionsConsumer
 
         session =
                 new Session(
-                        SessionOptions.builder().setBrokerUri(URI.create(brokerUri)).build(),
+                        SessionOptions.builder()
+                                .setBrokerUri(URI.create(brokerUri))
+                                .setAuthnCredentialCb(
+                                        () ->
+                                                AuthnCredentialResult.success(
+                                                        "ANONYMOUS", new byte[0]))
+                                .build(),
                         this); // SessionEventHandler
 
         logger.info("Starting the session with a timeout of 15 seconds");
