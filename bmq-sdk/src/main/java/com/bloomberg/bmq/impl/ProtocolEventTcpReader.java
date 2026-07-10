@@ -79,7 +79,7 @@ public class ProtocolEventTcpReader {
                 data.length,
                 completionStatus.numNeeded());
         try {
-            EventHeader eventHeader = null;
+            EventHeader eventHeader;
             for (ByteBuffer restData : data) {
                 boolean done = false;
                 while (!done) {

@@ -78,7 +78,7 @@ public class QueueControlEvent extends SessionEvent<QueueControlEvent.Type> {
         getEventType().dispatch(handler, this);
     }
 
-    private QueueHandle queue;
+    private final QueueHandle queue;
 
     private QueueControlEvent(
             Type queueEventType, GenericCode result, String errorDescription, QueueHandle queue) {

@@ -598,7 +598,7 @@ public final class BrokerSession
                                         .collect(Collectors.toList());
                         if (!activeStrategies.isEmpty()) {
                             // If given list is not empty, then cancel all unfinished sequences
-                            // and set up clean up action as a continuation executed in scheduler.
+                            // and set up cleanup action as a continuation executed in scheduler.
                             activeStrategies.forEach(QueueControlStrategy::cancelOnStop);
                             activeStrategies.stream()
                                     .map(QueueControlStrategy::getResultFuture)
