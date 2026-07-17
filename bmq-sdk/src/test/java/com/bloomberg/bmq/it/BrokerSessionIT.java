@@ -352,6 +352,92 @@ public class BrokerSessionIT {
     }
 
     /**
+     * Once a session has been asked to stop, it must stay stopped even if the broker connection is
+     * lost during the disconnect handshake.
+     *
+     * <p>Scenario:
+     *
+     * <ul>
+     *   <li>Bring the session up against a MANUAL-mode simulator.
+     *   <li>Call {@code stop()} (on a background thread since it blocks). It sends a Disconnect
+     *       request and waits for the DisconnectResponse.
+     *   <li>The broker connection is lost (channel dropped) right after it received the Disconnect,
+     *       then a broker becomes available again on the same port.
+     * </ul>
+     *
+     * <p>Expected behavior: after {@code stop()} has been requested the session stays down --
+     * {@code isStarted()} remains {@code false} and the session does not reconnect to the broker
+     * that came back up.
+     */
+    @Test
+    void sessionMustNotReconnectAfterStop() throws Exception {
+        logger.info("#TEST_BEGIN BrokerSessionIT sessionMustNotReconnectAfterStop");
+
+        BmqBrokerSimulator server = new BmqBrokerSimulator(Mode.BMQ_MANUAL_MODE);
+        server.start();
+        final int port = server.getPort();
+
+        SessionOptions sessionOptions =
+                SessionOptions.builder().setBrokerUri(server.getURI()).build();
+        TcpConnectionFactory connectionFactory = new NettyTcpConnectionFactory();
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        LinkedList<Event> events = new LinkedList<>();
+        BrokerSession session =
+                BrokerSession.createInstance(
+                        sessionOptions, connectionFactory, service, events::push);
+
+        BmqBrokerSimulator restarted = null;
+        // stop() is issued asynchronously because it blocks; the assertion is on the
+        // session state, not on stop()'s return code.
+        CompletableFuture<GenericResult> stopResult = null;
+        try {
+            server.pushItem(StatusCategory.E_SUCCESS); // negotiation OK -> session up
+            assertEquals(GenericResult.SUCCESS, session.start(Duration.ofSeconds(5)));
+            assertTrue(session.isStarted());
+
+            // Ask the session to stop. We deliberately push NO response for the
+            // Disconnect, so the client sends it and then waits for a response.
+            stopResult = CompletableFuture.supplyAsync(() -> session.stop(Duration.ofSeconds(3)));
+
+            // Confirm the Disconnect reached the broker, then drop the connection.
+            ControlMessageChoice req = server.nextClientRequest();
+            assertNotNull(req, "expected a Disconnect request from the client");
+            assertTrue(req.isDisconnectValue());
+            server.stop(); // connection lost while the client awaits DisconnectResponse
+
+            // Make a broker available again on the same port.
+            restarted = new BmqBrokerSimulator(port, Mode.BMQ_MANUAL_MODE);
+            restarted.pushItem(StatusCategory.E_SUCCESS); // in case of re-negotiation
+            restarted.start();
+
+            // Wait well past the reconnect retry interval (5s default).
+            TestTools.sleepForSeconds(8);
+
+            // A session that was asked to stop stays down.
+            assertFalse(
+                    session.isStarted(),
+                    "session that was asked to stop must not reconnect to the broker");
+        } catch (Exception e) {
+            logger.error("Exception: ", e);
+            throw e;
+        } finally {
+            if (stopResult != null) {
+                try {
+                    stopResult.get(10, TimeUnit.SECONDS);
+                } catch (Exception ignored) {
+                    // best-effort: we do not rely on stop()'s return code here
+                }
+            }
+            session.linger();
+            server.stop();
+            if (restarted != null) {
+                restarted.stop();
+            }
+            logger.info("#TEST_END BrokerSessionIT sessionMustNotReconnectAfterStop");
+        }
+    }
+
+    /**
      * Test for synchronous operations under queue (open-configure-close);
      *
      * <ul>
