@@ -101,6 +101,15 @@ public class QueueManager {
             if (queueInfo == null) {
                 queueInfo = new QueueInfo(queue.getQueueId());
             }
+
+            // Check for a duplicate subQueue before mutating any state, so a
+            // rejected insert leaves the maps untouched (no partial registration).
+            Map<String, Integer> subQueueIdsMap = queueInfo.getSubQueueIdsMap();
+            Integer subQueueId = subQueueIdsMap.get(uri.id());
+            if (subQueueId != null) {
+                return false;
+            }
+
             uriMap.put(uriString, queueInfo);
             QueueId queueId = queue.getFullQueueId();
             keyQueueIdMap.put(queueId, queue);
@@ -109,11 +118,6 @@ public class QueueManager {
                 subscriptionIdMap.put(sId, queue);
             }
 
-            Map<String, Integer> subQueueIdsMap = queueInfo.getSubQueueIdsMap();
-            Integer subQueueId = subQueueIdsMap.get(uri.id());
-            if (subQueueId != null) {
-                return false;
-            }
             subQueueIdsMap.put(uri.id(), queue.getSubQueueId());
         }
         return true;
