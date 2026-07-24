@@ -55,7 +55,7 @@ public final class QueueId {
     @Override
     public int hashCode() {
         long l = id;
-        l = l << 32 + subId;
+        l = (l << 32) + subId;
         Long hashed = l;
         return hashed.hashCode();
     }
