@@ -500,7 +500,15 @@ public final class BrokerSession
                             isStopping.set(false);
                             enqueueDisconnected();
                         },
-                        scheduler);
+                        scheduler)
+                // Log any failure in the stop chain; otherwise it would die
+                // silently in this uninspected future with no diagnostic.
+                .whenComplete(
+                        (r, ex) -> {
+                            if (ex != null) {
+                                logger.error("Failed to stop broker connection: ", ex);
+                            }
+                        });
 
         logger.info("Broker connection is stopping.");
     }
@@ -705,7 +713,14 @@ public final class BrokerSession
     public void onHostHealthStateChanged(HostHealthState state) {
         // Executed by thread determined by "HostHealthMonitor".
 
-        scheduler.execute(() -> handleHostHealthState(state));
+        scheduler.execute(
+                () -> {
+                    try {
+                        handleHostHealthState(state);
+                    } catch (Exception e) {
+                        logger.error("Failed to handle host health state change: ", e);
+                    }
+                });
     }
 
     private boolean isHostHealthy() {
