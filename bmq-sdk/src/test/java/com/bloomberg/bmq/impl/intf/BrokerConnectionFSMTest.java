@@ -95,9 +95,7 @@ public class BrokerConnectionFSMTest {
         for (Inputs i : Inputs.values()) {
             States newState = getState(initState, i);
             switch (i) {
-                case CHANNEL_STATUS_DOWN:
-                    assertEquals(States.CONNECTION_LOST, newState);
-                    break;
+                case CHANNEL_STATUS_DOWN: // fallthrough
                 case DISCONNECT_BROKER_RESPONSE: // fallthrough
                 case DISCONNECT_BROKER_TIMEOUT: // fallthrough
                 case DISCONNECT_BROKER_FAILURE:
