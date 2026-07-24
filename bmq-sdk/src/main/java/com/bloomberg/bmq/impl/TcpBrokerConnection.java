@@ -287,13 +287,16 @@ public class TcpBrokerConnection
 
     @Override
     public void handleAuthenticationResponse() {
-        if (onAuthenticationTimeoutFuture.isDone()) {
-            logger.warn("Authentication timeout expired");
-            return;
-        }
+        // Always drain the event that triggered this handler to keep 'bmqEvents'
+        // in sync, even if the timeout already expired.  Otherwise a stale event
+        // would be left in the queue and misread by a later BlazingMQ event.
         EventImpl bmqEv = bmqEvents.poll();
         if (bmqEv == null) {
             logger.error("No BlazingMQ events");
+            return;
+        }
+        if (onAuthenticationTimeoutFuture.isDone()) {
+            logger.warn("Authentication timeout expired");
             return;
         }
         if (bmqEv.type() != EventType.AUTHENTICATION) {
@@ -495,13 +498,16 @@ public class TcpBrokerConnection
 
     @Override
     public void handleNegotiationResponse() {
-        if (onNegotiationTimeoutFuture.isDone()) {
-            logger.warn("Negotiation timeout expired");
-            return;
-        }
+        // Always drain the event that triggered this handler to keep 'bmqEvents'
+        // in sync, even if the timeout already expired.  Otherwise a stale event
+        // would be left in the queue and misread by a later BlazingMQ event.
         EventImpl bmqEv = bmqEvents.poll();
         if (bmqEv == null) {
             logger.error("No BlazingMQ events");
+            return;
+        }
+        if (onNegotiationTimeoutFuture.isDone()) {
+            logger.warn("Negotiation timeout expired");
             return;
         }
         if (bmqEv.type() != EventType.CONTROL) {
