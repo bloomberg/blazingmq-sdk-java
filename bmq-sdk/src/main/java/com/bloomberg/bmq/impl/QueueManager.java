@@ -319,20 +319,23 @@ public class QueueManager {
      * @return QueueId object
      */
     public QueueId generateNextQueueId(Uri uri) {
-        // TODO: implement complete logic
-        QueueInfo qInfo = uriMap.get(uri.canonical());
-        int subQueueId = 0;
-        if (qInfo != null) {
-            if (!uri.id().isEmpty()) {
-                subQueueId = qInfo.getNextSubQueueId();
+        // TODO: IDs are allocated monotonically and never recycled; closed/expired
+        // queue IDs are not reused, and generation does not consult expiredQueueMap.
+        synchronized (lock) {
+            QueueInfo qInfo = uriMap.get(uri.canonical());
+            int subQueueId = 0;
+            if (qInfo != null) {
+                if (!uri.id().isEmpty()) {
+                    subQueueId = qInfo.getNextSubQueueId();
+                }
+                return QueueId.createInstance(qInfo.getQueueId(), subQueueId);
+            } else {
+                if (!uri.id().isEmpty()) {
+                    subQueueId = QueueInfo.INITIAL_CONSUMER_SUBQUEUE_ID;
+                }
+                int queueId = nextQueueId.getAndIncrement();
+                return QueueId.createInstance(queueId, subQueueId);
             }
-            return QueueId.createInstance(qInfo.getQueueId(), subQueueId);
-        } else {
-            if (!uri.id().isEmpty()) {
-                subQueueId = QueueInfo.INITIAL_CONSUMER_SUBQUEUE_ID;
-            }
-            int queueId = nextQueueId.getAndIncrement();
-            return QueueId.createInstance(queueId, subQueueId);
         }
     }
 
