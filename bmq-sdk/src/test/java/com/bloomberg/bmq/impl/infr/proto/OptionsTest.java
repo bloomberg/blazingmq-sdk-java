@@ -97,6 +97,44 @@ class OptionsTest {
     }
 
     @Test
+    void testStreamInPackedInfosThenIds() throws IOException {
+        // A *packed* SUB_QUEUE_INFOS option occupies exactly one word (4 bytes): the
+        // header only, with no option content. Its 'words' field is reinterpreted as
+        // the RDA counter, so 'size' must be decremented by HEADER_SIZE, not by
+        // words()*WORD_SIZE. If a second option follows, an incorrect decrement causes
+        // the loop to exit early and the trailing option to be misread/dropped.
+        ByteBuffer bb =
+                ByteBuffer.wrap(
+                        new byte[] {
+                            // Packed Infos: type=SUB_QUEUE_INFOS(3), packed=1,
+                            // words field reused as RDA counter (5)
+                            0b00001110, 0b00000000, 0b00000000, 0b00000101, // header only
+
+                            // Ids
+                            0b00000100, 0b00000000, 0b00000000, 0b00000010, // header
+                            0b00000000, 0b00000000, 0b00000000, 0b00000111, // subqueue id 7
+                        });
+        ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
+
+        Options options = new Options();
+        options.streamIn(12, bbis);
+
+        logger.info("Options: {}", options);
+
+        assertNotNull(options.subQueueInfosOption());
+        assertArrayEquals(
+                new Integer[] {com.bloomberg.bmq.impl.QueueId.k_DEFAULT_SUBQUEUE_ID},
+                options.subQueueInfosOption().subQueueIds());
+
+        // The option after the packed one must still be parsed.
+        assertNotNull(options.subQueueIdsOption());
+        assertArrayEquals(new Integer[] {7}, options.subQueueIdsOption().subQueueIds());
+
+        // Check that input stream is empty
+        assertEquals(0, bbis.available());
+    }
+
+    @Test
     void testStreamInInfosIds() throws IOException {
         ByteBuffer bb =
                 ByteBuffer.wrap(
