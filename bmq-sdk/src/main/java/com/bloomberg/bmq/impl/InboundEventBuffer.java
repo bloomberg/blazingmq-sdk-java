@@ -36,7 +36,9 @@ public final class InboundEventBuffer {
     private final SessionOptions.InboundEventBufferWaterMark watermarks;
     private final EventQueueStats eventQueueStats;
 
-    private boolean reportLwm = false;
+    // volatile: written by put (scheduler thread) and poll (worker thread),
+    // so both must see each other's latest value.
+    private volatile boolean reportLwm = false;
 
     public InboundEventBuffer(
             SessionOptions.InboundEventBufferWaterMark wms, EventQueueStats eventQueueStats) {
