@@ -313,8 +313,9 @@ public class QueueOptions {
         }
 
         /**
-         * Adds subscription parameters for a specified subscription. Update subscription parameters
-         * if subscription with current 'subscription.getId()' previously added.
+         * Adds subscription parameters for a specified subscription. Each call appends a new
+         * subscription; subscription ids are assigned by the SDK when the queue is configured, so
+         * this method does not deduplicate or update previously added subscriptions.
          *
          * @param subscription subscription parameters
          * @return Builder this object
