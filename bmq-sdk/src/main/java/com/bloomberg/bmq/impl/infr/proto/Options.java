@@ -43,6 +43,12 @@ public class Options {
         while (size > 0) {
             OptionHeader header = new OptionHeader();
             header.streamIn(bbis);
+
+            int totalSize =
+                    header.packed()
+                            ? OptionHeader.HEADER_SIZE
+                            : header.words() * Protocol.WORD_SIZE;
+
             switch (header.type()) {
                 case SUB_QUEUE_INFOS:
                     if (subQueueInfosOption == null) {
@@ -51,32 +57,29 @@ public class Options {
                         logger.debug("New options: {}", subQueueInfosOption);
                     } else {
                         logger.warn("Multiple SubQueueInfos option: {}", header.type());
-
-                        int numSkip =
-                                header.packed()
-                                        ? 0
-                                        : header.words() * Protocol.WORD_SIZE
-                                                - OptionHeader.HEADER_SIZE;
-
-                        bbis.skip(numSkip);
+                        bbis.skip(totalSize - OptionHeader.HEADER_SIZE);
                     }
                     break;
                 case SUB_QUEUE_IDS_OLD:
+                    // Only SUB_QUEUE_INFOS options may be packed.
+                    assert !header.packed();
                     if (subQueueIdsOption == null) {
                         subQueueIdsOption = new SubQueueIdsOption(header);
                         subQueueIdsOption.streamIn(bbis);
                         logger.debug("Old options: {}", subQueueIdsOption);
                     } else {
                         logger.warn("Multiple SubQueueIds option: {}", header.type());
-                        bbis.skip(header.words() * Protocol.WORD_SIZE - OptionHeader.HEADER_SIZE);
+                        bbis.skip(totalSize - OptionHeader.HEADER_SIZE);
                     }
                     break;
                 default:
+                    // Only SUB_QUEUE_INFOS options may be packed.
+                    assert !header.packed();
                     logger.warn("Unsupported option type: {}", header.type());
-                    bbis.skip(header.words() * Protocol.WORD_SIZE - OptionHeader.HEADER_SIZE);
+                    bbis.skip(totalSize - OptionHeader.HEADER_SIZE);
                     break;
             }
-            size -= header.words() * Protocol.WORD_SIZE;
+            size -= totalSize;
         }
 
         if (subQueueIdsOption != null && subQueueInfosOption != null) {
