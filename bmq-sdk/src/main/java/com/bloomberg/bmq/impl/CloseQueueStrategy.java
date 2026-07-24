@@ -155,7 +155,7 @@ public class CloseQueueStrategy extends QueueControlStrategy<CloseQueueCode> {
             }
 
             req = createConfigureQueueRequest();
-            req.setAsyncNotifier(this::onConfigureResponse);
+            setResponseHandler(req, this::onConfigureResponse);
         }
 
         GenericResult genericResult = sendRawRequest(req, getTimeout());
@@ -253,7 +253,7 @@ public class CloseQueueStrategy extends QueueControlStrategy<CloseQueueCode> {
 
         RequestManager.Request req = createCloseQueueRequest();
 
-        req.setAsyncNotifier(this::onCloseResponse);
+        setResponseHandler(req, this::onCloseResponse);
         GenericResult genericResult = sendRawRequest(req);
 
         // Regardless of close request status, we decrement substream count

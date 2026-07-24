@@ -68,6 +68,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -150,6 +151,18 @@ class BrokerSessionTest {
 
         public QueueStateManager queueManager() {
             return queueManager;
+        }
+
+        /** Runs the given task on the session executor thread and waits for it to complete. */
+        public void runInSession(Runnable task) {
+            try {
+                service.submit(Argument.expectNonNull(task, "task")).get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         public void start() {
@@ -707,6 +720,63 @@ class BrokerSessionTest {
 
     private static Uri createUri() {
         return new Uri("bmq://bmq.training.myapp/my.queue." + UUID.randomUUID().toString());
+    }
+
+    /**
+     * Regression test: a control response handled while the queue is in an unexpected state must
+     * not strand the queue's strategy/future.
+     *
+     * <p>When a (stale) configure response is processed after the queue has left the {@code
+     * e_OPENED} state, the strategy's response handler trips a {@link QueueStateManager}
+     * precondition guard and throws {@code IllegalArgumentException}. That exception is raised
+     * inside {@code RequestManager}'s dispatch {@code FutureTask}, whose body only logs it. The
+     * strategy must still complete with a failure result and be reset, so the caller unblocks and
+     * the queue is not left permanently busy.
+     */
+    @Test
+    void configureResponseInUnexpectedStateDoesNotStrandStrategy() throws TimeoutException {
+        logger.info("=========================================================================");
+        logger.info("BEGIN Testing configure response handled in an unexpected queue state.");
+        logger.info("=========================================================================");
+
+        TestSession obj = new TestSession();
+
+        try {
+            obj.start();
+
+            QueueOptions queueOptions = QueueOptions.builder().setConsumerPriority(2).build();
+
+            long flags = 0;
+            flags = QueueFlags.setReader(flags);
+
+            QueueImpl queue = obj.createQueue(createUri(), flags);
+
+            // Open the queue.
+            obj.openQueue(queue, queueOptions);
+            assertEquals(QueueState.e_OPENED, queue.getState());
+
+            // Start a standalone configure. The request is now pending while the queue is OPENED.
+            BmqFuture<ConfigureQueueCode> configFuture =
+                    queue.configureAsync(queueOptions, FUTURE_TIMEOUT);
+            ControlMessageChoice request = obj.verifyConfigureStreamRequest();
+
+            // Simulate the queue leaving the OPENED state before the response is processed (e.g. a
+            // concurrent close). The configure response handler's precondition guard
+            // (QueueStateManager.onConfigureStreamSent) will now throw IllegalArgumentException.
+            obj.runInSession(() -> queue.setState(QueueState.e_CLOSED));
+
+            // Deliver the (now stale) configure response.
+            obj.sendConfigureStreamResponse(request);
+
+            // The future must complete with a failure result rather than hang.
+            assertEquals(ConfigureQueueResult.UNKNOWN, configFuture.get(FUTURE_TIMEOUT));
+
+            // The strategy has been reset, so the queue is no longer stuck as busy.
+            assertNull(queue.getStrategy());
+        } finally {
+            obj.session().stop(Duration.ofMillis(100));
+            obj.session().linger();
+        }
     }
 
     /** Basic test that creates BrokerSession with a test channel */
