@@ -454,13 +454,17 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
         @Override
         public void onAuthenticationFailed() {
             logger.debug("onAuthenticationFailed: {}", this);
-            startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+            if (!isOnceStarted) {
+                startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+            }
         }
 
         @Override
         public void onAuthenticationTimeout() {
             logger.debug("onAuthenticationTimeout: {}", this);
-            startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+            if (!isOnceStarted) {
+                startErrorStatus = StartStatus.AUTHENTICATION_FAILURE;
+            }
         }
 
         @Override
@@ -493,13 +497,17 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
         @Override
         public void onNegotiationFailed() {
             logger.debug("onNegotiationFailed: {}", this);
-            startErrorStatus = StartStatus.NEGOTIATION_FAILURE;
+            if (!isOnceStarted) {
+                startErrorStatus = StartStatus.NEGOTIATION_FAILURE;
+            }
         }
 
         @Override
         public void onNegotiationTimeout() {
             logger.debug("onNegotiationTimeout: {}", this);
-            startErrorStatus = StartStatus.NEGOTIATION_FAILURE;
+            if (!isOnceStarted) {
+                startErrorStatus = StartStatus.NEGOTIATION_FAILURE;
+            }
         }
 
         @Override
