@@ -125,7 +125,7 @@ public class BrokerConnectionFSMImpl implements BrokerConnectionFSM {
             4,  5,  4,  4,  4,  4,  4,  0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
         },
         /* s5 DISCONNECTING_BROKER */ {
-            5,  5,  5,  5,  5,  5,  5,  0,  5,  5,  5,  5,  5,  6,  6,  6,  5,  5,  5,  5,
+            5,  5,  5,  5,  5,  5,  5,  6,  5,  5,  5,  5,  5,  6,  6,  6,  5,  5,  5,  5,
         },
         /* s6 DISCONNECTING_CHANNEL */ {
             6,  6,  6,  6,  6,  6,  6,  0,  6,  6,  6,  7,  7,  6,  6,  6,  6,  6,  6,  6,
