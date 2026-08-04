@@ -2,12 +2,19 @@ name: 'Publish to Maven Central'
 
 on: workflow_dispatch
 
+# Only one release run at a time, so two dispatches can't produce
+# competing version bumps.
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: 'Publish'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write        # push tag + version-bump branch
+      pull-requests: write   # open the version-bump PR
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v3
@@ -28,9 +35,61 @@ jobs:
           git config --global user.email "opensource@bloomberg.net"
           git config --global user.name "Bloomberg Open Source"
 
-      - name: 'Publish snapshot to OSSRH'
-        run: mvn --batch-mode -Possrh -Darguments="-Dmaven.test.skip=true -Dspotbugs.skip=true -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }} -Dusername=${{ secrets.GITHUB_TOKEN }}" release:prepare release:perform
+      # 1. Prepare the release locally only: rewrite POMs, commit the release
+      #    and next-SNAPSHOT versions, and create the tag WITHOUT pushing to
+      #    the protected 'main' branch (pushChanges=false).
+      - name: 'release:prepare (local only)'
+        run: >
+          mvn --batch-mode -Possrh -DpushChanges=false release:prepare
+          -Darguments="-Dmaven.test.skip=true -Dspotbugs.skip=true
+          -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }}"
         env:
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+
+      # 2. Capture the tag/branch names from release.properties now, before
+      #    release:perform consumes the file.
+      - name: 'Capture release metadata'
+        run: |
+          TAG=$(grep '^scm.tag=' release.properties | cut -d= -f2-)
+          if [ -z "$TAG" ]; then
+            echo "Could not read scm.tag from release.properties" >&2
+            exit 1
+          fi
+          echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "RELEASE_BRANCH=release/$TAG" >> "$GITHUB_ENV"
+
+      # 3. Build from the local tag and deploy the signed artifacts to OSSRH.
+      #    localCheckout=true makes perform use the local repo/tag instead of
+      #    fetching the (unpushed) tag from the remote.
+      - name: 'release:perform (from local checkout)'
+        run: >
+          mvn --batch-mode -Possrh -DlocalCheckout=true release:perform
+          -Darguments="-Dmaven.test.skip=true -Dspotbugs.skip=true
+          -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }}"
+        env:
+          GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+
+      # 4. Push the tag (tags are not covered by branch protection) and open a
+      #    PR carrying the two version-bump commits. A human reviews and merges
+      #    the PR into 'main'; artifacts are already published at this point.
+      - name: 'Push tag and open version-bump PR'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin "refs/tags/${RELEASE_TAG}"
+          git push origin "HEAD:refs/heads/${RELEASE_BRANCH}"
+          gh pr create \
+            --base main \
+            --head "${RELEASE_BRANCH}" \
+            --title "Release ${RELEASE_TAG}: version bump" \
+            --body "Automated version-bump commits from \`release:prepare\` for \`${RELEASE_TAG}\`.
+
+          Artifacts have already been published to OSSRH; merging this PR only
+          restores the version bookkeeping on \`main\`.
+
+          Please merge with a **merge commit or rebase** (not squash) so the
+          tagged commit remains on \`main\`'s history."
