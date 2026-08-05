@@ -17,7 +17,7 @@ limitations under the License. -->
 
   <groupId>com.bloomberg.bmq</groupId>
   <artifactId>bmq-sdk-java</artifactId>
-  <version>0.0.16-SNAPSHOT</version>
+  <version>0.0.18</version>
   <packaging>pom</packaging>
 
   <name>BlazingMQ Java SDK Bundle</name>
@@ -61,12 +61,12 @@ limitations under the License. -->
 
     <repository>
       <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
     </repository>
 
     <snapshotRepository>
       <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
 
   </distributionManagement>
@@ -103,7 +103,7 @@ limitations under the License. -->
       <dependency>
         <groupId>com.bloomberg.bmq</groupId>
         <artifactId>bmq-sdk</artifactId>
-        <version>0.0.16-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
@@ -567,6 +567,12 @@ limitations under the License. -->
 
     <profile>
       <id>ossrh</id>
+      <properties>
+        <!-- Dry-run toggle: pass -Dcentral.skipPublishing=true to build the signed
+             bundle WITHOUT uploading/publishing, so its contents can be inspected
+             in CI before a real release. Defaults to a real publish. -->
+        <central.skipPublishing>false</central.skipPublishing>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -619,6 +625,28 @@ limitations under the License. -->
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <!-- Publish to Maven Central via the Central Portal. With extensions=true
+               this replaces maven-deploy-plugin during `deploy`, uploads a signed
+               bundle to the `central` server (see settings.xml), and auto-releases
+               once validation passes. -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.11.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+              <skipPublishing>${central.skipPublishing}</skipPublishing>
+              <!-- Publish only the bmq-sdk library: exclude the aggregator POM and
+                   the examples module (matched by artifactId) from the bundle. -->
+              <excludeArtifacts>
+                <excludeArtifact>bmq-sdk-java</excludeArtifact>
+                <excludeArtifact>bmq-examples</excludeArtifact>
+              </excludeArtifacts>
+            </configuration>
           </plugin>
         </plugins>
       </build>
