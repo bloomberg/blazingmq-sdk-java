@@ -103,7 +103,7 @@ limitations under the License. -->
       <dependency>
         <groupId>com.bloomberg.bmq</groupId>
         <artifactId>bmq-sdk</artifactId>
-        <version>0.0.16-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
