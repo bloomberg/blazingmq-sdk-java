@@ -261,7 +261,17 @@ public class CloseQueueStrategy extends QueueControlStrategy<CloseQueueCode> {
 
         if (genericResult.isFailure()) {
             logger.error("Failed to send closeQueue request. RC={}", genericResult);
-            setQueueState(QueueState.e_CLOSED);
+            if (scenario.isDefault()) {
+                // If no connection the queue now is closed.
+                onFullyClosed();
+                if (genericResult.isNotConnected()) {
+                    genericResult = GenericResult.SUCCESS;
+                }
+            } else {
+                // The late scenarios have already removed the queue from the
+                // active maps, so just mark it closed (mirrors onCloseResponse()).
+                setQueueState(QueueState.e_CLOSED);
+            }
 
             resultHook(genericResult);
         }

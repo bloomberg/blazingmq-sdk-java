@@ -1254,7 +1254,9 @@ class BrokerSessionTest {
 
             obj.sendConfigureStreamResponse(configureRequest);
 
-            assertEquals(CloseQueueResult.NOT_CONNECTED, closeFuture.get(FUTURE_TIMEOUT));
+            // With no connection the queue is considered closed, so close
+            // reports success.
+            assertEquals(CloseQueueResult.SUCCESS, closeFuture.get(FUTURE_TIMEOUT));
 
             // Check close request
             obj.verifyCloseQueueRequest(true);
@@ -1266,21 +1268,16 @@ class BrokerSessionTest {
 
             // Check event
             obj.verifyQueueControlEvent(
-                    QueueControlEvent.Type.e_QUEUE_CLOSE_RESULT, CloseQueueResult.NOT_CONNECTED);
+                    QueueControlEvent.Type.e_QUEUE_CLOSE_RESULT, CloseQueueResult.SUCCESS);
 
             assertEquals(QueueState.e_CLOSED, queue.getState());
 
             // Open the queue
             obj.connection().resetWriteStatus(); // SUCCESS
 
-            // Due to the bug, queue is not closed fully, so we cannot reopen it
-            logger.info("[BUG] Current queue cannot be reopened");
-            assertEquals(
-                    OpenQueueResult.QUEUE_ID_NOT_UNIQUE,
-                    queue.open(queueOptions, SEQUENCE_TIMEOUT));
-
-            // Create and open another queue
-            queue = obj.createQueue(createUri(), flags);
+            // The queue is fully closed and no longer registered in the active
+            // queue map, so the same queue can be reopened.
+            assertNull(obj.queueManager().findByQueueId(queue.getFullQueueId()));
 
             obj.openQueue(queue, queueOptions);
 
