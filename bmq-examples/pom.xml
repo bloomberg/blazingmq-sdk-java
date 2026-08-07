@@ -121,4 +121,16 @@ limitations under the License. -->
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- Example code is not published to Maven Central. The parent's ossrh profile
+         un-skips deploy for a Central Portal publish; re-skip it here so this module
+         is excluded from the bundle. -->
+    <profile>
+      <id>ossrh</id>
+      <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+      </properties>
+    </profile>
+  </profiles>
 </project>

@@ -61,7 +61,7 @@ limitations under the License. -->
 
     <repository>
       <id>ossrh</id>
-      <url>https://ossrh-staging-api.central.sonatype.com/service/local/</url>
+      <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
     </repository>
 
     <snapshotRepository>
@@ -567,6 +567,12 @@ limitations under the License. -->
 
     <profile>
       <id>ossrh</id>
+      <properties>
+        <!-- Un-skip deploy during a Central Portal publish so the parent POM and
+             bmq-sdk are included in the bundle. bmq-examples re-skips itself via
+             its own ossrh profile so example code is not published. -->
+        <maven.deploy.skip>false</maven.deploy.skip>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -619,6 +625,21 @@ limitations under the License. -->
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <!-- Publish to Maven Central via the Central Portal. With extensions=true
+               this replaces maven-deploy-plugin during `deploy`, uploads a signed
+               bundle to the `central` server (see settings.xml), and auto-releases
+               once validation passes. -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.11.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+            </configuration>
           </plugin>
         </plugins>
       </build>
