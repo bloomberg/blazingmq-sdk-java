@@ -17,7 +17,7 @@ limitations under the License. -->
 
   <groupId>com.bloomberg.bmq</groupId>
   <artifactId>bmq-sdk-java</artifactId>
-  <version>0.0.17</version>
+  <version>0.0.18</version>
   <packaging>pom</packaging>
 
   <name>BlazingMQ Java SDK Bundle</name>
@@ -568,10 +568,10 @@ limitations under the License. -->
     <profile>
       <id>ossrh</id>
       <properties>
-        <!-- Un-skip deploy during a Central Portal publish so the parent POM and
-             bmq-sdk are included in the bundle. bmq-examples re-skips itself via
-             its own ossrh profile so example code is not published. -->
-        <maven.deploy.skip>false</maven.deploy.skip>
+        <!-- Dry-run toggle: pass -Dcentral.skipPublishing=true to build the signed
+             bundle WITHOUT uploading/publishing, so its contents can be inspected
+             in CI before a real release. Defaults to a real publish. -->
+        <central.skipPublishing>false</central.skipPublishing>
       </properties>
       <build>
         <plugins>
@@ -639,6 +639,13 @@ limitations under the License. -->
               <publishingServerId>central</publishingServerId>
               <autoPublish>true</autoPublish>
               <waitUntil>published</waitUntil>
+              <skipPublishing>${central.skipPublishing}</skipPublishing>
+              <!-- Publish only the bmq-sdk library: exclude the aggregator POM and
+                   the examples module (matched by artifactId) from the bundle. -->
+              <excludeArtifacts>
+                <excludeArtifact>bmq-sdk-java</excludeArtifact>
+                <excludeArtifact>bmq-examples</excludeArtifact>
+              </excludeArtifacts>
             </configuration>
           </plugin>
         </plugins>
