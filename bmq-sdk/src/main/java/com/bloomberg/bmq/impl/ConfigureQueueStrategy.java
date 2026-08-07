@@ -59,7 +59,7 @@ public abstract class ConfigureQueueStrategy extends QueueControlStrategy<Config
         }
 
         RequestManager.Request req = createConfigureQueueRequest();
-        req.setAsyncNotifier(this::onConfigureQueueResponse);
+        setResponseHandler(req, this::onConfigureQueueResponse);
         GenericResult genericResult = sendRawRequest(req);
         if (genericResult.isFailure()) {
             logger.error("Failed to send configureQueue request. RC={}", genericResult);

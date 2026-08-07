@@ -54,13 +54,13 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
     private GenericResult sendOpenRequest() {
         generateNextQueueIdForQueueIfNeeded();
         RequestManager.Request req = createOpenQueueRequest();
-        req.setAsyncNotifier(this::onOpenQueueResponse);
+        setResponseHandler(req, this::onOpenQueueResponse);
         return sendRawRequest(req);
     }
 
     private void sendConfigureRequest() {
         RequestManager.Request req = createConfigureQueueRequest();
-        req.setAsyncNotifier(this::onConfigureQueueResponse);
+        setResponseHandler(req, this::onConfigureQueueResponse);
         GenericResult genericResult = sendRawRequest(req);
         if (genericResult.isFailure()) {
             logger.error("Failed to send configureQueue request. RC={}", genericResult);
