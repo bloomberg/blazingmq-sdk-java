@@ -1,6 +1,12 @@
 name: 'Publish to Maven Central'
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build & upload the bundle as a CI artifact WITHOUT publishing to Maven Central'
+        type: boolean
+        default: false
 
 jobs:
   publish:
@@ -23,8 +29,22 @@ jobs:
           gpg-passphrase: GPG_KEY_PASSPHRASE
 
       - name: 'Publish to Maven Central'
-        run: mvn --batch-mode -Possrh -Dmaven.test.skip=true -Dspotbugs.skip=true -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }} deploy
+        run: mvn --batch-mode -Possrh -Dcentral.skipPublishing=${{ inputs.dry_run }} -Dmaven.test.skip=true -Dspotbugs.skip=true -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} -Dgpg.passphrase=${{ secrets.GPG_KEY_PASSPHRASE }} deploy
         env:
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+
+      # Dry run only: surface what WOULD be published so the bundle can be verified
+      # (e.g. that bmq-examples and the aggregator POM are excluded) before a real release.
+      - name: 'Inspect bundle (dry run)'
+        if: ${{ inputs.dry_run }}
+        run: find . -name central-bundle.zip -exec unzip -l {} \;
+
+      - name: 'Upload bundle (dry run)'
+        if: ${{ inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: central-bundle
+          path: '**/central-bundle.zip'
+          if-no-files-found: error
