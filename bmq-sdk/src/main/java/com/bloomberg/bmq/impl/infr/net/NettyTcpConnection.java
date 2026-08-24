@@ -37,16 +37,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -185,12 +180,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     private static final int NUM_IO_THREADS = 1;
     private static final int DEFAULT_LINGER_TIMEOUT_MILLISECONDS = 2000;
     private static final int DEFAULT_SHUTDOWN_ATTEMPTS = 3;
-    private static final int MAX_IO_DUMP_FILE_SIZE = 1024 * 1024 * 1024; // One Gb
-
-    private static boolean dumpMode = false; // todo: move dump mode routines out of this class
-
-    private static FileOutputStream blackBox;
-    private static Writer blackBoxIndex;
 
     private ByteBufferOutputStream readBuffer;
 
@@ -212,33 +201,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     private Semaphore channelWaterMarkSema;
     private final ClientChannelAdapter clientChannelAdapter;
     private final long lingerTimeout;
-
-    static {
-        String s = System.getenv("BMQ_IO_DUMP_DIR");
-        if (s != null) {
-            File dumpDir = new File(s);
-            if (dumpDir.exists() && dumpDir.isDirectory() && dumpDir.canWrite()) {
-                try {
-                    String filePref = "bmq_io_dump_" + System.currentTimeMillis();
-                    File binFile = new File(dumpDir, filePref + ".bin");
-                    File idxFile = new File(dumpDir, filePref + ".idx");
-
-                    blackBox = new FileOutputStream(binFile);
-                    blackBoxIndex =
-                            new OutputStreamWriter(
-                                    new FileOutputStream(idxFile), StandardCharsets.US_ASCII);
-                    dumpMode = true;
-                    logger.info("Dump mode data  file: {}", binFile.getAbsolutePath());
-                    logger.info("Dump mode index file: {}", idxFile.getAbsolutePath());
-                } catch (IOException e) {
-                    logger.error("Failed to enable IO dump mode: ", e);
-                }
-            } else {
-                logger.error(
-                        "Failed to enable IO dump mode. No such directory or not writable: {}", s);
-            }
-        }
-    }
 
     /**
      * Create {@link NettyTcpConnection} instance.
@@ -301,43 +263,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
         this.lingerTimeout = lingerTimeout;
         clientChannelAdapter = injectedAdapter;
         hostResolver = new NetResolver();
-    }
-
-    private void dump(ByteBuffer[] byteBuffers) {
-        try {
-            if (blackBox.getChannel().size() >= MAX_IO_DUMP_FILE_SIZE) {
-                logger.warn("Dump exceeded max size: {}", blackBox.getChannel().size());
-                closeDumps();
-                dumpMode = false;
-                return;
-            }
-            blackBoxIndex.write(Integer.toString(byteBuffers.length));
-            for (ByteBuffer b : byteBuffers) {
-                blackBoxIndex.write(" " + b.remaining());
-                while (b.hasRemaining()) {
-                    blackBox.write(b.get());
-                }
-                b.rewind();
-            }
-            blackBoxIndex.write("\n");
-        } catch (IOException e) {
-            logger.error("Failed to do IO dump: ", e);
-            closeDumps();
-            dumpMode = false;
-        }
-    }
-
-    private void closeDumps() {
-        try {
-            if (blackBox != null) {
-                blackBox.close();
-            }
-            if (blackBoxIndex != null) {
-                blackBoxIndex.close();
-            }
-        } catch (IOException e) {
-            logger.error("Failed to close dumps: ", e);
-        }
     }
 
     private boolean stopEventLoop(EventLoopGroup eventLoop, long lingerTimeout) {
@@ -535,9 +460,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             el = eventLoop;
             this.eventLoop = null; // null event loop means that given connection is being stopped
             clientChannelAdapter.reset();
-            if (dumpMode) {
-                closeDumps();
-            }
         }
         if (!stopEventLoop(el, timeout)) {
             logger.error("Failed to linger - event loop");
@@ -771,10 +693,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 final ByteBuffer[] byteBuffers = readBuffer.reset();
 
                 readBuffer = new ByteBufferOutputStream();
-
-                if (dumpMode) {
-                    dump(byteBuffers);
-                }
 
                 readCallback.handleReadCb(readBytesStatus, byteBuffers);
             }
