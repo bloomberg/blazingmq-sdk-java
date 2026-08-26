@@ -890,7 +890,8 @@ public final class BrokerSession
             // Attempt to suspend each queue.
             queueStateManager
                     // Grab opened queues
-                    .getOpenedQueues().stream()
+                    .getOpenedQueues()
+                    .stream()
                     // Take queues without currently running strategy
                     .filter(q -> q.getStrategy() == null)
                     // Take queues which are sensitive to host health
@@ -939,7 +940,8 @@ public final class BrokerSession
             // Attempt to resume each queue.
             queueStateManager
                     // Grab opened queues
-                    .getOpenedQueues().stream()
+                    .getOpenedQueues()
+                    .stream()
                     // Take queues without currently running strategy
                     .filter(q -> q.getStrategy() == null)
                     // Take queues which are sensitive to host health

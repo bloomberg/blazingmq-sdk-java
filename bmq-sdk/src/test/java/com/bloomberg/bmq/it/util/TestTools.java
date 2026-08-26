@@ -231,7 +231,7 @@ public class TestTools {
     public static long getUsedMemoryMB() {
         long before = getGcCount();
         System.gc();
-        while (getGcCount() == before) ;
+        while (getGcCount() == before) {}
         return getCurrentlyAllocatedMemoryMB();
     }
 

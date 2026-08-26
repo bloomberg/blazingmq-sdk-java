@@ -48,22 +48,30 @@ public class Token {
         this.pos = pos;
     }
 
-    /** @return token type */
+    /**
+     * @return token type
+     */
     public Type getType() {
         return this.type;
     }
 
-    /** @return token value */
+    /**
+     * @return token value
+     */
     public String getValue() {
         return this.value;
     }
 
-    /** @return token position in expression */
+    /**
+     * @return token position in expression
+     */
     public long getPosition() {
         return this.pos;
     }
 
-    /** @return 'true' if token is literal or property, 'false' otherwise */
+    /**
+     * @return 'true' if token is literal or property, 'false' otherwise
+     */
     public boolean isLiteralOrProperty() {
         switch (type) {
             case BOOL:
@@ -76,7 +84,9 @@ public class Token {
         }
     }
 
-    /** @return 'true' if token is logical, comparison or math operation, 'false' otherwise */
+    /**
+     * @return 'true' if token is logical, comparison or math operation, 'false' otherwise
+     */
     public boolean isOperation() {
         switch (type) {
             case LOGICAL_OP:

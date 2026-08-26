@@ -207,7 +207,7 @@ public class NettyTcpConnectionTest {
                     } else {
                         job.run();
                     }
-                };
+                }
 
                 @Override
                 public void configure(NettyTcpConnection conn, EventLoopGroup loop) {
