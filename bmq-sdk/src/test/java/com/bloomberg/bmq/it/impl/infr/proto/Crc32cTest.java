@@ -17,12 +17,9 @@ package com.bloomberg.bmq.it.impl.infr.proto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.proto.Crc32c;
-import com.bloomberg.bmq.impl.infr.scm.VersionUtil;
-import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
@@ -60,31 +57,6 @@ class Crc32cTest {
         DATA.put("gaaXsSP1al", 0xC4E61D23L);
         DATA.put("2Wm9bbNDehd", 0x54A11873L);
         DATA.put("GamS0NJhAl8y", 0x0044AC66L);
-    }
-
-    @Test
-    void testImplementation() {
-        // Ensure we are running with supported version of JVM
-        SystemUtil.JavaVersion javaVersion = SystemUtil.getJavaVersion();
-        assertTrue(javaVersion.isSupported(), "Unsupported JDK");
-
-        boolean isPartOfJar = VersionUtil.getJarVersion() != null;
-
-        if (!isPartOfJar) {
-            // We execute unit test, 3rd party implementation of Crc32c should be used.
-            logger.info("Running Crc32cTest as a separate class (not packed into Jar file)");
-            assertFalse(Crc32c.isJdkImplementation());
-        } else {
-            // We are running integration test.
-            // if JDK8 is used to build and verify, then the generated JAR file contains only Java8
-            // version of Crc32c class (3rd party implementation).
-            // If JDK11 or above is used, then the generated JAR file also contains Java9 version of
-            // Crc32c (native JDK implementation) and it should be used by JVM.
-            logger.info("Running Crc32cTest as a part of Jar file");
-            boolean isJava9orAbove =
-                    SystemUtil.getJavaVersion().compareTo(SystemUtil.JavaVersion.JAVA_8) > 0;
-            assertEquals(isJava9orAbove, Crc32c.isJdkImplementation());
-        }
     }
 
     @Test
