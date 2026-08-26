@@ -50,7 +50,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
@@ -490,7 +491,8 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
     public void run() {
         final int NUM_IO_THREADS = 1;
         final NettyServerHandler handler = new NettyServerHandler();
-        final EventLoopGroup eventLoop = new NioEventLoopGroup(NUM_IO_THREADS);
+        final EventLoopGroup eventLoop =
+                new MultiThreadIoEventLoopGroup(NUM_IO_THREADS, NioIoHandler.newFactory());
 
         try {
             ServerBootstrap b = new ServerBootstrap();

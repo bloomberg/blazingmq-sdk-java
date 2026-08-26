@@ -32,8 +32,9 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
@@ -326,7 +327,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
         synchronized (lock) {
             this.options = options;
             numRemainingInitialTries = this.options.startNumRetries();
-            eventLoop = new NioEventLoopGroup(NUM_IO_THREADS);
+            eventLoop = new MultiThreadIoEventLoopGroup(NUM_IO_THREADS, NioIoHandler.newFactory());
             readCallback = readCb;
             connectCallback = connectCb;
             clientChannelAdapter.reset();
