@@ -598,71 +598,76 @@ class TcpBrokerConnectionIT {
         }
     }
 
+    @FunctionalInterface
+    interface TestTcpServerFactory {
+        TestTcpServer create(ConnectionOptions opts) throws IOException;
+    }
+
     @Test
     void testNegotiationMpsEx() throws IOException {
-        final ConnectionOptions opts = new ConnectionOptions();
-        opts.setBrokerUri(getServerUri());
+        testNegotiationMpsEx(
+                new ConnectionOptions().setBrokerUri(getServerUri()),
+                opts -> new BmqBrokerSimulator(opts.brokerUri().getPort(), Mode.BMQ_AUTO_MODE));
 
-        final TestTcpServer[] servers =
-                new TestTcpServer[] {
-                    new BmqBrokerSimulator(opts.brokerUri().getPort(), Mode.BMQ_AUTO_MODE),
-                    BmqBrokerContainer.createContainer(opts.brokerUri().getPort())
-                };
+        testNegotiationMpsEx(
+                new ConnectionOptions().setBrokerUri(getServerUri()),
+                opts -> BmqBrokerContainer.createContainer(opts.brokerUri().getPort()));
+    }
 
-        assertFalse(servers[0].isOldStyleMessageProperties());
-        assertFalse(servers[1].isOldStyleMessageProperties());
+    private void testNegotiationMpsEx(ConnectionOptions opts, TestTcpServerFactory serverFactory)
+            throws IOException {
+        final TestTcpServer server = serverFactory.create(opts);
+        assertFalse(server.isOldStyleMessageProperties());
 
-        for (TestTcpServer server : servers) {
-            TestSession session = new TestSession(opts);
+        TestSession session = new TestSession(opts);
 
-            // 1) Bring up the server
+        // 1) Bring up the server
+        // 2) Invoke channel 'start' and ensure that it succeeds.
+        // 3) Wait for start status callback
+        // 4) Check that the "broker" supports new style message properties
+        // 5) Linger client session.
+        // 6) Stop the server.
+
+        logger.info("Start the server.");
+        server.start();
+
+        sleepForSeconds(1);
+
+        try {
             // 2) Invoke channel 'start' and ensure that it succeeds.
-            // 3) Wait for start status callback
-            // 4) Check that the "broker" supports new style message properties
-            // 5) Linger client session.
-            // 6) Stop the server.
+            logger.info("Starting channel...");
 
-            logger.info("Start the server.");
-            server.start();
+            session.start();
 
-            sleepForSeconds(1);
+            final int timeout = (int) opts.startAttemptTimeout().getSeconds();
 
-            try {
-                // 2) Invoke channel 'start' and ensure that it succeeds.
-                logger.info("Starting channel...");
+            // 3) Wait for start status callback.
+            assertEquals(StartStatus.SUCCESS, session.startStatus(timeout));
+            assertEquals(SessionStatus.SESSION_UP, session.sessionStatus());
 
-                session.start();
+            // 4) Check the connection for broker response
+            logger.info(
+                    "Server: {}, old style properties: {}",
+                    server,
+                    server.isOldStyleMessageProperties());
 
-                final int timeout = (int) opts.startAttemptTimeout().getSeconds();
+            assertEquals(
+                    server.isOldStyleMessageProperties(),
+                    session.channel.isOldStyleMessageProperties());
 
-                // 3) Wait for start status callback.
-                assertEquals(StartStatus.SUCCESS, session.startStatus(timeout));
-                assertEquals(SessionStatus.SESSION_UP, session.sessionStatus());
-
-                // 4) Check the connection for broker response
-                logger.info(
-                        "Server: {}, old style properties: {}",
-                        server,
-                        server.isOldStyleMessageProperties());
-
-                assertEquals(
-                        server.isOldStyleMessageProperties(),
-                        session.channel.isOldStyleMessageProperties());
-
-                if (server instanceof BmqBroker) {
-                    ((BmqBroker) server).setDropTmpFolder();
-                }
-            } finally {
-                // 5) Stop client session.
-                session.stop();
-                assertEquals(SessionStatus.SESSION_DOWN, session.sessionStatus());
-
-                assertEquals(StopStatus.SUCCESS, session.stopStatus());
-                assertEquals(GenericResult.SUCCESS, session.linger());
-
-                // 6) Close the server.
-                server.close();
+            if (server instanceof BmqBroker) {
+                ((BmqBroker) server).setDropTmpFolder();
             }
+        } finally {
+            // 5) Stop client session.
+            session.stop();
+            assertEquals(SessionStatus.SESSION_DOWN, session.sessionStatus());
+
+            assertEquals(StopStatus.SUCCESS, session.stopStatus());
+            assertEquals(GenericResult.SUCCESS, session.linger());
+
+            // 6) Close the server.
+            server.close();
         }
     }
 
