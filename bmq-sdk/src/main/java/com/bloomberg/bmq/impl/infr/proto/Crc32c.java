@@ -15,10 +15,9 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-import com.bloomberg.bmq.impl.infr.util.SystemUtil;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
-import org.apache.commons.codec.digest.PureJavaCrc32C;
+import java.util.zip.CRC32C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,35 +26,18 @@ public class Crc32c {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     static {
-        logger.info("*** Using org.apache.commons.codec.digest.PureJavaCrc32C ***");
-
-        // Warn if Java version > 1.8 is used.
-        // The warning record is logged only in situation if SDK was built with
-        // JDK8 but is used with newer one e.g. JDK11
-        if (SystemUtil.getJavaVersion().compareTo(SystemUtil.JavaVersion.JAVA_8) > 0) {
-            logger.warn("*** [NOTE] Starting from JDK9 switch to java.util.zip.CRC32C ***");
-        }
-    }
-
-    public static boolean isJdkImplementation() {
-        return false;
+        logger.info("*** Using java.util.zip.CRC32C ***");
     }
 
     public static long calculate(ByteBuffer[] buffer) {
-
-        PureJavaCrc32C crc32c = new PureJavaCrc32C();
+        CRC32C crc32c = new CRC32C();
 
         for (ByteBuffer b : buffer) {
-            byte[] buf;
-            if (b.hasArray()) {
-                buf = b.array();
-            } else {
-                ByteBuffer t = ByteBuffer.allocate(b.limit());
-                t.put(b);
-                buf = t.array();
-            }
-            crc32c.update(buf, 0, b.limit());
+            b.mark();
+            crc32c.update(b);
+            b.reset();
         }
+
         return crc32c.getValue();
     }
 }

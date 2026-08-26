@@ -91,36 +91,15 @@ etc) can be found [here](https://www.github.com/bloomberg/blazingmq).
 
 ### Supported JDKs
 
-The SDK code supports building with the following kits:
+The SDK requires **JDK 17 or newer** to build and run. The code is compiled
+with `release=17`.
 
-- *JDK8*
-  - Builds the code with these compiler parameters:
-    - `source=8` (which allows up to *Java 8* features)
-    - `target=8` (which generates JVM 8 bytecode)
-- *JDK11* and *JDK17*
-  - Builds the code with `release=8` (generated JVM 8 compatible code) plus
-    builds the code in `java9` directory with `release=9`.  This way multi
-    release JAR is produced which contains Java8 and Java9 versions of `Crc32c`
-    class
-
-By default, JDK defined in `JAVA_HOME` is used.  When running any maven
-command, corresponding profile is activated depending on the JDK version.  To
-get a list of active profiles run the following command:
+By default, the JDK defined in `JAVA_HOME` is used. To use a specific JDK,
+override `JAVA_HOME` env variable. For instance:
 
 ```sh
-# On this machine JAVA_HOME is set to JDK8.
-$ mvn help:active-profiles
-...
-The following profiles are active:
-
- - JDK8 (source: com.bloomberg.bmq:bmq-sdk:X.Y.Z-SNAPSHOT)
-```
-
-To use another JDK, override `JAVA_HOME` env variable. For instance:
-
-```sh
-# clean output and compile the code using JDK 11
-$ JAVA_HOME=${PATH_TO_JDK11} mvn clean compile
+# clean output and compile the code using a specific JDK install
+$ JAVA_HOME=${PATH_TO_JDK} mvn clean compile
 ...
 [INFO] BUILD SUCCESS
 ...

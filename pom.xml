@@ -82,7 +82,10 @@ limitations under the License. -->
 
     <sonar.host.url />
     <sonar.scm.disabled>true</sonar.scm.disabled>
-    <sonar.java.source>8</sonar.java.source>
+    <sonar.java.source>17</sonar.java.source>
+
+    <!-- Minimum supported JDK; see the requireJavaVersion enforcer rule below -->
+    <maven.compiler.release>17</maven.compiler.release>
 
     <skipUnitTests>false</skipUnitTests>
 
@@ -168,7 +171,6 @@ limitations under the License. -->
         <scope>import</scope>
       </dependency>
 
-      <!-- last version that supports JDK8 -->
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-junit-jupiter</artifactId>
@@ -268,8 +270,8 @@ limitations under the License. -->
                     <message>log4j older than v.2.17.1 is banned</message>
                   </bannedDependencies>
                   <requireJavaVersion>
-                    <version>[1.8,9),[11,12),[17,18)</version>
-                    <message>Only JDK8, JDK11 and JDK17 are supported</message>
+                    <version>[17,)</version>
+                    <message>JDK 17 or newer is required</message>
                   </requireJavaVersion>
                 </rules>
                 <fail>true</fail>
@@ -527,44 +529,7 @@ limitations under the License. -->
     </plugins>
   </build>
 
-  <!-- We use profiles to modify configuration of plugins depending on JDK being used:
-       - JDK8
-         This profile is activated with JDK8 and sets compiler "source" and "target" parameters to "1.8" (so the code
-         can run with JVM8 or newer)
-       - JDK9-and-above
-         This profile is activated with JDK9 and above (actually, only JDK11 and JDK17 are supported) and sets
-         compiler "release" parameter to "8" (so all the code still can run with JVM8) -->
   <profiles>
-    <profile>
-      <id>JDK8</id>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <properties>
-        <!-- JDK 8 compiler settings -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>JDK9-and-above</id>
-      <activation>
-        <!-- This is a general profile which is activated for JDK9 or newer.
-             If you need to support specific JDK, create new profile or update this one e.g. for JDK17
-             set the xml element below to 17. See version range spec for more information:
-             https://maven.apache.org/enforcer/enforcer-rules/versionRanges.html -->
-        <jdk>[9,)</jdk>
-      </activation>
-      <properties>
-        <!-- By default, compile everything to Java 8 (better to set this explicitly rather than use default value).
-             If necessary, change release parameter to greater value.
-             For instance, set release to 17 in order to enable Java 17 features
-             and generate bytecode compatible with JVM17 and newer -->
-        <maven.compiler.release>8</maven.compiler.release>
-      </properties>
-    </profile>
-
     <profile>
       <id>ossrh</id>
       <properties>
