@@ -18,3 +18,14 @@ updates:
     cooldown:
       default-days: 7
 
+  - package-ecosystem: "maven"
+    directory: "/"
+    groups:
+      maven:
+        patterns:
+          - "*"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
