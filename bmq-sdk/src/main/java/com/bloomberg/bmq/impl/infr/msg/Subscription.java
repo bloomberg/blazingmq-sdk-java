@@ -40,7 +40,7 @@ public class Subscription {
 
     public void setId(int id) {
         sId = id;
-    };
+    }
 
     public Expression expression() {
         return expression;

@@ -27,22 +27,30 @@ public class ValidationResult {
         this.success = success;
     }
 
-    /** @return String with error message if it exists or null otherwise */
+    /**
+     * @return String with error message if it exists or null otherwise
+     */
     public String getErrorMessage() {
         return errorMessage;
     }
 
-    /** @return boolean {@code true} on success, and {@code false} in case of failure */
+    /**
+     * @return boolean {@code true} on success, and {@code false} in case of failure
+     */
     public boolean isSuccess() {
         return success;
     }
 
-    /** @return ValidationResult for successfull validation */
+    /**
+     * @return ValidationResult for successfull validation
+     */
     public static ValidationResult makeSuccess() {
         return new ValidationResult(true, null);
     }
 
-    /** @return ValidationResult for invalid character error */
+    /**
+     * @return ValidationResult for invalid character error
+     */
     public static ValidationResult makeInvalidCharacter(String value, Long position) {
         StringBuilder sb = new StringBuilder("syntax error, unexpected invalid character \"");
         sb.append(value).append("\" at offset ").append(position);
@@ -50,7 +58,9 @@ public class ValidationResult {
         return new ValidationResult(false, sb.toString());
     }
 
-    /** @return ValidationResult for unexpected character error */
+    /**
+     * @return ValidationResult for unexpected character error
+     */
     public static ValidationResult makeUnexpectedCharacter(String value, Long position) {
         StringBuilder sb = new StringBuilder("syntax error, unexpected \"");
         sb.append(value).append("\" at offset ").append(position);
@@ -58,38 +68,52 @@ public class ValidationResult {
         return new ValidationResult(false, sb.toString());
     }
 
-    /** @return ValidationResult for integer overflow error */
+    /**
+     * @return ValidationResult for integer overflow error
+     */
     public static ValidationResult makeIntegerOverflow(Long position) {
         return new ValidationResult(false, "integer overflow at offset " + position);
     }
 
-    /** @return ValidationResult for too many properties error */
+    /**
+     * @return ValidationResult for too many properties error
+     */
     public static ValidationResult makeTooManyProperties() {
         return new ValidationResult(false, "expression uses too many properties");
     }
 
-    /** @return ValidationResult for missed operation error */
+    /**
+     * @return ValidationResult for missed operation error
+     */
     public static ValidationResult makeMissedOperation(Long position) {
         return new ValidationResult(false, "syntax error, missed operation at offset " + position);
     }
 
-    /** @return ValidationResult for too many operators */
+    /**
+     * @return ValidationResult for too many operators
+     */
     public static ValidationResult makeTooManyOperators() {
         return new ValidationResult(false, "too many operators");
     }
 
-    /** @return ValidationResult for unexpected end of expression error */
+    /**
+     * @return ValidationResult for unexpected end of expression error
+     */
     public static ValidationResult makeUnexpectedEnd(Long position) {
         return new ValidationResult(
                 false, "syntax error, unexpected end of expression at offset " + position);
     }
 
-    /** @return ValidationResult for too no properties error */
+    /**
+     * @return ValidationResult for too no properties error
+     */
     public static ValidationResult makeNoProperties() {
         return new ValidationResult(false, "expression does not use any properties");
     }
 
-    /** @return ValidationResult for unmatched paranthesis error */
+    /**
+     * @return ValidationResult for unmatched paranthesis error
+     */
     public static ValidationResult makeUnmatchedParanthesis() {
         return new ValidationResult(
                 false, "syntax error, unmatched number of open and close paranthesis");

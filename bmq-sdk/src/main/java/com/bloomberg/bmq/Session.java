@@ -1258,7 +1258,7 @@ public final class Session implements AbstractSession {
                     }
                 }
                 return null;
-            };
+            }
 
             @Override
             public Queue queue() {
