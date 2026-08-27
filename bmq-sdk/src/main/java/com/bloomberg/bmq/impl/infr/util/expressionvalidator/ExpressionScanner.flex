@@ -109,7 +109,7 @@ package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 [ \t\n] {
 }
 
-. {
+[^] {
 	return new Token(Token.Type.INVALID, yytext(), yychar);
 }
 
