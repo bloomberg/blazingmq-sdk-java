@@ -135,6 +135,12 @@ limitations under the License. -->
       <artifactId>docker-java-transport-httpclient5</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.code-intelligence</groupId>
+      <artifactId>jazzer-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

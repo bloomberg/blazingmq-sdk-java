@@ -1,0 +1,76 @@
+name: ClusterFuzzLite
+
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Batch fuzzing: deepens the shared corpus.
+    - cron: '23 */6 * * *'
+    # Pruning: drops corpus entries that no longer add coverage.
+    - cron: '41 2 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  code_change:
+    name: "Fuzz: code change"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build fuzzers
+      id: build
+      uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+      with:
+        language: jvm
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Run fuzzers
+      id: run
+      uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fuzz-seconds: 300
+        mode: 'code-change'
+
+  batch:
+    name: "Fuzz: batch"
+    if: github.event.schedule == '23 */6 * * *'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build fuzzers
+      id: build
+      uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+      with:
+        language: jvm
+
+    - name: Run fuzzers
+      id: run
+      uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fuzz-seconds: 1800
+        mode: 'batch'
+
+  prune:
+    name: "Fuzz: prune corpus"
+    if: github.event.schedule == '41 2 * * *'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build fuzzers
+      id: build
+      uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+      with:
+        language: jvm
+
+    - name: Run fuzzers
+      id: run
+      uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        fuzz-seconds: 600
+        mode: 'prune'
