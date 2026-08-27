@@ -343,4 +343,24 @@ public class ExpressionValidatorTest {
             assertEquals(result.getErrorMessage(), expectedErrorMessage);
         }
     }
+
+    public static Collection<Object[]> unsupportedCodePoints() {
+        // Code points which are neither whitespace accepted by the scanner nor part of any
+        // token: VT, FF, CR, NEL, LINE SEPARATOR, PARAGRAPH SEPARATOR.
+        return Arrays.asList(new Object[][] {{0x0B}, {0x0C}, {0x0D}, {0x85}, {0x2028}, {0x2029}});
+    }
+
+    @MethodSource("unsupportedCodePoints")
+    @ParameterizedTest
+    public void testUnsupportedCharacter(int codePoint) throws java.io.IOException {
+        String character = new String(Character.toChars(codePoint));
+        String inputExpression = "a > " + character + "0";
+        try (java.io.Reader expression = new java.io.StringReader(inputExpression)) {
+            ValidationResult result = ExpressionValidator.validate(expression);
+            assertEquals(false, result.isSuccess());
+            assertEquals(
+                    "syntax error, unexpected invalid character \"" + character + "\" at offset 4",
+                    result.getErrorMessage());
+        }
+    }
 }
