@@ -54,6 +54,7 @@ import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.EventExecutor;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
@@ -68,9 +69,9 @@ import javax.annotation.concurrent.Immutable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BmqBrokerSimulator implements TestTcpServer, Runnable {
+public class BmqBrokerSimulator implements TestTcpServer {
 
-    static final Duration DEFAULT_SERVER_START_TIMEOUT = Duration.ofSeconds(20);
+    static final Duration DEFAULT_SERVER_STOP_TIMEOUT = Duration.ofSeconds(10);
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Immutable
@@ -200,7 +201,7 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
                         break;
                     case E_NOT_READY:
                         logger.info("Special request to shutdown");
-                        stop();
+                        closeChannels();
                         break;
                     default:
                         negoResp =
@@ -292,7 +293,10 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) {
-            channelContext = Argument.expectNonNull(ctx, "ctx");
+            Argument.expectNonNull(ctx, "ctx");
+            synchronized (lock) {
+                channelContext = ctx;
+            }
         }
 
         @Override
@@ -310,14 +314,21 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
         BMQ_MANUAL_MODE // test driver defines what should be responded to the BlazingMQ client
     }
 
-    private Thread thread;
     private final int port;
     private final URI uri;
     private Mode serverMode;
+
+    /**
+     * Guards {@code eventLoop}, {@code channelFuture} and {@code channelContext}, which are
+     * accessed both by the test driver thread and by the server event loop. Only held for
+     * non-blocking work, never while awaiting the event loop.
+     */
+    private final Object lock = new Object();
+
+    private EventLoopGroup eventLoop;
     private ChannelFuture channelFuture;
     private ConcurrentLinkedQueue<ResponseItem> userDefinedResponses;
     private volatile ChannelHandlerContext channelContext = null;
-    private Semaphore startSema = new Semaphore(0);
     private LinkedBlockingQueue<ControlMessageChoice> receivedRequests =
             new LinkedBlockingQueue<>();
     private LinkedBlockingQueue<EventType> receivedEventTypes = new LinkedBlockingQueue<>();
@@ -377,46 +388,118 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
     @Override
     public void start() {
-        thread = new Thread(this, "NettyTestTcpServer_thread");
-        thread.start();
-        try {
-            if (!startSema.tryAcquire(
-                    DEFAULT_SERVER_START_TIMEOUT.toNanos(), TimeUnit.NANOSECONDS)) {
+        final int NUM_IO_THREADS = 1;
+        final NettyServerHandler handler = new NettyServerHandler();
+        final EventLoopGroup group =
+                new MultiThreadIoEventLoopGroup(NUM_IO_THREADS, NioIoHandler.newFactory());
+        synchronized (lock) {
+            eventLoop = group;
+        }
 
-                throw new IllegalStateException("Failed to acquire semaphore");
-            }
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(group)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(
+                        new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            public void initChannel(SocketChannel ch) {
+                                ch.pipeline().addLast(handler);
+                            }
+                        })
+                .option(ChannelOption.SO_BACKLOG, 128)
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+        final ChannelFuture bound;
+        try {
+            bound = b.bind(port).syncUninterruptibly();
         } catch (Exception e) {
+            shutdownEventLoop();
             logger.error("Failed to start server on port '{}'", port);
             throw new RuntimeException(e);
         }
+        synchronized (lock) {
+            channelFuture = bound;
+        }
+        logger.info("Server bound to port {}", port);
     }
 
+    /**
+     * Stops the server and waits until all its resources are released.
+     *
+     * <p>When this method returns, both the listening socket and the accepted client connection are
+     * closed and the port is free to be bound again. Must be called from outside the server event
+     * loop, use {@code closeChannels} to bring the server down from a channel handler.
+     */
     @Override
     public void stop() {
-        if (channelFuture != null) {
-            channelFuture.channel().close();
+        logger.info("Server stopping...");
+        closeChannels();
+        shutdownEventLoop();
+        logger.info("Server stopped");
+    }
+
+    /**
+     * Closes the client connection and the listening socket, may be called from the event loop.
+     *
+     * <p>Concurrent callers are safe: the channels are claimed under the lock, so exactly one
+     * caller observes them and closes them.
+     */
+    private void closeChannels() {
+        final ChannelHandlerContext ctx;
+        final ChannelFuture bound;
+        synchronized (lock) {
+            ctx = channelContext;
+            channelContext = null;
+            bound = channelFuture;
+            channelFuture = null;
         }
-        try {
-            logger.info("Server stopping...");
-            thread.join();
-            logger.info("Server stopped");
-        } catch (InterruptedException e) {
-            logger.error("Server stop interrupted");
-            Thread.currentThread().interrupt();
+        if (ctx != null) {
+            ctx.close();
         }
+        if (bound != null) {
+            bound.channel().close();
+        }
+    }
+
+    private void shutdownEventLoop() {
+        final EventLoopGroup group;
+        synchronized (lock) {
+            group = eventLoop;
+            if (group != null) {
+                for (EventExecutor executor : group) {
+                    if (executor.inEventLoop()) {
+                        throw new IllegalStateException(
+                                "Server must not be stopped from its event loop");
+                    }
+                }
+                eventLoop = null;
+            }
+        }
+        if (group == null) {
+            return;
+        }
+        group.shutdownGracefully(0, DEFAULT_SERVER_STOP_TIMEOUT.getSeconds(), TimeUnit.SECONDS)
+                .syncUninterruptibly();
     }
 
     @Override
     public void enableRead() {
-        if (channelFuture != null) {
-            channelFuture.channel().config().setAutoRead(true);
-        }
+        setAutoRead(true);
     }
 
     @Override
     public void disableRead() {
-        if (channelFuture != null) {
-            channelFuture.channel().config().setAutoRead(false);
+        setAutoRead(false);
+    }
+
+    private void setAutoRead(boolean autoRead) {
+        final ChannelFuture bound;
+        synchronized (lock) {
+            bound = channelFuture;
+        }
+        if (bound != null) {
+            bound.channel().config().setAutoRead(autoRead);
         }
     }
 
@@ -486,42 +569,6 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
             Thread.currentThread().interrupt();
         }
         return res;
-    }
-
-    public void run() {
-        final int NUM_IO_THREADS = 1;
-        final NettyServerHandler handler = new NettyServerHandler();
-        final EventLoopGroup eventLoop =
-                new MultiThreadIoEventLoopGroup(NUM_IO_THREADS, NioIoHandler.newFactory());
-
-        try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(eventLoop)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(
-                            new ChannelInitializer<SocketChannel>() {
-                                @Override
-                                public void initChannel(SocketChannel ch) {
-                                    ch.pipeline().addLast(handler);
-                                }
-                            })
-                    .option(ChannelOption.SO_BACKLOG, 128)
-                    .option(ChannelOption.SO_REUSEADDR, true)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-            // Bind and start to accept incoming connections.
-            channelFuture = b.bind(port).sync();
-            logger.info("Server bound to port {}", port);
-            // Wait until the server socket is closed.
-            startSema.release();
-            channelFuture.channel().closeFuture().sync();
-            channelFuture = null;
-        } catch (InterruptedException e) {
-            logger.info("Server thread interrupted: ", e);
-            Thread.currentThread().interrupt();
-        } finally {
-            eventLoop.shutdownGracefully();
-        }
     }
 
     @Override
