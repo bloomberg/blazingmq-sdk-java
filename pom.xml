@@ -218,7 +218,7 @@ limitations under the License. -->
       <dependency>
         <groupId>com.code-intelligence</groupId>
         <artifactId>jazzer-api</artifactId>
-        <version>0.24.0</version>
+        <version>0.30.0</version>
         <scope>test</scope>
       </dependency>
 
@@ -358,7 +358,7 @@ limitations under the License. -->
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>3.10.0</version>
+          <version>3.10.1</version>
           <configuration>
             <upToDateChecking>
               <enabled>true</enabled>
