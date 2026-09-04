@@ -43,7 +43,6 @@ import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,7 +198,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     private ConnectCallback connectCallback;
     private DisconnectCallback disconnectCallback;
     private ChannelStatusHandler channelStatusHandler;
-    private Semaphore channelWaterMarkSema;
     private final ClientChannelAdapter clientChannelAdapter;
     private final long lingerTimeout;
 
@@ -335,7 +333,6 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             readBuffer = new ByteBufferOutputStream();
             readBytesStatus = new ReadCompletionStatus();
             readBytesStatus.setNumNeeded(initialMinNumBytes);
-            channelWaterMarkSema = new Semaphore(0);
             doConnect();
         }
 
@@ -373,7 +370,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             // Unblock any thread waiting for the channel to become writable
             // (client could invoke 'disconnect' from one thread, while another
             // thread is blocked on 'waitUntilWritable').
-            channelWaterMarkSema.release();
+            lock.notifyAll();
 
             logger.debug("disconnect in state {}", state);
 
@@ -555,7 +552,11 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     }
 
     /**
-     * Wait until channel becomes writable.
+     * Wait until channel becomes writable, or until it goes down.
+     *
+     * <p>A channel which is no longer connected never becomes writable, so the wait ends when the
+     * channel does. Waiters are notified under {@code lock}, which also guards the waited-for
+     * state, so a notification cannot be missed by a thread which has not blocked yet.
      *
      * <p>Thread model: executed in any thread except I/O thread.
      *
@@ -564,26 +565,20 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
     @SuppressWarnings("squid:S2142")
     public void waitUntilWritable() {
 
-        Semaphore sema = null;
-
         synchronized (lock) {
             if (Thread.currentThread().getId() == ioThreadId) {
                 throw new IllegalStateException(
                         "Cannot invoke 'waitUntilWritable' from the IO thread.");
             }
 
-            if (state == ChannelState.CONNECTED && !channelContext.channel().isWritable()) {
-                sema = channelWaterMarkSema;
-            } // else: channel is not connected, or is writable.
-        }
-
-        // Wait indefinitely on the semaphore outside the lock.
-        if (sema != null) {
-            try {
-                sema.acquire();
-            } catch (InterruptedException e) {
-                logger.info("InterruptedException: ", e);
-                Thread.currentThread().interrupt();
+            while (state == ChannelState.CONNECTED && !channelContext.channel().isWritable()) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    logger.info("InterruptedException: ", e);
+                    Thread.currentThread().interrupt();
+                    return;
+                }
             }
         }
     }
@@ -734,9 +729,9 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
      */
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-        // If channel has become writable, post on the semaphore on which
-        // 'write' might be waiting, and also send CHANNEL_WRITABLE status.
-        // Else, simply log.
+        // If channel has become writable, wake the threads which might be
+        // waiting for it in 'waitUntilWritable', and also send
+        // CHANNEL_WRITABLE status.  Else, simply log.
 
         logger.info(
                 "channelWritabilityChanged. isWritable: {}, BytesBeforeUnwritable: {}, BytesBeforeWritable: {}",
@@ -748,8 +743,8 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
             ChannelStatusHandler channelHandler = null;
             synchronized (lock) {
                 channelHandler = channelStatusHandler;
+                lock.notifyAll();
             }
-            channelWaterMarkSema.release();
             if (channelHandler != null) {
                 channelHandler.handleChannelStatus(ChannelStatus.CHANNEL_WRITABLE);
             }
@@ -843,6 +838,11 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
 
             logger.debug("channelCloseFutureComplete {}", state);
 
+            // The channel is gone, so it can never become writable again.
+            // Release the threads waiting for that to happen; their writes
+            // complete with a not-connected result.
+            lock.notifyAll();
+
             if (state == ChannelState.DISCONNECTING) {
                 // Disconnection complete.
 
@@ -884,7 +884,7 @@ public final class NettyTcpConnection extends ChannelInboundHandlerAdapter
                 if (future.isSuccess()) {
                     future.channel().closeFuture().addListener(this);
                     future.channel().close();
-                    // We will post on the disconnecting-semaphore in the
+                    // The disconnect callback is invoked from the
                     // channel-close future.
                 }
                 // else: future is cancelled or failure, in which case, there
