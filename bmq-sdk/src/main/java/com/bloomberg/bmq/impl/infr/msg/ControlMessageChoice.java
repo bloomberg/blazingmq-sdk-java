@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.msg;
 
-public class ControlMessageChoice {
+public final class ControlMessageChoice {
 
     private Integer rId;
     private Status status;
@@ -40,150 +40,150 @@ public class ControlMessageChoice {
         return new ControlMessageChoice();
     }
 
-    public final void reset() {
+    public void reset() {
         init();
     }
 
-    public final void makeStatus() {
+    public void makeStatus() {
         reset();
         status = new Status();
     }
 
-    public final void makeOpenQueue() {
+    public void makeOpenQueue() {
         reset();
         openQueue = new OpenQueue();
     }
 
-    public final void makeOpenQueueResponse() {
+    public void makeOpenQueueResponse() {
         reset();
         openQueueResponse = new OpenQueueResponse();
     }
 
-    public final void makeConfigureQueueStream() {
+    public void makeConfigureQueueStream() {
         reset();
         configureQueueStream = new ConfigureQueueStream();
     }
 
-    public final void makeConfigureQueueStreamResponse() {
+    public void makeConfigureQueueStreamResponse() {
         reset();
         configureQueueStreamResponse = new ConfigureQueueStreamResponse();
     }
 
-    public final void makeConfigureStream() {
+    public void makeConfigureStream() {
         reset();
         configureStream = new ConfigureStream();
     }
 
-    public final void makeConfigureStreamResponse() {
+    public void makeConfigureStreamResponse() {
         reset();
         configureStreamResponse = new ConfigureStreamResponse();
     }
 
-    public final void makeCloseQueue() {
+    public void makeCloseQueue() {
         reset();
         closeQueue = new CloseQueue();
     }
 
-    public final void makeCloseQueueResponse() {
+    public void makeCloseQueueResponse() {
         reset();
         closeQueueResponse = new CloseQueueResponse();
     }
 
-    public final void makeDisconnect() {
+    public void makeDisconnect() {
         reset();
         disconnect = new Disconnect();
     }
 
-    public final void makeDisconnectResponse() {
+    public void makeDisconnectResponse() {
         reset();
         disconnectResponse = new DisconnectResponse();
     }
 
-    public final boolean isStatusValue() {
+    public boolean isStatusValue() {
         return status != null;
     }
 
-    public final boolean isOpenQueueValue() {
+    public boolean isOpenQueueValue() {
         return openQueue != null;
     }
 
-    public final boolean isOpenQueueResponseValue() {
+    public boolean isOpenQueueResponseValue() {
         return openQueueResponse != null;
     }
 
-    public final boolean isDisconnectValue() {
+    public boolean isDisconnectValue() {
         return disconnect != null;
     }
 
-    public final boolean isDisconnectResponseValue() {
+    public boolean isDisconnectResponseValue() {
         return disconnectResponse != null;
     }
 
-    public final boolean isConfigureQueueStreamValue() {
+    public boolean isConfigureQueueStreamValue() {
         return configureQueueStream != null;
     }
 
-    public final boolean isConfigureQueueStreamResponseValue() {
+    public boolean isConfigureQueueStreamResponseValue() {
         return configureQueueStreamResponse != null;
     }
 
-    public final boolean isConfigureStreamValue() {
+    public boolean isConfigureStreamValue() {
         return configureStream != null;
     }
 
-    public final boolean isConfigureStreamResponseValue() {
+    public boolean isConfigureStreamResponseValue() {
         return configureStreamResponse != null;
     }
 
-    public final boolean isCloseQueueValue() {
+    public boolean isCloseQueueValue() {
         return closeQueue != null;
     }
 
-    public final boolean isCloseQueueResponseValue() {
+    public boolean isCloseQueueResponseValue() {
         return closeQueueResponse != null;
     }
 
-    public final Status status() {
+    public Status status() {
         return status;
     }
 
-    public final OpenQueue openQueue() {
+    public OpenQueue openQueue() {
         return openQueue;
     }
 
-    public final OpenQueueResponse openQueueResponse() {
+    public OpenQueueResponse openQueueResponse() {
         return openQueueResponse;
     }
 
-    public final ConfigureQueueStream configureQueueStream() {
+    public ConfigureQueueStream configureQueueStream() {
         return configureQueueStream;
     }
 
-    public final ConfigureQueueStreamResponse configureQueueStreamResponse() {
+    public ConfigureQueueStreamResponse configureQueueStreamResponse() {
         return configureQueueStreamResponse;
     }
 
-    public final ConfigureStream configureStream() {
+    public ConfigureStream configureStream() {
         return configureStream;
     }
 
-    public final ConfigureStreamResponse configureStreamResponse() {
+    public ConfigureStreamResponse configureStreamResponse() {
         return configureStreamResponse;
     }
 
-    public final CloseQueue closeQueue() {
+    public CloseQueue closeQueue() {
         return closeQueue;
     }
 
-    public final CloseQueueResponse closeQueueResponse() {
+    public CloseQueueResponse closeQueueResponse() {
         return closeQueueResponse;
     }
 
-    public final Disconnect disconnect() {
+    public Disconnect disconnect() {
         return disconnect;
     }
 
-    public final DisconnectResponse disconnectResponse() {
+    public DisconnectResponse disconnectResponse() {
         return disconnectResponse;
     }
 

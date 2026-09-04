@@ -39,11 +39,11 @@ public abstract class MessageIterator {
         }
     }
 
-    protected EventImpl event() {
+    protected final EventImpl event() {
         return event;
     }
 
-    protected <T extends Streamable> T fetchNextMessage(T message) {
+    protected final <T extends Streamable> T fetchNextMessage(T message) {
         Argument.expectNonNull(message, "message");
         try {
             if (currentPosition > 0) {
@@ -65,7 +65,7 @@ public abstract class MessageIterator {
         }
     }
 
-    public boolean isValid() {
+    public final boolean isValid() {
         return event != null;
     }
 }

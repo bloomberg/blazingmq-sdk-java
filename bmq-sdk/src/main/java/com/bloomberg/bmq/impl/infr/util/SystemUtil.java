@@ -19,49 +19,12 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.management.ManagementFactory;
 import java.net.ServerSocket;
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SystemUtil {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    public enum JavaVersion {
-        JAVA_UNSUPPORTED(""),
-        JAVA_8("1.8"),
-        JAVA_11("11"),
-        JAVA_17("17");
-
-        private final String major;
-
-        JavaVersion(String major) {
-            this.major = major;
-        }
-
-        public boolean isSupported() {
-            return !major.isEmpty();
-        }
-    }
-
-    public static JavaVersion getJavaVersion() {
-        JavaVersion result = JavaVersion.JAVA_UNSUPPORTED;
-
-        try {
-            String version = getJavaVersionString();
-
-            result =
-                    Arrays.stream(JavaVersion.values())
-                            .filter(JavaVersion::isSupported)
-                            .filter(v -> version.startsWith(v.major))
-                            .findFirst()
-                            .orElse(JavaVersion.JAVA_UNSUPPORTED);
-        } catch (Exception e) {
-            logger.info("Error while getting Java version: ", e);
-        }
-
-        return result;
-    }
 
     public static String getJavaVersionString() {
         return System.getProperty("java.version");
