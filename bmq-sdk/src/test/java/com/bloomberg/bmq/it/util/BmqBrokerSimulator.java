@@ -408,15 +408,21 @@ public class BmqBrokerSimulator implements TestTcpServer, Runnable {
 
     @Override
     public void enableRead() {
-        if (channelFuture != null) {
-            channelFuture.channel().config().setAutoRead(true);
-        }
+        setAutoRead(true);
     }
 
     @Override
     public void disableRead() {
-        if (channelFuture != null) {
-            channelFuture.channel().config().setAutoRead(false);
+        setAutoRead(false);
+    }
+
+    private void setAutoRead(boolean value) {
+        // Applies to the accepted client connection, not to the listening
+        // socket: suppressing reads here stops draining the client's data and
+        // lets its write buffer grow.
+        ChannelHandlerContext ctx = channelContext;
+        if (ctx != null) {
+            ctx.channel().config().setAutoRead(value);
         }
     }
 
