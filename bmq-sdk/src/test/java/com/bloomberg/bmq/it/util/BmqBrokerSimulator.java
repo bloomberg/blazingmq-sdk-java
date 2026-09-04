@@ -493,13 +493,10 @@ public class BmqBrokerSimulator implements TestTcpServer {
         setAutoRead(false);
     }
 
-    private void setAutoRead(boolean autoRead) {
-        final ChannelFuture bound;
-        synchronized (lock) {
-            bound = channelFuture;
-        }
-        if (bound != null) {
-            bound.channel().config().setAutoRead(autoRead);
+    private void setAutoRead(boolean value) {
+        ChannelHandlerContext ctx = channelContext;
+        if (ctx != null) {
+            ctx.channel().config().setAutoRead(value);
         }
     }
 
