@@ -77,6 +77,7 @@ public final class ConfirmHeader implements Streamable {
     // Maximum size (bytes) of an 'ConfirmMessage'.
 
     public static final int MIN_HEADER_SIZE = 1;
+
     // Minimum size (bytes) of a 'ConfirmHeader' (which is sufficient to
     // capture header words).  This value should *never* change.
 

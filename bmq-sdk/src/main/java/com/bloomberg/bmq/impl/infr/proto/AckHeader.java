@@ -87,6 +87,7 @@ public final class AckHeader implements Streamable {
     // Maximum size (bytes) of an 'AckMessageImpl'.
 
     public static final int MIN_HEADER_SIZE = 1;
+
     // Minimum size (bytes) of a 'AckHeader' (which is sufficient to
     // capture header words).  This value should *never* change.
 

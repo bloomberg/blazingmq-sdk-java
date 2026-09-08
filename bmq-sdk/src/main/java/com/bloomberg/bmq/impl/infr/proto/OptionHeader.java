@@ -121,6 +121,7 @@ public final class OptionHeader implements Streamable {
     // (including this OptionHeader).
 
     public static final int HEADER_SIZE = 4;
+
     // Current size (bytes) of the header.
 
     public OptionHeader() {

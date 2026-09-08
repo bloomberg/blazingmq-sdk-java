@@ -166,6 +166,7 @@ public final class PutHeader {
     public static final int MAX_CORRELATION_ID = (1 << CORRELATION_ID_NUM_BITS) - 1;
 
     public static final int HEADER_SIZE = 36;
+
     // Current size (bytes) of the header.
 
     public PutHeader() {

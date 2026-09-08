@@ -87,6 +87,13 @@ limitations under the License. -->
     <!-- Minimum supported JDK; see the requireJavaVersion enforcer rule below -->
     <maven.compiler.release>17</maven.compiler.release>
 
+    <!-- google-java-format version used by Spotless. Each release only runs on a
+         minimum JVM (it shells out to internal, unstable javac APIs), so no single
+         version works across our whole CI JDK matrix (17, 21-25): 1.30.0 requires
+         JVM 21+, while 1.28.0 is the newest version that still runs on JVM 17. This
+         default covers JDK 21+; the JDK17 profile below overrides it to 1.28.0. -->
+    <google-java-format.version>1.30.0</google-java-format.version>
+
     <skipUnitTests>false</skipUnitTests>
 
     <!-- Rerun failed unit tests up to 3 times -->
@@ -384,7 +391,7 @@ limitations under the License. -->
                 <exclude>src/main/java/com/bloomberg/bmq/impl/infr/util/expressionvalidator/ExpressionScanner.java</exclude>
               </excludes>
               <googleJavaFormat>
-                <version>1.16.0</version>
+                <version>${google-java-format.version}</version>
                 <style>AOSP</style>
               </googleJavaFormat>
               <licenseHeader>
@@ -537,6 +544,19 @@ limitations under the License. -->
   </build>
 
   <profiles>
+    <profile>
+      <id>JDK17</id>
+      <activation>
+        <jdk>[17,18)</jdk>
+      </activation>
+      <properties>
+        <!-- google-java-format 1.30.0 (our default; see the property definition
+             above) requires JVM 21+. 1.28.0 is the newest release that still runs
+             on JVM 17. -->
+        <google-java-format.version>1.28.0</google-java-format.version>
+      </properties>
+    </profile>
+
     <profile>
       <id>ossrh</id>
       <properties>

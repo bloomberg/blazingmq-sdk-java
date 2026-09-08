@@ -45,6 +45,7 @@ public class CloseQueueStrategy extends QueueControlStrategy<CloseQueueCode> {
         // response during opening sequence
 
         LATE_ONE_STEP_CLOSING;
+
         // reaction on late incoming open queue
         // response during opening sequence or
         // configure queue response during closing

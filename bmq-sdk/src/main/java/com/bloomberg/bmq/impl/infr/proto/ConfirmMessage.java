@@ -57,6 +57,7 @@ public class ConfirmMessage implements Streamable {
     private int subQueueId;
 
     public static final int MESSAGE_SIZE = 24;
+
     // Current size (bytes) of the message.
 
     public ConfirmMessage() {

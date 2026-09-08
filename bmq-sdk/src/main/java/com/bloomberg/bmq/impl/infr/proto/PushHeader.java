@@ -149,6 +149,7 @@ public final class PushHeader {
     // TODO: set to 32 after 2nd release of "new style" brokers
 
     public static final int HEADER_SIZE_FOR_SCHEMA_ID = 32;
+
     // Current size (bytes) of the header with schema id
     // TODO: remove after 2nd release of "new style" brokers
 

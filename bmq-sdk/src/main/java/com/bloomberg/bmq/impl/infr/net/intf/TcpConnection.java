@@ -86,6 +86,7 @@ public interface TcpConnection {
     boolean isWritable();
 
     void waitUntilWritable();
+
     // Cannot be invoked from I/O thread.
 
     InetSocketAddress localAddress();
