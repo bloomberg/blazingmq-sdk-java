@@ -225,7 +225,7 @@ limitations under the License. -->
       <dependency>
         <groupId>com.code-intelligence</groupId>
         <artifactId>jazzer-api</artifactId>
-        <version>0.24.0</version>
+        <version>0.30.0</version>
         <scope>test</scope>
       </dependency>
 
@@ -297,7 +297,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.15.0</version>
+          <version>3.16.0</version>
           <configuration>
             <failOnWarning>true</failOnWarning>
             <showWarnings>true</showWarnings>
@@ -365,7 +365,7 @@ limitations under the License. -->
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>3.10.0</version>
+          <version>3.10.1</version>
           <configuration>
             <upToDateChecking>
               <enabled>true</enabled>
@@ -412,7 +412,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>3.6.0</version>
           <configuration>
             <!-- argLine>${surefireArgLine}</argLine -->
             <!-- this line interferes with jacoco execution -->
@@ -488,7 +488,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>3.6.0</version>
           <executions>
             <execution>
               <id>integration-test</id>
