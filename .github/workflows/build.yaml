@@ -35,6 +35,18 @@ jobs:
     - name: Build and run unit tests with Maven
       run:  mvn --batch-mode -Dspotbugs.skip=true test
 
+  # Build the SDK on a fixed image, to catch dependency bumps that break it.
+  docker_build:
+    name: "Build [docker]"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Build SDK [docker]
+      run: docker build --file .github/workflows/ext/Dockerfile .
+
   integration_test:
     name: "ITs: JDK ${{ matrix.Java }}"
     runs-on: ubuntu-latest
