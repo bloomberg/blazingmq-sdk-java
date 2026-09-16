@@ -980,6 +980,91 @@ public class NettyTcpConnectionImplIT {
     }
 
     @Test
+    void testWaitUntilWritableReturnsWhenChannelGoesDown() {
+
+        logger.info("=====================================================================");
+        logger.info("BEGIN Testing 'waitUntilWritable' when the channel goes down.");
+        logger.info("=====================================================================");
+
+        // A thread blocked in 'waitUntilWritable' must be released once the
+        // channel goes down, since a dead channel never becomes writable.
+
+        // 1) Bring up the server and disable reads, so the client's write
+        //    buffer cannot drain.
+        // 2) Invoke 'connect' and ensure that it succeeds.
+        // 3) Write messages until 'write' returns 'WRITE_BUFFER_FULL'.
+        // 4) Invoke 'waitUntilWritable' from another thread.
+        // 5) Stop the server, so the channel goes down while the thread is
+        //    still blocked.
+        // 6) Ensure that the blocked thread is released.
+
+        init();
+
+        final String message = "Payload for NettyTcpConnection integration test";
+
+        SessionOptions so = SessionOptions.builder().setBrokerUri(getServerUri()).build();
+
+        // 1) Bring up the server (only netty-based server supports disabling
+        //    reads).
+        TestTcpServer server = new BmqBrokerSimulator(so.brokerUri().getPort(), Mode.SILENT_MODE);
+        server.start();
+
+        TcpConnection impl = NettyTcpConnection.createInstance();
+
+        impl.setChannelStatusHandler(eventHandler);
+
+        // 2) Invoke 'connect' and ensure that it succeeds.
+        logger.info("Initiating connection...");
+        int rc =
+                impl.connect(
+                        new ConnectionOptions(so), eventHandler, eventHandler, MIN_NUM_READ_BYTES);
+
+        assertEquals(0, rc);
+        TestTools.acquireSema(connectSema);
+        TestTools.acquireSema(channelUpSema);
+
+        server.disableRead();
+
+        // 3) Write messages until 'write' returns 'WRITE_BUFFER_FULL'.
+        ByteBuffer packet = ByteBuffer.wrap(message.getBytes(StandardCharsets.US_ASCII));
+        ByteBuffer[] data = new ByteBuffer[] {packet};
+        WriteStatus writeRc;
+        while (true) {
+            writeRc = impl.write(data);
+            if (writeRc != WriteStatus.SUCCESS) {
+                break;
+            }
+        }
+        assertEquals(WriteStatus.WRITE_BUFFER_FULL, writeRc);
+
+        // 4) Invoke 'waitUntilWritable' from another thread.  It is a daemon
+        //    so that it cannot keep the JVM alive if it is never released.
+        Thread waiter = new Thread(impl::waitUntilWritable, "waitUntilWritable_thread");
+        waiter.setDaemon(true);
+        waiter.start();
+
+        TestTools.sleepForSeconds(1);
+        assertTrue(waiter.isAlive());
+
+        // 5) Stop the server, so the channel goes down while the thread is
+        //    still blocked.
+        server.stop();
+        TestTools.acquireSema(channelDownSema);
+
+        // 6) Ensure that the blocked thread is released.
+        try {
+            waiter.join(Duration.ofSeconds(30).toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        assertFalse(waiter.isAlive());
+
+        logger.info("===================================================================");
+        logger.info("END Testing 'waitUntilWritable' when the channel goes down.");
+        logger.info("===================================================================");
+    }
+
+    @Test
     void testBmqServer() throws IOException {
         logger.info("======================================================================");
         logger.info("BEGIN Testing NettyTcpConnection channel and connection to BlazingMQ Broker.");
