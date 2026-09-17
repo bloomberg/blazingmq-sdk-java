@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -395,6 +396,34 @@ public abstract class QueueControlStrategy<RESULT extends GenericCode> {
     protected final GenericResult sendRawRequest(RequestManager.Request r, Duration timeout) {
         setCurrentRequest(r);
         return requestManager.sendRequest(r, getConnection(), timeout);
+    }
+
+    /**
+     * Registers a response handler and guarantees the strategy is always completed.
+     *
+     * <p>{@link RequestManager} dispatches responses inside a {@code FutureTask} whose body only
+     * logs any exception thrown by the handler. This wrapper catches such an exception (e.g. a
+     * queue-state precondition guard tripping on an unexpected or stale response) and completes the
+     * strategy with a failure result, resetting it and unblocking the caller.
+     */
+    protected final void setResponseHandler(
+            RequestManager.Request req, Consumer<RequestManager.Request> handler) {
+        req.setAsyncNotifier(
+                r -> {
+                    try {
+                        handler.accept(r);
+                    } catch (RuntimeException e) {
+                        logger.error(
+                                "Exception while handling response for queue [uri: {}]: ",
+                                getQueue().getUri(),
+                                e);
+                        // The handler failed before completing the strategy; complete it with a
+                        // failure so the strategy is reset and the caller's future unblocks.
+                        if (getQueue().getStrategy() == this) {
+                            resultHook(GenericResult.UNKNOWN);
+                        }
+                    }
+                });
     }
 
     protected abstract RESULT upcast(GenericResult genericResult);
