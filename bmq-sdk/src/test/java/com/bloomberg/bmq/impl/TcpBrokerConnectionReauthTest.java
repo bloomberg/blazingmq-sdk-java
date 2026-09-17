@@ -32,6 +32,7 @@ import com.bloomberg.bmq.impl.infr.msg.Status;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
 import com.bloomberg.bmq.impl.infr.net.ConnectionOptions;
 import com.bloomberg.bmq.impl.infr.proto.AuthenticationEventBuilder;
+import com.bloomberg.bmq.impl.infr.proto.EventImpl;
 import com.bloomberg.bmq.impl.infr.proto.Protocol;
 import com.bloomberg.bmq.impl.infr.proto.RequestManager;
 import com.bloomberg.bmq.impl.infr.proto.SchemaEventBuilder;
@@ -47,7 +48,9 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -133,10 +136,7 @@ class TcpBrokerConnectionReauthTest {
         return builder.build();
     }
 
-    private void sendNegotiationResponse(TestTcpConnection conn) throws IOException {
-        ByteBuffer[] negoRequest = conn.nextWriteRequest();
-        assertNotNull(negoRequest);
-
+    private ByteBuffer[] buildNegotiationResponse() throws IOException {
         NegotiationMessageChoice negMsg = new NegotiationMessageChoice();
         negMsg.makeBrokerResponse();
         BrokerResponse brokerResponse = negMsg.brokerResponse();
@@ -152,7 +152,13 @@ class TcpBrokerConnectionReauthTest {
 
         SchemaEventBuilder builder = new SchemaEventBuilder();
         builder.setMessage(negMsg);
-        conn.sendResponse(builder.build());
+        return builder.build();
+    }
+
+    private void sendNegotiationResponse(TestTcpConnection conn) throws IOException {
+        ByteBuffer[] negoRequest = conn.nextWriteRequest();
+        assertNotNull(negoRequest);
+        conn.sendResponse(buildNegotiationResponse());
     }
 
     private CompletableFuture<StartStatus> startConnection(TcpBrokerConnection connection) {
@@ -399,5 +405,99 @@ class TcpBrokerConnectionReauthTest {
         Thread.sleep(200);
 
         assertTrue(reauthFuture.isCancelled());
+    }
+
+    @SuppressWarnings("unchecked")
+    private LinkedBlockingQueue<EventImpl> getBmqEvents(TcpBrokerConnection connection) {
+        return (LinkedBlockingQueue<EventImpl>)
+                TestHelpers.getInternalState(connection, "bmqEvents");
+    }
+
+    // Parks the single scheduler thread inside a task until the returned latch is released.
+    // While parked, tasks the SDK submits (e.g. BMQ_EVENT inputs from incoming frames) queue
+    // up behind it without running. This lets a test deliver several frames through the real
+    // read path and control exactly when the FSM processes them -- reproducing broker frames
+    // that arrive back-to-back on the same scheduler tick.
+    private CountDownLatch blockScheduler() throws InterruptedException {
+        CountDownLatch release = new CountDownLatch(1);
+        CountDownLatch parked = new CountDownLatch(1);
+        scheduler.execute(
+                () -> {
+                    parked.countDown();
+                    try {
+                        release.await(5, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+        assertTrue(parked.await(5, TimeUnit.SECONDS), "scheduler did not park");
+        return release;
+    }
+
+    // End-to-end: two negotiation responses arriving back-to-back while the FSM is in
+    // NEGOTIATING. The first drains its event and cancels the negotiation timeout (making the
+    // future isDone()); the second BMQ_EVENT is then processed while still in NEGOTIATING with
+    // the timeout already done. If that path early-returns without draining, the event is
+    // stranded and 'bmqEvents' desyncs (off-by-one) -- later polls return the stale event.
+    @Test
+    void testNegotiationBurstDoesNotDesyncBmqEvents() throws Exception {
+        TcpBrokerConnection connection = createConnection(null);
+        TestTcpConnection testConn = connectionFactory.getTestConnection();
+
+        CompletableFuture<StartStatus> startFuture = startConnection(connection);
+
+        // The negotiation request is written as the FSM enters NEGOTIATING, so its arrival
+        // means the timeout is armed and the connection awaits a negotiation response.
+        assertNotNull(testConn.nextWriteRequest());
+
+        LinkedBlockingQueue<EventImpl> bmqEvents = getBmqEvents(connection);
+
+        CountDownLatch release = blockScheduler();
+        testConn.sendResponse(buildNegotiationResponse());
+        testConn.sendResponse(buildNegotiationResponse());
+        // Both events reached the queue through the real read path, none processed yet.
+        assertEquals(2, bmqEvents.size());
+        release.countDown();
+
+        // Reaching CONNECTED guarantees both BMQ_EVENT tasks (queued before the
+        // NEGOTIATION_RESPONSE transition) have already run on the scheduler.
+        assertEquals(StartStatus.SUCCESS, startFuture.get(5, TimeUnit.SECONDS));
+        assertEquals(0, bmqEvents.size(), "bmqEvents desynced: stale event stranded");
+    }
+
+    // End-to-end counterpart for the AUTHENTICATING phase: two authentication responses arriving
+    // back-to-back while the FSM is in AUTHENTICATING.
+    @Test
+    void testAuthenticationBurstDoesNotDesyncBmqEvents() throws Exception {
+        AuthnCredentialCb cb =
+                () ->
+                        AuthnCredential.builder()
+                                .setMechanism("OAUTH2")
+                                .setData("token".getBytes())
+                                .build();
+        TcpBrokerConnection connection = createConnection(cb);
+        TestTcpConnection testConn = connectionFactory.getTestConnection();
+
+        CompletableFuture<StartStatus> startFuture = startConnection(connection);
+
+        // The authentication request is written as the FSM enters AUTHENTICATING.
+        assertNotNull(testConn.nextWriteRequest());
+
+        LinkedBlockingQueue<EventImpl> bmqEvents = getBmqEvents(connection);
+
+        CountDownLatch release = blockScheduler();
+        testConn.sendResponse(buildAuthResponse(StatusCategory.E_SUCCESS, null));
+        testConn.sendResponse(buildAuthResponse(StatusCategory.E_SUCCESS, null));
+        assertEquals(2, bmqEvents.size());
+        release.countDown();
+
+        // The first auth response drives the FSM to NEGOTIATING, which writes the
+        // negotiation request; its arrival means the second BMQ_EVENT has already run too.
+        assertNotNull(testConn.nextWriteRequest());
+        assertEquals(0, bmqEvents.size(), "bmqEvents desynced: stale event stranded");
+
+        // Complete the handshake so the connection ends in a clean state.
+        testConn.sendResponse(buildNegotiationResponse());
+        assertEquals(StartStatus.SUCCESS, startFuture.get(5, TimeUnit.SECONDS));
     }
 }
