@@ -119,7 +119,7 @@ limitations under the License. -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>2.0.18</version>
+        <version>2.0.19</version>
       </dependency>
 
       <dependency>
@@ -155,7 +155,7 @@ limitations under the License. -->
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
-        <version>4.2.17.Final</version>
+        <version>4.2.18.Final</version>
       </dependency>
 
       <dependency>
@@ -225,7 +225,7 @@ limitations under the License. -->
       <dependency>
         <groupId>com.code-intelligence</groupId>
         <artifactId>jazzer-api</artifactId>
-        <version>0.24.0</version>
+        <version>0.30.0</version>
         <scope>test</scope>
       </dependency>
 
@@ -297,7 +297,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.15.0</version>
+          <version>3.16.0</version>
           <configuration>
             <failOnWarning>true</failOnWarning>
             <showWarnings>true</showWarnings>
@@ -311,7 +311,7 @@ limitations under the License. -->
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>4.10.4.0</version>
+          <version>4.10.4.1</version>
           <configuration>
             <failOnError>true</failOnError>
             <effort>Max</effort>
@@ -352,7 +352,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>5.7.0.6970</version>
+          <version>5.8.0.7211</version>
           <executions>
             <execution>
               <goals>
@@ -365,7 +365,7 @@ limitations under the License. -->
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>3.10.0</version>
+          <version>3.10.2</version>
           <configuration>
             <upToDateChecking>
               <enabled>true</enabled>
@@ -412,7 +412,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>3.6.0</version>
           <configuration>
             <!-- argLine>${surefireArgLine}</argLine -->
             <!-- this line interferes with jacoco execution -->
@@ -488,7 +488,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>3.6.0</version>
           <executions>
             <execution>
               <id>integration-test</id>
