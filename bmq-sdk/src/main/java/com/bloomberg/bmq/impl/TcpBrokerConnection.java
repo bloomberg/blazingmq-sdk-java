@@ -122,8 +122,8 @@ public class TcpBrokerConnection
     private final int sessionId = counter.incrementAndGet();
     private final AuthnCredentialCb authnCredentialCb;
     private NegotiationMessageChoice negotiationMsg;
-    private boolean isReauthenticating = false;
-    private long credentialLifetimeMs = 0;
+    private volatile boolean isReauthenticating = false;
+    private volatile long credentialLifetimeMs = 0;
 
     public static BrokerConnection createInstance(
             ConnectionOptions options,
