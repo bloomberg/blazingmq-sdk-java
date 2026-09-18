@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.util;
 
-public class BitUtil {
+public final class BitUtil {
 
     private static int ltMask(int index) {
         return index == Limits.INTEGER_NUM_BITS ? -1 : ((1 << index) - 1);

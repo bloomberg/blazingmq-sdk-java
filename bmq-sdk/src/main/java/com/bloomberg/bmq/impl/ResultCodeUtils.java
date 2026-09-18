@@ -19,7 +19,7 @@ import com.bloomberg.bmq.ResultCodes;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
 import com.bloomberg.bmq.impl.infr.msg.StatusCategory;
 
-public class ResultCodeUtils {
+public final class ResultCodeUtils {
     public static GenericResult toGenericResult(StatusCategory statusCategory) {
         switch (statusCategory) {
             case E_SUCCESS:

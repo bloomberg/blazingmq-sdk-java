@@ -23,7 +23,7 @@ package com.bloomberg.bmq.impl.infr.util;
  * to argument checks only because if any of the provided check functions fails, the
  * 'IllegalArgumentException' is thrown.
  */
-public class Argument {
+public final class Argument {
     public static int expectPositive(int value, String varname) {
         if (value <= 0) {
             StringBuilder sb = new StringBuilder();

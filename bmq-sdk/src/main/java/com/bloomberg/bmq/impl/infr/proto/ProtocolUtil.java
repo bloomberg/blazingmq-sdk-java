@@ -19,7 +19,7 @@ import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.io.IOException;
 
-public class ProtocolUtil {
+public final class ProtocolUtil {
 
     private static final byte[][] PADDING =
             new byte[][] {

@@ -17,7 +17,7 @@ package com.bloomberg.bmq.impl.infr.util;
 
 import java.nio.ByteBuffer;
 
-public class PrintUtil {
+public final class PrintUtil {
 
     private static final char[] HEX_DUMP_CHARS = {
         '.', //   0   0
