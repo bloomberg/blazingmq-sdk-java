@@ -17,6 +17,7 @@ package com.bloomberg.bmq.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -277,6 +278,79 @@ public class QueueManagerTest {
         logger.info("==================================================================");
         logger.info("END Testing QueueManager removeExpiredQueueTest.");
         logger.info("==================================================================");
+    }
+
+    /**
+     * Test that an expired queue is looked up by both its canonical URI and its appId.
+     *
+     * <p>The same appId may be used by queues with different canonical URIs, and each of them has
+     * its own subQueueId. {@link LateResponseHandler} rebuilds a {@link QueueId} from the qId of a
+     * late configure response and the subQueueId found by appId, so the lookup must give the
+     * subQueueId of the queue the response belongs to.
+     *
+     * <p>Test steps:
+     *
+     * <ol>
+     *   <li>create queue manager instance
+     *   <li>insert two active queues of one canonical URI with appIds "foo" and "bar", so that
+     *       "bar" gets subQueueId 2
+     *   <li>insert an active queue of another canonical URI with appId "bar", which gets subQueueId
+     *       1
+     *   <li>move all three queues to expired queues, as a local timeout does
+     *   <li>for each queue, rebuild a QueueId from its qId and the subQueueId found by its appId,
+     *       the way LateResponseHandler does
+     *   <li>check that every rebuilt QueueId resolves to the queue it was built from
+     * </ol>
+     */
+    @Test
+    void lookupByUriAndAppIdTest() {
+        logger.info("====================================================");
+        logger.info("BEGIN Testing QueueManager lookupByUriAndAppIdTest.");
+        logger.info("====================================================");
+
+        QueueManager obj = QueueManager.createInstance();
+
+        Uri fooOfQueueA = new Uri("bmq://ts.trades.myapp/queueA?id=foo");
+        Uri barOfQueueA = new Uri("bmq://ts.trades.myapp/queueA?id=bar");
+        Uri barOfQueueB = new Uri("bmq://ts.trades.myapp/queueB?id=bar");
+
+        QueueImpl queueAFoo = insertActive(obj, fooOfQueueA);
+        QueueImpl queueABar = insertActive(obj, barOfQueueA);
+        QueueImpl queueBBar = insertActive(obj, barOfQueueB);
+
+        // Two appIds of one canonical URI, so the second one gets subQueueId 2.
+        assertEquals(1, queueAFoo.getSubQueueId());
+        assertEquals(2, queueABar.getSubQueueId());
+
+        // Another canonical URI starts its subQueueIds anew.
+        assertEquals(1, queueBBar.getSubQueueId());
+
+        assertTrue(obj.insertExpired(queueAFoo));
+        assertTrue(obj.insertExpired(queueABar));
+        assertTrue(obj.insertExpired(queueBBar));
+
+        assertEquals(queueAFoo, findExpiredByAppId(obj, queueAFoo));
+        assertEquals(queueABar, findExpiredByAppId(obj, queueABar));
+        assertEquals(queueBBar, findExpiredByAppId(obj, queueBBar));
+
+        logger.info("==================================================");
+        logger.info("END Testing QueueManager lookupByUriAndAppIdTest.");
+        logger.info("==================================================");
+    }
+
+    private QueueImpl insertActive(QueueManager manager, Uri uri) {
+        QueueImpl queue = createQueue(session, uri, 0L);
+        QueueId queueId = manager.generateNextQueueId(uri);
+        queue.setQueueId(queueId.getQId()).setSubQueueId(queueId.getSubQId());
+        assertTrue(manager.insert(queue));
+        return queue;
+    }
+
+    /** Resolve an expired queue the way LateResponseHandler does. */
+    private QueueImpl findExpiredByAppId(QueueManager manager, QueueImpl queue) {
+        Integer subQId = manager.findSubQId(queue.getUri().id());
+        assertNotNull(subQId);
+        return manager.findExpiredByQueueId(QueueId.createInstance(queue.getQueueId(), subQId));
     }
 
     /**
