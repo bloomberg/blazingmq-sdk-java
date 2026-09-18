@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubQueueIdsOption {
+public final class SubQueueIdsOption {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

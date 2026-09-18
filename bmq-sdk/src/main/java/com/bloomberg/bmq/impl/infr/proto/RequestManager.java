@@ -45,7 +45,7 @@ public class RequestManager {
 
     public static final Duration k_TIMEOUT_DEFAULT = Duration.ofSeconds(30);
 
-    public class Request {
+    public final class Request {
         private ControlMessageChoice reqMsg;
         private ControlMessageChoice respMsg;
         private Consumer<Request> onResponse;
