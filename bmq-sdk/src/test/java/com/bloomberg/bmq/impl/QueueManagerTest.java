@@ -348,7 +348,7 @@ public class QueueManagerTest {
 
     /** Resolve an expired queue the way LateResponseHandler does. */
     private QueueImpl findExpiredByAppId(QueueManager manager, QueueImpl queue) {
-        Integer subQId = manager.findSubQId(queue.getUri().id());
+        Integer subQId = manager.findSubQId(queue.getQueueId(), queue.getUri().id());
         assertNotNull(subQId);
         return manager.findExpiredByQueueId(QueueId.createInstance(queue.getQueueId(), subQId));
     }
