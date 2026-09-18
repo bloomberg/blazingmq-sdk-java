@@ -15,7 +15,7 @@
  */
 package com.bloomberg.bmq.impl.infr.proto;
 
-public class Protocol {
+public final class Protocol {
     // Version of the protocol
     public static final int VERSION = 1;
 

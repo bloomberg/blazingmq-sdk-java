@@ -17,7 +17,7 @@ package com.bloomberg.bmq.impl.infr.util.expressionvalidator;
 
 import java.io.IOException;
 
-public class ExpressionValidator {
+public final class ExpressionValidator {
     // This class provides a simple validation of a logical expression used in BlazingMQ
     // subscription.
 

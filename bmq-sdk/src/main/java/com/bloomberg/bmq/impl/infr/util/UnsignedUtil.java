@@ -17,7 +17,7 @@ package com.bloomberg.bmq.impl.infr.util;
 
 import java.math.BigInteger;
 
-public class UnsignedUtil {
+public final class UnsignedUtil {
     private static final BigInteger BIGINT_ZERO = BigInteger.valueOf(0);
 
     public static byte shortToUint8(short s) throws NumberFormatException {

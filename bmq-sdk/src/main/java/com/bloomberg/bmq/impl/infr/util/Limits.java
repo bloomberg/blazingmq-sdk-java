@@ -17,7 +17,7 @@ package com.bloomberg.bmq.impl.infr.util;
 
 import java.math.BigInteger;
 
-public class Limits {
+public final class Limits {
     // Sizes of various basic types in bytes
     public static final byte BYTE_SIZE = 1;
     public static final byte SHORT_SIZE = 2; // (Short.SIZE / Byte.SIZE);
