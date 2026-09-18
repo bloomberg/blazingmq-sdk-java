@@ -42,35 +42,10 @@ public class BmqBrokerTestServer implements BmqBroker {
     // 'start' forks a process and executes `bmqbrk.tsk`.
     // 'stop' kills the process.
 
-    // From bmqbrkr.cfg: error|warn|info|debug|trace
-    enum LogLevel {
-        error,
-        warn,
-        info,
-        debug,
-        trace;
-
-        static LogLevel fromString(String lvl) {
-            for (LogLevel ll : LogLevel.values()) {
-                if (ll.toString().equals(lvl)) return ll;
-            }
-            return info;
-        }
-    }
-
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final String PATH_TO_BMQ_BROKER;
-    private static final String INTEGRATION_TEST_PATH_TO_BMQ_BROKER;
     private static final int DEFAULT_WAITING_TIME = 20; // sec
     private static final int DEFAULT_INVALID_PID = -111; // sec
-    private static final LogLevel BMQ_BROKER_LOG_LEVEL;
-
-    static {
-        PATH_TO_BMQ_BROKER = System.getenv("BMQ_BROKER_PATH");
-        INTEGRATION_TEST_PATH_TO_BMQ_BROKER = System.getenv("BMQ_BROKER_INTEGRATION_TEST_PATH");
-        BMQ_BROKER_LOG_LEVEL = LogLevel.fromString(System.getenv("BMQ_BROKER_LOG_LEVEL"));
-    }
 
     Process process;
     Path tmpFolder;
