@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubQueueInfosOption {
+public final class SubQueueInfosOption {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

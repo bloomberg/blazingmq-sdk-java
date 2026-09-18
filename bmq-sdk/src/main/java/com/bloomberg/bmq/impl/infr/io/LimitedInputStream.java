@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  */
-public class LimitedInputStream extends FilterInputStream {
+public final class LimitedInputStream extends FilterInputStream {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final int limit;

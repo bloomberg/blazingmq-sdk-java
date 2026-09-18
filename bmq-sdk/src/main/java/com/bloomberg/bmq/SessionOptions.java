@@ -152,7 +152,7 @@ public final class SessionOptions {
      * watermark is 500 events.
      */
     @Immutable
-    public static class InboundEventBufferWaterMark {
+    public static final class InboundEventBufferWaterMark {
 
         private static final int DEFAULT_BUFFER_LWM = 500; // num of events
         private static final int DEFAULT_BUFFER_HWM = 1000; // num of events

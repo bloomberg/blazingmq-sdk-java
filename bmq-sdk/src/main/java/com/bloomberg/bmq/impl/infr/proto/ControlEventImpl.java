@@ -27,7 +27,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ControlEventImpl extends EventImpl {
+public final class ControlEventImpl extends EventImpl {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

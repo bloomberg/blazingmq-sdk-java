@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class AckEventImpl extends EventImpl {
+public final class AckEventImpl extends EventImpl {
 
     final AckHeader header;
     final Collection<AckMessageImpl> messages = new ArrayList<>();
