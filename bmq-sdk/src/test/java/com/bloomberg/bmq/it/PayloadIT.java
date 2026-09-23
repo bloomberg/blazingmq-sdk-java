@@ -60,9 +60,7 @@ class PayloadIT {
         try (BmqBroker broker = BmqBroker.createStartedBroker()) {
             final SessionOptions OPTS = broker.sessionOptions();
 
-            final boolean isOldStyleProperties = broker.isOldStyleMessageProperties();
-            ByteBuffer unpaddedPayload =
-                    TestTools.prepareUnpaddedData(TEST_MESSAGE, isOldStyleProperties);
+            ByteBuffer unpaddedPayload = TestTools.prepareUnpaddedData(TEST_MESSAGE);
 
             // ==================================
             // Check netty producer and consumer
@@ -71,7 +69,7 @@ class PayloadIT {
             String[] payloads = new String[NUM_MESSAGES];
             Arrays.fill(payloads, TEST_MESSAGE);
 
-            NettyProducerIT.sendMessage(payloads, OPTS, QUEUE_URI, isOldStyleProperties);
+            NettyProducerIT.sendMessage(payloads, OPTS, QUEUE_URI);
 
             // Read PUSH message but don't confirm it
             boolean DO_CONFIRM = false;

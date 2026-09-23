@@ -53,9 +53,6 @@ class PutHeaderTest {
         assertNotNull(header.type());
         assertEquals(EventType.PUT, header.type());
 
-        final long[] crc32s = new long[] {3469549003L, 340340870L};
-        final int[] schemaIds = new int[] {0, 1};
-
         for (int i = 0; i < 2; ++i) {
             PutHeader putHeader = new PutHeader();
 
@@ -71,8 +68,8 @@ class PutHeaderTest {
 
             CorrelationId corId = CorrelationIdImpl.restoreId(1234);
             assertEquals(corId, putHeader.correlationId());
-            assertEquals(crc32s[i], putHeader.crc32c());
-            assertEquals(schemaIds[i], putHeader.schemaWireId());
+            assertEquals(340340870L, putHeader.crc32c());
+            assertEquals(1, putHeader.schemaWireId());
 
             final int toSkip =
                     (putHeader.messageWords() - putHeader.headerWords()) * Protocol.WORD_SIZE;

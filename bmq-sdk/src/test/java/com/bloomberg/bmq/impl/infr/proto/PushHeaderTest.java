@@ -85,7 +85,7 @@ class PushHeaderTest {
             assertEquals(0, pushHeader.compressionType());
             assertEquals(8, pushHeader.headerWords());
             assertEquals(9876, pushHeader.queueId());
-            assertEquals(i, pushHeader.schemaWireId());
+            assertEquals(1, pushHeader.schemaWireId());
 
             assertEquals("ABCDEF0123456789ABCDEF0123456789", pushHeader.messageGUID().toString());
 

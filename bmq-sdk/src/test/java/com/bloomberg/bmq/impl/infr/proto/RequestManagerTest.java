@@ -154,11 +154,6 @@ class RequestManagerTest {
         }
 
         @Override
-        public boolean isOldStyleMessageProperties() {
-            return false;
-        }
-
-        @Override
         public GenericResult write(ByteBuffer[] buffers, boolean waitUntilWritable) {
             assertNotNull(eventHandler);
             Runnable task =

@@ -126,14 +126,8 @@ class PushMessageIteratorTest {
         int i = 0;
         while (pushIt.hasNext()) {
             // Build expected content
-            final boolean isOldStyleProperties = i % 2 == 0;
-
             final ByteBufferOutputStream bbos = new ByteBufferOutputStream();
-            if (isOldStyleProperties) {
-                props.streamOutOld(bbos);
-            } else {
-                props.streamOut(bbos);
-            }
+            props.streamOut(bbos);
 
             bbos.writeAscii(PAYLOAD);
 
@@ -155,8 +149,7 @@ class PushMessageIteratorTest {
             assertEquals(GUID, pushMsg.messageGUID().toHex());
             assertEquals(QUEUE_ID, pushMsg.queueId());
             assertEquals(FLAGS, pushMsg.flags());
-            assertEquals(isOldStyleProperties ? 0 : 1, pushMsg.header().schemaWireId());
-            assertEquals(isOldStyleProperties, pushMsg.appData().isOldStyleProperties());
+            assertEquals(1, pushMsg.header().schemaWireId());
             assertArrayEquals(new Integer[] {0}, pushMsg.subQueueIds());
 
             ByteBuffer[] data = pushMsg.appData().applicationData();
@@ -200,8 +193,6 @@ class PushMessageIteratorTest {
         final PushMessageImpl[] pushs = new PushMessageImpl[NUM_MSGS];
 
         for (int i = 0; i < NUM_MSGS; i++) {
-            final boolean isOldStyleProperties = i % 2 == 0;
-
             PushMessageImpl msg = new PushMessageImpl();
             msg.setFlags(FLAGS);
             msg.setQueueId(i);
@@ -209,10 +200,9 @@ class PushMessageIteratorTest {
             msg.appData().setProperties(props);
             msg.appData().setPayload(payload);
 
-            EventBuilderResult rc = builder.packMessage(msg, isOldStyleProperties);
+            EventBuilderResult rc = builder.packMessage(msg);
             assertEquals(EventBuilderResult.SUCCESS, rc);
-            assertEquals(isOldStyleProperties, msg.appData().isOldStyleProperties());
-            assertEquals(isOldStyleProperties ? 0 : 1, msg.header().schemaWireId());
+            assertEquals(1, msg.header().schemaWireId());
 
             pushs[i] = msg;
         }
@@ -233,8 +223,7 @@ class PushMessageIteratorTest {
                 assertEquals(GUID, msg.messageGUID());
                 assertEquals(i, msg.queueId());
                 assertEquals(FLAGS, msg.flags());
-                assertEquals(i % 2, msg.header().schemaWireId());
-                assertEquals(i % 2 == 0, msg.appData().isOldStyleProperties());
+                assertEquals(1, msg.header().schemaWireId());
                 assertEquals(exp.appData().numPaddingBytes(), msg.appData().numPaddingBytes());
                 assertArrayEquals(exp.appData().applicationData(), msg.appData().applicationData());
 
@@ -312,8 +301,6 @@ class PushMessageIteratorTest {
         final int NUM = 500;
 
         for (int i = 0; i < NUM; i++) {
-            final boolean isOldStyleProperties = i % 2 == 0;
-
             PushMessageImpl pushMsg = new PushMessageImpl();
 
             pushMsg.appData().setPayload(ByteBuffer.wrap(bytes));
@@ -326,7 +313,7 @@ class PushMessageIteratorTest {
 
             pushMsg.setCompressionType(CompressionAlgorithmType.E_ZLIB);
 
-            builder.packMessage(pushMsg, isOldStyleProperties);
+            builder.packMessage(pushMsg);
         }
 
         PushEventImpl pushEvent = new PushEventImpl(builder.build());
@@ -364,93 +351,87 @@ class PushMessageIteratorTest {
 
     @Test
     void testUnknownCompression() throws IOException {
-        for (boolean isOldStyleProperties : new boolean[] {true, false}) {
-            final byte[] bytes = new byte[Protocol.COMPRESSION_MIN_APPDATA_SIZE + 1];
+        final byte[] bytes = new byte[Protocol.COMPRESSION_MIN_APPDATA_SIZE + 1];
 
-            bytes[0] = 1;
-            bytes[Protocol.COMPRESSION_MIN_APPDATA_SIZE - 1] = 1;
+        bytes[0] = 1;
+        bytes[Protocol.COMPRESSION_MIN_APPDATA_SIZE - 1] = 1;
 
-            final int NUM = 4;
+        final int NUM = 4;
 
-            final int unknownType =
-                    EnumSet.allOf(CompressionAlgorithmType.class).stream()
-                                    .mapToInt(CompressionAlgorithmType::toInt)
-                                    .max()
-                                    .getAsInt()
-                            + 1;
+        final int unknownType =
+                EnumSet.allOf(CompressionAlgorithmType.class).stream()
+                                .mapToInt(CompressionAlgorithmType::toInt)
+                                .max()
+                                .getAsInt()
+                        + 1;
 
-            final MessagePropertiesImpl props = new MessagePropertiesImpl();
-            props.setPropertyAsInt32("routingId", 42);
-            props.setPropertyAsInt64("timestamp", 1234567890L);
+        final MessagePropertiesImpl props = new MessagePropertiesImpl();
+        props.setPropertyAsInt32("routingId", 42);
+        props.setPropertyAsInt64("timestamp", 1234567890L);
 
-            ByteBufferOutputStream bbos = new ByteBufferOutputStream();
+        ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
-            EventHeader header = new EventHeader();
-            header.setType(EventType.PUSH);
+        EventHeader header = new EventHeader();
+        header.setType(EventType.PUSH);
 
-            final int unpackedSize = props.totalSize() + bytes.length;
-            final int numPaddingBytes = ProtocolUtil.calculatePadding(unpackedSize);
+        final int unpackedSize = props.totalSize() + bytes.length;
+        final int numPaddingBytes = ProtocolUtil.calculatePadding(unpackedSize);
 
-            header.setLength(
-                    EventHeader.HEADER_SIZE
-                            + (PushHeader.HEADER_SIZE_FOR_SCHEMA_ID
-                                            + unpackedSize
-                                            + numPaddingBytes)
-                                    * NUM);
+        header.setLength(
+                EventHeader.HEADER_SIZE
+                        + (PushHeader.HEADER_SIZE + unpackedSize + numPaddingBytes) * NUM);
 
-            header.streamOut(bbos);
+        header.streamOut(bbos);
 
-            for (int i = 0; i < NUM; i++) {
-                PushMessageImpl pushMsg = new PushMessageImpl();
+        for (int i = 0; i < NUM; i++) {
+            PushMessageImpl pushMsg = new PushMessageImpl();
 
-                pushMsg.appData().setPayload(ByteBuffer.wrap(bytes));
+            pushMsg.appData().setPayload(ByteBuffer.wrap(bytes));
 
-                pushMsg.appData().setProperties(props);
-                pushMsg.appData().setIsOldStyleProperties(isOldStyleProperties);
+            pushMsg.appData().setProperties(props);
 
-                pushMsg.compressData();
+            pushMsg.compressData();
 
-                // override compression type for the third message
-                if (i == 2) {
-                    pushMsg.header().setCompressionType(unknownType);
-                }
-
-                assertEquals(unpackedSize, pushMsg.appData().unpackedSize());
-                assertEquals(numPaddingBytes, pushMsg.appData().numPaddingBytes());
-
-                pushMsg.streamOut(bbos);
+            // override compression type for the third message
+            if (i == 2) {
+                pushMsg.header().setCompressionType(unknownType);
             }
 
-            PushEventImpl pushEvent = new PushEventImpl(bbos.reset());
-            PushMessageIterator pushIt = pushEvent.iterator();
+            assertEquals(unpackedSize, pushMsg.appData().unpackedSize());
+            assertEquals(numPaddingBytes, pushMsg.appData().numPaddingBytes());
 
-            int counter = 0;
-            try {
-                while (pushIt.hasNext()) {
-                    PushMessageImpl pushMsg = pushIt.next();
+            pushMsg.streamOut(bbos);
+        }
 
-                    assertArrayEquals(
-                            new ByteBuffer[] {ByteBuffer.wrap(bytes)}, pushMsg.appData().payload());
-                    counter++;
-                }
-            } catch (IllegalArgumentException e) {
-                // According to PushMessageIterator, when 'next()' method is called,
-                // the next item after the current one is also prefetched and parsed.
-                // If the next item is invalid then the exception will be thrown for
-                // the current one.
-                //
-                // In our situation, the first item should be processed successfully.
-                // When we call 'next()' to get the second one, which is valid,
-                // an exception should be thrown related to the third item.
-                assertEquals(
-                        String.format("'%d' - unknown compression algorithm type", unknownType),
-                        e.getMessage());
+        PushEventImpl pushEvent = new PushEventImpl(bbos.reset());
+        PushMessageIterator pushIt = pushEvent.iterator();
 
-                // only the first message should be processed successfully
-                assertEquals(1, counter);
+        int counter = 0;
+        try {
+            while (pushIt.hasNext()) {
+                PushMessageImpl pushMsg = pushIt.next();
+
+                assertArrayEquals(
+                        new ByteBuffer[] {ByteBuffer.wrap(bytes)}, pushMsg.appData().payload());
+                counter++;
             }
+        } catch (IllegalArgumentException e) {
+            // According to PushMessageIterator, when 'next()' method is called,
+            // the next item after the current one is also prefetched and parsed.
+            // If the next item is invalid then the exception will be thrown for
+            // the current one.
+            //
+            // In our situation, the first item should be processed successfully.
+            // When we call 'next()' to get the second one, which is valid,
+            // an exception should be thrown related to the third item.
+            assertEquals(
+                    String.format("'%d' - unknown compression algorithm type", unknownType),
+                    e.getMessage());
 
+            // only the first message should be processed successfully
             assertEquals(1, counter);
         }
+
+        assertEquals(1, counter);
     }
 }

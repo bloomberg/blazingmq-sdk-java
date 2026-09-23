@@ -105,7 +105,6 @@ public class TcpBrokerConnection
     private volatile StopCallback stopCallback;
 
     private volatile Duration stopTimeout;
-    private volatile boolean isOldStyleMessageProperties = false;
 
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> onAuthenticationTimeoutFuture;
@@ -659,16 +658,6 @@ public class TcpBrokerConnection
                 && resp.getOriginalRequest() != null) {
 
             brokerIdentity = resp.getOriginalRequest();
-
-            // TODO: remove after 2nd rollout of "new style" brokers
-            String brokerFeatures = brokerIdentity.features();
-            isOldStyleMessageProperties =
-                    brokerFeatures == null
-                            || brokerFeatures.isEmpty()
-                            || !brokerFeatures.toUpperCase().contains(MPS_EX_FEATURE);
-            logger.info(
-                    "Broker supports new style message properties: {}",
-                    !isOldStyleMessageProperties);
             isValid = true;
         } else {
             logger.error("Broker response is invalid");
@@ -790,11 +779,6 @@ public class TcpBrokerConnection
             }
         }
         return GenericResult.SUCCESS;
-    }
-
-    @Override
-    public boolean isOldStyleMessageProperties() {
-        return isOldStyleMessageProperties;
     }
 
     @Override

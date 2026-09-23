@@ -98,12 +98,8 @@ public class PutMessageImpl implements Streamable {
 
         CompressionAlgorithmType finalCompressionType = this.compressionType;
 
+        // Properties are not compressed.
         int dataToCompress = appData.payloadSize();
-        // New style properties are not compressed.
-        // TODO: remove after 2nd rollout of "new style" brokers.
-        if (appData.hasProperties() && appData.isOldStyleProperties()) {
-            dataToCompress += appData.propertiesSize();
-        }
 
         // When data is less than a threshold, it is not compressed.
         if (dataToCompress < Protocol.COMPRESSION_MIN_APPDATA_SIZE) {
@@ -162,9 +158,8 @@ public class PutMessageImpl implements Streamable {
                 PutHeaderFlags.isSet(header.flags(), PutHeaderFlags.MESSAGE_PROPERTIES);
         final CompressionAlgorithmType inputCompressionType =
                 CompressionAlgorithmType.fromInt(header.compressionType());
-        final boolean isOldStyleProperties = header.schemaWireId() == 0;
 
-        appData.streamIn(dataSize, hasProperties, isOldStyleProperties, inputCompressionType, bbis);
+        appData.streamIn(dataSize, hasProperties, inputCompressionType, bbis);
 
         if (appData.unpackedSize() == 0) {
             throw new BMQException("Application data is empty.");
@@ -179,14 +174,9 @@ public class PutMessageImpl implements Streamable {
                 setFlags(f);
             }
 
-            // If properties are encoded using new style, we need to set
-            // schema wire id to 1 (invalid schema wire id) in order to tell the
-            // broker that PUT message contains new style properties without
-            // schema id.
-            // TODO: always set after 2nd rollout of "new style" brokers.
-            if (!appData.isOldStyleProperties()) {
-                header.setSchemaWireId(INVALID_SCHEMA_WIRE_ID);
-            }
+            // Set schema wire id to 1 (invalid schema wire id) in order to tell
+            // the broker that PUT message contains properties without schema id.
+            header.setSchemaWireId(INVALID_SCHEMA_WIRE_ID);
         }
 
         final int numWords = ProtocolUtil.calculateNumWords(appData.unpackedSize());

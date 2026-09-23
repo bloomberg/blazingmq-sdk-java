@@ -15,36 +15,33 @@
  */
 package com.bloomberg.bmq.impl;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.bloomberg.bmq.MessageGUID;
+import com.bloomberg.bmq.ResultCodes.AckResult;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
-import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
+import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.ReadCallback.ReadCompletionStatus;
+import com.bloomberg.bmq.impl.infr.proto.AckEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.AckEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.AckMessageImpl;
-import com.bloomberg.bmq.impl.infr.proto.ControlEventImpl;
-import com.bloomberg.bmq.impl.infr.proto.EventImpl;
+import com.bloomberg.bmq.impl.infr.proto.EventBuilderResult;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
+import com.bloomberg.bmq.impl.infr.proto.MessagePropertiesImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.PushEventImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageIterator;
-import com.bloomberg.bmq.util.TestHelpers;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,143 +50,152 @@ class ProtocolEventImplTcpReaderTest {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private ByteBuffer[] buildPushMessage(boolean isOldStyleProperties) throws IOException {
-        String PAYLOAD = "abcdefghijklmnopqrstuvwxyz";
-        String GUID = "ABCDEF0123456789ABCDEF0123456789";
+    private static final int QUEUE_ID = 9876;
+    private static final String PAYLOAD = "abcdefghijklmnopqrstuvwxyz";
+    private static final String ROUTING_ID = "abcd-efgh-ijkl";
+    private static final long TIMESTAMP = 123456789L;
 
-        MessageGUID guid = MessageGUID.fromHex(GUID);
+    private ByteBuffer[] buildPushMessage() throws IOException {
+        MessageGUID guid = MessageGUID.fromHex("ABCDEF0123456789ABCDEF0123456789");
 
         PushMessageImpl pushMsg = new PushMessageImpl();
-        pushMsg.setQueueId(9876);
+        pushMsg.setQueueId(QUEUE_ID);
         pushMsg.setMessageGUID(guid);
         pushMsg.appData().setPayload(ByteBuffer.wrap(PAYLOAD.getBytes()));
 
         PushEventBuilder builder = new PushEventBuilder();
-        builder.packMessage(pushMsg, isOldStyleProperties);
+        builder.packMessage(pushMsg);
 
         return builder.build();
     }
 
+    private PushMessageImpl createPushMessage(MessageGUID guid) throws IOException {
+        MessagePropertiesImpl props = new MessagePropertiesImpl();
+        props.setPropertyAsString("routingId", ROUTING_ID);
+        props.setPropertyAsInt64("timestamp", TIMESTAMP);
+
+        PushMessageImpl pushMsg = new PushMessageImpl();
+        pushMsg.setQueueId(QUEUE_ID);
+        pushMsg.setMessageGUID(guid);
+        pushMsg.appData().setProperties(props);
+        pushMsg.appData().setPayload(ByteBuffer.wrap(PAYLOAD.getBytes()));
+
+        return pushMsg;
+    }
+
     @Test
-    void testIODump() throws IOException, InterruptedException {
-        logger.info("========================================================");
-        logger.info("BEGIN Testing ProtocolEventImplTcpReaderTest testIODump.");
-        logger.info("========================================================");
+    void testPushAndAckStream() throws IOException {
+        logger.info("===============================================================");
+        logger.info("BEGIN Testing ProtocolEventImplTcpReaderTest PUSH and ACK stream.");
+        logger.info("===============================================================");
 
-        // Check that ProtocolEventTcpReader correctly reads BlazingMQ events
-        // stored in IO dump file.
+        // Check that ProtocolEventTcpReader correctly reads a stream of PUSH
+        // and ACK events split into chunks which do not match event boundaries.
         // Steps:
-        // 1. Read dump file and feed ProtocolEventTcpReader by portions defined in index file;
-        // 2. From ProtocolEventTcpReader callback decode BlazingMQ events and put them into a
-        // queue;
-        // 3. Read events out of that queue from a separate thread emulating event handling
-        //    in TcpBrokerConnection;
-        // 4. Collect GUIDs from ACK messages and verify each GUID from PUSH message has it's
-        //    equivalent GUID from ACK message.
+        // 1. Build PUSH events with message properties and ACK events with the
+        //    same GUIDs;
+        // 2. Feed ProtocolEventTcpReader with the stream by chunks of different size;
+        // 3. Decode BlazingMQ events from the ProtocolEventTcpReader callback;
+        // 4. Verify each PUSH message keeps its properties and payload, and has
+        //    an ACK message with the same GUID.
 
-        final int NUM_PUSH_MESSAGES = 970;
+        final int NUM_EVENTS = 5;
+        final int NUM_MESSAGES = 20;
 
-        InputStream fis =
-                this.getClass().getResourceAsStream(MessagesTestSamples.BMQ_IO_DUMP_BIN.filePath());
-        InputStream iis =
-                this.getClass().getResourceAsStream(MessagesTestSamples.BMQ_IO_DUMP_IDX.filePath());
-        BufferedReader br = new BufferedReader(new InputStreamReader(iis));
-        LinkedBlockingQueue<EventImpl> eventQueue = new LinkedBlockingQueue<>();
-        ProtocolEventTcpReader reader =
-                new ProtocolEventTcpReader(
-                        (eventType, bbuf) -> {
-                            EventImpl reportedEvent = null;
-                            switch (eventType) {
-                                case CONTROL:
-                                    reportedEvent = new ControlEventImpl(bbuf);
-                                    break;
-                                case PUSH:
-                                    reportedEvent = new PushEventImpl(bbuf);
-                                    break;
-                                case ACK:
-                                    reportedEvent = new AckEventImpl(bbuf);
-                                    break;
-                                default:
-                                    logger.error("Unknown event type: {}", eventType);
-                                    fail();
-                                    break;
-                            }
-                            try {
-                                eventQueue.put(reportedEvent);
-                            } catch (InterruptedException e) {
-                                logger.error("Interrupted: ", e);
-                                Thread.currentThread().interrupt();
-                            }
-                        });
+        ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
-        ReadCompletionStatus status = new ReadCompletionStatus();
-        while (fis.available() > 0) {
-            String[] ss = br.readLine().split(" ");
-            assertEquals(2, ss.length);
-            int sz = Integer.parseInt(ss[1]);
-            byte[] ar = new byte[sz];
-            assertEquals(ar.length, fis.read(ar));
-            reader.read(status, new ByteBuffer[] {ByteBuffer.wrap(ar)});
-        }
-        Semaphore evSema = new Semaphore(0);
-        HashSet<String> ackGuids = new HashSet<>();
-        ArrayList<PushMessageImpl> pushMsgs = new ArrayList<>();
+        for (int i = 0; i < NUM_EVENTS; i++) {
+            PushEventBuilder pushBuilder = new PushEventBuilder();
+            AckEventBuilder ackBuilder = new AckEventBuilder();
 
-        Runnable task =
-                () -> {
-                    int evNum = 0;
-                    while (true) {
-                        EventImpl ev;
-                        try {
-                            ev = eventQueue.poll(1, TimeUnit.SECONDS);
-                        } catch (InterruptedException e) {
-                            logger.error("Interrupted: ", e);
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                        if (ev == null) {
-                            evSema.release();
-                            break;
-                        }
-                        evNum++;
+            for (int j = 0; j < NUM_MESSAGES; j++) {
+                final MessageGUID guid =
+                        MessageGUID.fromHex(String.format("%032X", i * NUM_MESSAGES + j + 1));
 
-                        try {
-                            if (ev instanceof PushEventImpl) {
-                                PushEventImpl pev = (PushEventImpl) ev;
-                                PushMessageIterator it = pev.iterator();
-                                while (it.hasNext()) {
-                                    PushMessageImpl pm = it.next();
-                                    pushMsgs.add(pm);
-                                }
-                            } else if (ev instanceof AckEventImpl) {
-                                AckEventImpl aev = (AckEventImpl) ev;
-                                Iterator<AckMessageImpl> it = aev.iterator();
-                                while (it.hasNext()) {
-                                    AckMessageImpl msg = it.next();
-                                    ackGuids.add(msg.messageGUID().toString());
-                                }
-                            }
-                        } catch (Exception e) {
-                            logger.error("Exception while processing the event: ", e);
-                            evSema.release();
-                            break;
-                        }
-                    }
-                    logger.info("Number of events: {}", evNum);
-                };
+                assertEquals(
+                        EventBuilderResult.SUCCESS,
+                        pushBuilder.packMessage(createPushMessage(guid)));
+                assertEquals(
+                        EventBuilderResult.SUCCESS,
+                        ackBuilder.packMessage(
+                                new AckMessageImpl(
+                                        AckResult.SUCCESS,
+                                        CorrelationIdImpl.restoreId(j),
+                                        guid,
+                                        QUEUE_ID)));
+            }
 
-        new Thread(task).start();
-
-        TestHelpers.acquireSema(evSema, 15);
-        assertEquals(NUM_PUSH_MESSAGES, pushMsgs.size());
-        for (PushMessageImpl msg : pushMsgs) {
-            String guid = msg.messageGUID().toString();
-            assertTrue(ackGuids.contains(guid));
+            for (ByteBuffer b : pushBuilder.build()) {
+                bbos.writeBytes(b);
+            }
+            for (ByteBuffer b : ackBuilder.build()) {
+                bbos.writeBytes(b);
+            }
         }
 
-        logger.info("======================================================");
-        logger.info("END Testing ProtocolEventImplTcpReaderTest testIODump.");
-        logger.info("======================================================");
+        final byte[] stream;
+        try (ByteBufferInputStream bbis = new ByteBufferInputStream(bbos.reset())) {
+            stream = new byte[bbis.available()];
+            assertEquals(stream.length, bbis.read(stream));
+        }
+
+        for (int chunkSize : new int[] {1, 13, 512, stream.length}) {
+            logger.info("Read {} bytes by chunks of {} bytes", stream.length, chunkSize);
+
+            final ArrayList<PushMessageImpl> pushMsgs = new ArrayList<>();
+            final HashSet<String> ackGuids = new HashSet<>();
+
+            ProtocolEventTcpReader reader =
+                    new ProtocolEventTcpReader(
+                            (eventType, bbuf) -> {
+                                switch (eventType) {
+                                    case PUSH:
+                                        PushMessageIterator pushIt =
+                                                new PushEventImpl(bbuf).iterator();
+                                        while (pushIt.hasNext()) {
+                                            pushMsgs.add(pushIt.next());
+                                        }
+                                        break;
+                                    case ACK:
+                                        Iterator<AckMessageImpl> ackIt =
+                                                new AckEventImpl(bbuf).iterator();
+                                        while (ackIt.hasNext()) {
+                                            ackGuids.add(ackIt.next().messageGUID().toString());
+                                        }
+                                        break;
+                                    default:
+                                        logger.error("Unexpected event type: {}", eventType);
+                                        fail();
+                                        break;
+                                }
+                            });
+
+            ReadCompletionStatus status = new ReadCompletionStatus();
+            for (int pos = 0; pos < stream.length; pos += chunkSize) {
+                final int size = Math.min(chunkSize, stream.length - pos);
+                byte[] chunk = Arrays.copyOfRange(stream, pos, pos + size);
+                reader.read(status, new ByteBuffer[] {ByteBuffer.wrap(chunk)});
+            }
+
+            assertEquals(NUM_EVENTS * NUM_MESSAGES, pushMsgs.size());
+
+            for (PushMessageImpl msg : pushMsgs) {
+                assertTrue(ackGuids.contains(msg.messageGUID().toString()));
+
+                MessagePropertiesImpl props = msg.appData().properties();
+                assertEquals(2, props.numProperties());
+                assertEquals(ROUTING_ID, props.get("routingId").getValueAsString());
+                assertEquals(TIMESTAMP, props.get("timestamp").getValueAsInt64());
+
+                assertArrayEquals(
+                        new ByteBuffer[] {ByteBuffer.wrap(PAYLOAD.getBytes())},
+                        msg.appData().payload());
+            }
+        }
+
+        logger.info("=============================================================");
+        logger.info("END Testing ProtocolEventImplTcpReaderTest PUSH and ACK stream.");
+        logger.info("=============================================================");
     }
 
     @Test
@@ -206,55 +212,53 @@ class ProtocolEventImplTcpReaderTest {
 
         final int NUM_MESSAGES = 3;
 
-        for (boolean isOldStyleProperties : new boolean[] {true, false}) {
-            // 1. Generate BlazingMQ EventImpl with several PUSH messages;
-            ByteBuffer[] event = buildPushMessage(isOldStyleProperties);
-            ByteBufferInputStream inpStream = new ByteBufferInputStream(event);
-            ReadCompletionStatus status = new ReadCompletionStatus();
+        // 1. Generate BlazingMQ EventImpl with several PUSH messages;
+        ByteBuffer[] event = buildPushMessage();
+        ByteBufferInputStream inpStream = new ByteBufferInputStream(event);
+        ReadCompletionStatus status = new ReadCompletionStatus();
 
-            ArrayList<ByteBuffer[]> dataList = new ArrayList<>();
+        ArrayList<ByteBuffer[]> dataList = new ArrayList<>();
 
-            ProtocolEventTcpReader reader =
-                    new ProtocolEventTcpReader(
-                            (eventType, bbuf) -> {
-                                dataList.add(bbuf);
-                                assertEquals(EventType.PUSH, eventType);
-                            });
-            // 2. Fill a plain buffer with the event content;
-            final int PLAIN_BUF_SIZE = inpStream.available() * NUM_MESSAGES;
-            ByteBuffer plainBuffer = ByteBuffer.allocate(PLAIN_BUF_SIZE);
-            for (int i = 0; i < NUM_MESSAGES; i++) {
-                for (ByteBuffer b : event) {
-                    b.rewind();
-                    plainBuffer.put(b);
-                }
+        ProtocolEventTcpReader reader =
+                new ProtocolEventTcpReader(
+                        (eventType, bbuf) -> {
+                            dataList.add(bbuf);
+                            assertEquals(EventType.PUSH, eventType);
+                        });
+        // 2. Fill a plain buffer with the event content;
+        final int PLAIN_BUF_SIZE = inpStream.available() * NUM_MESSAGES;
+        ByteBuffer plainBuffer = ByteBuffer.allocate(PLAIN_BUF_SIZE);
+        for (int i = 0; i < NUM_MESSAGES; i++) {
+            for (ByteBuffer b : event) {
+                b.rewind();
+                plainBuffer.put(b);
             }
+        }
+        plainBuffer.rewind();
+
+        // 3. Read from this buffer by portions with different size (from 1
+        //    up to the whole buffer) and feed ProtocolEventTcpReader with those portions;
+        for (int i = 1; i <= PLAIN_BUF_SIZE; i++) {
+            ArrayList<ByteBuffer> payloads = new ArrayList<>();
+            while (plainBuffer.hasRemaining()) {
+                int sz = Math.min(i, plainBuffer.remaining());
+                byte[] ar = new byte[sz];
+                plainBuffer.get(ar);
+                payloads.add(ByteBuffer.wrap(ar));
+            }
+            ByteBuffer[] bb = new ByteBuffer[payloads.size()];
+            bb = payloads.toArray(bb);
+            reader.read(status, bb);
             plainBuffer.rewind();
-
-            // 3. Read from this buffer by portions with different size (from 1
-            //    up to the whole buffer) and feed ProtocolEventTcpReader with those portions;
-            for (int i = 1; i <= PLAIN_BUF_SIZE; i++) {
-                ArrayList<ByteBuffer> payloads = new ArrayList<>();
-                while (plainBuffer.hasRemaining()) {
-                    int sz = Math.min(i, plainBuffer.remaining());
-                    byte[] ar = new byte[sz];
-                    plainBuffer.get(ar);
-                    payloads.add(ByteBuffer.wrap(ar));
-                }
-                ByteBuffer[] bb = new ByteBuffer[payloads.size()];
-                bb = payloads.toArray(bb);
-                reader.read(status, bb);
-                plainBuffer.rewind();
-            }
-            // 4. Check that ProtocolEventTcpReader correctly composes BlazingMQ Events.
-            assertEquals(dataList.size(), PLAIN_BUF_SIZE * NUM_MESSAGES);
-            for (ByteBuffer[] data : dataList) {
-                inpStream.reset();
-                ByteBufferInputStream istr = new ByteBufferInputStream(data);
-                assertEquals(istr.available(), inpStream.available());
-                while (istr.available() > 0) {
-                    assertEquals(istr.readByte(), inpStream.readByte());
-                }
+        }
+        // 4. Check that ProtocolEventTcpReader correctly composes BlazingMQ Events.
+        assertEquals(dataList.size(), PLAIN_BUF_SIZE * NUM_MESSAGES);
+        for (ByteBuffer[] data : dataList) {
+            inpStream.reset();
+            ByteBufferInputStream istr = new ByteBufferInputStream(data);
+            assertEquals(istr.available(), inpStream.available());
+            while (istr.available() > 0) {
+                assertEquals(istr.readByte(), inpStream.readByte());
             }
         }
     }

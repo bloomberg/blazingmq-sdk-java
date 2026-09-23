@@ -38,15 +38,9 @@ public class ApplicationDataBenchmark {
         final int PAYLOAD_SIZE_BYTES = 1024 * 1024 * 2; // 2 Mb
 
         test.verifyStreamIn(
-                test.generatePayload(PAYLOAD_SIZE_BYTES),
-                test.generateProps(),
-                false,
-                compressionType);
+                test.generatePayload(PAYLOAD_SIZE_BYTES), test.generateProps(), compressionType);
 
         test.verifyStreamOut(
-                test.generatePayload(PAYLOAD_SIZE_BYTES),
-                test.generateProps(),
-                false,
-                compressionType);
+                test.generatePayload(PAYLOAD_SIZE_BYTES), test.generateProps(), compressionType);
     }
 }

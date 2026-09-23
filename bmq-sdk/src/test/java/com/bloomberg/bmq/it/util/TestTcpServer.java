@@ -43,11 +43,6 @@ public interface TestTcpServer extends AutoCloseable {
 
     void disableRead();
 
-    // TODO: remove after 2nd rollout of "new style" brokers
-    default boolean isOldStyleMessageProperties() {
-        return false;
-    }
-
     default CompletableFuture<Void> startAsync() {
         return CompletableFuture.runAsync(this::start);
     }

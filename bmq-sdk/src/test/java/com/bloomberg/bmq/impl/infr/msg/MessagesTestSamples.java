@@ -39,11 +39,6 @@ public class MessagesTestSamples {
         }
     }
 
-    public static final SampleFileMetadata BMQ_IO_DUMP_BIN =
-            new SampleFileMetadata("/data/bmq_io_dump_1551267643131.bin", 16520);
-    public static final SampleFileMetadata BMQ_IO_DUMP_IDX =
-            new SampleFileMetadata("/data/bmq_io_dump_1551267643131.idx", 2178);
-
     public static final SampleFileMetadata STATUS_MSG =
             new SampleFileMetadata(
                     "/data/msg_control_status_53121b03-f45d-46b2-95d0-f2df8a1a2cb2.bin", 36);
@@ -95,8 +90,6 @@ public class MessagesTestSamples {
             new SampleFileMetadata("/data/msg_put_zlib_27042018.bin", 132);
     public static final SampleFileMetadata PUT_MULTI_MSG =
             new SampleFileMetadata("/data/msg_put_multi.bin", 264);
-    public static final SampleFileMetadata MSG_PROPS_OLD =
-            new SampleFileMetadata("/data/msg_props_old.bin", 64);
     public static final SampleFileMetadata MSG_PROPS =
             new SampleFileMetadata("/data/msg_props.bin", 64);
     public static final SampleFileMetadata MSG_PROPS_LONG_HEADERS =

@@ -41,62 +41,28 @@ class MessagePropertiesTest {
     void testWithPattern() throws IOException {
         class TestData {
             final MessagesTestSamples.SampleFileMetadata sampleFile;
-            final boolean streamInOld;
-            final boolean streamOutOld;
             final MessagesTestSamples.SampleFileMetadata sampleFileCompare;
 
             TestData(
                     MessagesTestSamples.SampleFileMetadata sampleFile,
-                    boolean streamInOld,
-                    boolean streamOutOld,
                     MessagesTestSamples.SampleFileMetadata sampleFileCompare) {
                 this.sampleFile = sampleFile;
-                this.streamInOld = streamInOld;
-                this.streamOutOld = streamOutOld;
                 this.sampleFileCompare = sampleFileCompare;
             }
         }
 
         final TestData[] data =
                 new TestData[] {
-                    new TestData(
-                            MessagesTestSamples.MSG_PROPS_OLD,
-                            true,
-                            true,
-                            MessagesTestSamples.MSG_PROPS_OLD),
-                    new TestData(
-                            MessagesTestSamples.MSG_PROPS_OLD,
-                            true,
-                            false,
-                            MessagesTestSamples.MSG_PROPS),
-                    new TestData(
-                            MessagesTestSamples.MSG_PROPS,
-                            false,
-                            false,
-                            MessagesTestSamples.MSG_PROPS),
-                    new TestData(
-                            MessagesTestSamples.MSG_PROPS,
-                            false,
-                            true,
-                            MessagesTestSamples.MSG_PROPS_OLD),
+                    new TestData(MessagesTestSamples.MSG_PROPS, MessagesTestSamples.MSG_PROPS),
                     new TestData(
                             MessagesTestSamples.MSG_PROPS_LONG_HEADERS,
-                            false,
-                            false,
-                            MessagesTestSamples.MSG_PROPS),
-                    new TestData(
-                            MessagesTestSamples.MSG_PROPS_LONG_HEADERS,
-                            false,
-                            true,
-                            MessagesTestSamples.MSG_PROPS_OLD)
+                            MessagesTestSamples.MSG_PROPS)
                 };
 
         for (TestData testData : data) {
             logger.info(
-                    "Sample: {}, stream in old: {}, stream out old: {}, compare: {}",
+                    "Sample: {}, compare: {}",
                     testData.sampleFile.filePath(),
-                    testData.streamInOld,
-                    testData.streamOutOld,
                     testData.sampleFileCompare.filePath());
 
             ByteBuffer buf = TestHelpers.readFile(testData.sampleFile.filePath());
@@ -113,11 +79,7 @@ class MessagePropertiesTest {
             int toRead = bbis.available();
             logger.info("Stream in {} bytes", toRead);
 
-            if (testData.streamInOld) {
-                toRead -= props.streamInOld(bbis);
-            } else {
-                toRead -= props.streamIn(bbis);
-            }
+            toRead -= props.streamIn(bbis);
 
             assertEquals(0, toRead);
             assertEquals(0, bbis.available());
@@ -158,14 +120,10 @@ class MessagePropertiesTest {
             assertTrue(timestampFound);
             assertTrue(encodingFound);
 
-            // Stream out to another format and compare
+            // Stream out and compare
             ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
-            if (testData.streamOutOld) {
-                props.streamOutOld(bbos);
-            } else {
-                props.streamOut(bbos);
-            }
+            props.streamOut(bbos);
 
             TestHelpers.compareWithFileContent(bbos.reset(), testData.sampleFileCompare);
         }
@@ -173,124 +131,114 @@ class MessagePropertiesTest {
 
     @Test
     void testStreamOut() throws IOException {
-        for (boolean isOldStyleProperties : new boolean[] {false, true}) {
-            final boolean BOOL_VAL = true;
-            final byte BYTE_VAL = 2;
-            final short SHORT_VAL = 12;
-            final int INT32_VAL = 12345;
-            final long INT64_VAL = 987654321L;
-            final String STRING_VAL = "myValue";
-            final byte[] BINARY_VAL = "abcdefgh".getBytes();
+        final boolean BOOL_VAL = true;
+        final byte BYTE_VAL = 2;
+        final short SHORT_VAL = 12;
+        final int INT32_VAL = 12345;
+        final long INT64_VAL = 987654321L;
+        final String STRING_VAL = "myValue";
+        final byte[] BINARY_VAL = "abcdefgh".getBytes();
 
-            final int NUM_PROPERTIES = 7;
+        final int NUM_PROPERTIES = 7;
 
-            ByteBufferOutputStream bbos = new ByteBufferOutputStream();
-            MessagePropertiesImpl props = new MessagePropertiesImpl();
-            assertEquals(0, props.numProperties());
-            assertEquals(0, props.totalSize());
+        ByteBufferOutputStream bbos = new ByteBufferOutputStream();
+        MessagePropertiesImpl props = new MessagePropertiesImpl();
+        assertEquals(0, props.numProperties());
+        assertEquals(0, props.totalSize());
 
-            for (PropertyType t : PropertyType.values()) {
-                switch (t) {
-                    case UNDEFINED: // Skip
-                        break;
-                    case BOOL:
-                        props.setPropertyAsBool(PropertyType.BOOL.toString(), BOOL_VAL);
-                        break;
-                    case BYTE:
-                        props.setPropertyAsByte(PropertyType.BYTE.toString(), BYTE_VAL);
-                        break;
-                    case SHORT:
-                        props.setPropertyAsShort(PropertyType.SHORT.toString(), SHORT_VAL);
-                        break;
-                    case INT32:
-                        props.setPropertyAsInt32(PropertyType.INT32.toString(), INT32_VAL);
-                        break;
-                    case INT64:
-                        props.setPropertyAsInt64(PropertyType.INT64.toString(), INT64_VAL);
-                        break;
-                    case STRING:
-                        props.setPropertyAsString(PropertyType.STRING.toString(), STRING_VAL);
-                        break;
-                    case BINARY:
-                        props.setPropertyAsBinary(PropertyType.BINARY.toString(), BINARY_VAL);
-                        break;
-                    default: // Unknown type
-                        fail();
-                        break;
-                }
+        for (PropertyType t : PropertyType.values()) {
+            switch (t) {
+                case UNDEFINED: // Skip
+                    break;
+                case BOOL:
+                    props.setPropertyAsBool(PropertyType.BOOL.toString(), BOOL_VAL);
+                    break;
+                case BYTE:
+                    props.setPropertyAsByte(PropertyType.BYTE.toString(), BYTE_VAL);
+                    break;
+                case SHORT:
+                    props.setPropertyAsShort(PropertyType.SHORT.toString(), SHORT_VAL);
+                    break;
+                case INT32:
+                    props.setPropertyAsInt32(PropertyType.INT32.toString(), INT32_VAL);
+                    break;
+                case INT64:
+                    props.setPropertyAsInt64(PropertyType.INT64.toString(), INT64_VAL);
+                    break;
+                case STRING:
+                    props.setPropertyAsString(PropertyType.STRING.toString(), STRING_VAL);
+                    break;
+                case BINARY:
+                    props.setPropertyAsBinary(PropertyType.BINARY.toString(), BINARY_VAL);
+                    break;
+                default: // Unknown type
+                    fail();
+                    break;
             }
+        }
 
-            assertEquals(NUM_PROPERTIES, props.numProperties());
+        assertEquals(NUM_PROPERTIES, props.numProperties());
 
-            if (isOldStyleProperties) {
-                props.streamOutOld(bbos);
-            } else {
-                props.streamOut(bbos);
+        props.streamOut(bbos);
+
+        assertTrue(bbos.size() > 0);
+
+        ByteBufferInputStream bbis = new ByteBufferInputStream(bbos.reset());
+        props = new MessagePropertiesImpl();
+        assertEquals(0, props.numProperties());
+
+        int toRead = bbis.available();
+
+        toRead -= props.streamIn(bbis);
+
+        assertEquals(0, toRead);
+        assertEquals(0, bbis.available());
+
+        assertEquals(NUM_PROPERTIES, props.numProperties());
+
+        Iterator<Map.Entry<String, MessageProperty>> pit = props.iterator();
+
+        for (PropertyType t : PropertyType.values()) {
+            if (!PropertyType.isValid(t.toInt())) {
+                continue;
             }
-
-            assertTrue(bbos.size() > 0);
-
-            ByteBufferInputStream bbis = new ByteBufferInputStream(bbos.reset());
-            props = new MessagePropertiesImpl();
-            assertEquals(0, props.numProperties());
-
-            int toRead = bbis.available();
-
-            if (isOldStyleProperties) {
-                toRead -= props.streamInOld(bbis);
-            } else {
-                toRead -= props.streamIn(bbis);
+            assertTrue(pit.hasNext());
+            MessageProperty p = pit.next().getValue();
+            String name = null;
+            switch (t) {
+                case BOOL:
+                    name = PropertyType.BOOL.toString();
+                    assertEquals(BOOL_VAL, p.getValueAsBool());
+                    break;
+                case BYTE:
+                    name = PropertyType.BYTE.toString();
+                    assertEquals(BYTE_VAL, p.getValueAsByte());
+                    break;
+                case SHORT:
+                    name = PropertyType.SHORT.toString();
+                    assertEquals(SHORT_VAL, p.getValueAsShort());
+                    break;
+                case INT32:
+                    name = PropertyType.INT32.toString();
+                    assertEquals(INT32_VAL, p.getValueAsInt32());
+                    break;
+                case INT64:
+                    name = PropertyType.INT64.toString();
+                    assertEquals(INT64_VAL, p.getValueAsInt64());
+                    break;
+                case STRING:
+                    name = PropertyType.STRING.toString();
+                    assertEquals(STRING_VAL, p.getValueAsString());
+                    break;
+                case BINARY:
+                    name = PropertyType.BINARY.toString();
+                    assertArrayEquals(BINARY_VAL, p.getValueAsBinary());
+                    break;
+                default: // Unknown type
+                    fail();
+                    break;
             }
-
-            assertEquals(0, toRead);
-            assertEquals(0, bbis.available());
-
-            assertEquals(NUM_PROPERTIES, props.numProperties());
-
-            Iterator<Map.Entry<String, MessageProperty>> pit = props.iterator();
-
-            for (PropertyType t : PropertyType.values()) {
-                if (!PropertyType.isValid(t.toInt())) {
-                    continue;
-                }
-                assertTrue(pit.hasNext());
-                MessageProperty p = pit.next().getValue();
-                String name = null;
-                switch (t) {
-                    case BOOL:
-                        name = PropertyType.BOOL.toString();
-                        assertEquals(BOOL_VAL, p.getValueAsBool());
-                        break;
-                    case BYTE:
-                        name = PropertyType.BYTE.toString();
-                        assertEquals(BYTE_VAL, p.getValueAsByte());
-                        break;
-                    case SHORT:
-                        name = PropertyType.SHORT.toString();
-                        assertEquals(SHORT_VAL, p.getValueAsShort());
-                        break;
-                    case INT32:
-                        name = PropertyType.INT32.toString();
-                        assertEquals(INT32_VAL, p.getValueAsInt32());
-                        break;
-                    case INT64:
-                        name = PropertyType.INT64.toString();
-                        assertEquals(INT64_VAL, p.getValueAsInt64());
-                        break;
-                    case STRING:
-                        name = PropertyType.STRING.toString();
-                        assertEquals(STRING_VAL, p.getValueAsString());
-                        break;
-                    case BINARY:
-                        name = PropertyType.BINARY.toString();
-                        assertArrayEquals(BINARY_VAL, p.getValueAsBinary());
-                        break;
-                    default: // Unknown type
-                        fail();
-                        break;
-                }
-                assertEquals(name, p.name());
-            }
+            assertEquals(name, p.name());
         }
     }
 

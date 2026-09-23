@@ -90,17 +90,17 @@ class MessagePropertiesHeaderTest {
 
             MessagePropertyHeader ph = msgPropHeaders[0];
             assertEquals(PropertyType.INT32.toInt(), ph.propertyType());
-            assertEquals(0, ph.propertyValueLength()); // offset
+            assertEquals(0, ph.propertyValueOffset());
             assertEquals(8, ph.propertyNameLength());
 
             ph = msgPropHeaders[1];
             assertEquals(PropertyType.INT64.toInt(), ph.propertyType());
-            assertEquals(12, ph.propertyValueLength()); // offset
+            assertEquals(12, ph.propertyValueOffset());
             assertEquals(9, ph.propertyNameLength());
 
             ph = msgPropHeaders[2];
             assertEquals(PropertyType.STRING.toInt(), ph.propertyType());
-            assertEquals(29, ph.propertyValueLength()); // offset
+            assertEquals(29, ph.propertyValueOffset());
             assertEquals(2, ph.propertyNameLength());
 
             final int available =

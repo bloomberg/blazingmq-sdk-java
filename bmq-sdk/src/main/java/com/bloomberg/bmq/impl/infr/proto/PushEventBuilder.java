@@ -32,16 +32,12 @@ public class PushEventBuilder extends EventBuilder {
         super.reset(EventType.PUSH);
     }
 
-    // TODO: remove boolean after 2nd release of "new style" brokers
     // TODO: move to test code
-    public EventBuilderResult packMessage(PushMessageImpl msg, boolean isOldStyleProperties)
-            throws IOException {
+    public EventBuilderResult packMessage(PushMessageImpl msg) throws IOException {
         // Warn if payload is empty
         if (msg.appData().payloadSize() == 0) {
             logger.warn("PUSH message payload is empty");
         }
-
-        msg.appData().setIsOldStyleProperties(isOldStyleProperties);
 
         // Compress data
         msg.compressData();
@@ -56,10 +52,7 @@ public class PushEventBuilder extends EventBuilder {
         int numPaddingBytes = msg.appData().numPaddingBytes();
 
         final int sizeNoOptions =
-                bbos.size()
-                        + PushHeader.HEADER_SIZE_FOR_SCHEMA_ID
-                        + appDataLength
-                        + numPaddingBytes;
+                bbos.size() + PushHeader.HEADER_SIZE + appDataLength + numPaddingBytes;
 
         if (sizeNoOptions > EventHeader.MAX_SIZE_SOFT) {
             return EventBuilderResult.EVENT_TOO_BIG; // RETURN

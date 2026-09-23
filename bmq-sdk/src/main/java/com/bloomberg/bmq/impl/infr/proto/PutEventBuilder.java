@@ -55,15 +55,11 @@ public class PutEventBuilder extends EventBuilder {
         }
     }
 
-    // TODO: remove boolean after 2nd release of "new style" brokers
-    public EventBuilderResult packMessage(PutMessageImpl msg, boolean isOldStyleProperties)
-            throws IOException {
+    public EventBuilderResult packMessage(PutMessageImpl msg) throws IOException {
         // Validate payload is empty
         if (msg.appData().payloadSize() == 0) {
             return EventBuilderResult.PAYLOAD_EMPTY; // RETURN
         }
-
-        msg.appData().setIsOldStyleProperties(isOldStyleProperties);
 
         // Compress data
         msg.compressData();

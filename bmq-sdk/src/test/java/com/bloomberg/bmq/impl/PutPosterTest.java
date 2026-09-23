@@ -161,218 +161,200 @@ class PutPosterTest {
 
     @Test
     void testPostValidMessages() throws IOException {
-        for (boolean isOldStyleProperties : new boolean[] {false, true}) {
-            BrokerConnection mockedConnection = mock(BrokerConnection.class);
-            when(mockedConnection.isOldStyleMessageProperties()).thenReturn(isOldStyleProperties);
-            when(mockedConnection.write(any(ByteBuffer[].class), anyBoolean()))
-                    .thenReturn(GenericResult.SUCCESS);
+        BrokerConnection mockedConnection = mock(BrokerConnection.class);
+        when(mockedConnection.write(any(ByteBuffer[].class), anyBoolean()))
+                .thenReturn(GenericResult.SUCCESS);
 
-            EventsStats eventsStats = new EventsStats();
-            PutPoster poster = new PutPoster(mockedConnection, eventsStats);
+        EventsStats eventsStats = new EventsStats();
+        PutPoster poster = new PutPoster(mockedConnection, eventsStats);
 
-            final MessagePropertiesImpl props = new MessagePropertiesImpl();
-            props.setPropertyAsInt32("id", 3);
-            props.setPropertyAsBinary("data", new byte[] {1, 2, 3, 4, 5});
+        final MessagePropertiesImpl props = new MessagePropertiesImpl();
+        props.setPropertyAsInt32("id", 3);
+        props.setPropertyAsBinary("data", new byte[] {1, 2, 3, 4, 5});
 
-            PutMessageImpl bigMsg1 = new PutMessageImpl();
-            bigMsg1.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
-            bigMsg1.setCompressionType(CompressionAlgorithmType.E_NONE);
+        PutMessageImpl bigMsg1 = new PutMessageImpl();
+        bigMsg1.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+        bigMsg1.setCompressionType(CompressionAlgorithmType.E_NONE);
 
-            PutMessageImpl smallMsg1 = new PutMessageImpl();
-            smallMsg1.appData().setPayload(ByteBuffer.allocate(10000));
-            smallMsg1.appData().setProperties(props);
+        PutMessageImpl smallMsg1 = new PutMessageImpl();
+        smallMsg1.appData().setPayload(ByteBuffer.allocate(10000));
+        smallMsg1.appData().setProperties(props);
 
-            PutMessageImpl bigMsg2 = new PutMessageImpl();
-            bigMsg2.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
-            bigMsg2.setCompressionType(CompressionAlgorithmType.E_NONE);
+        PutMessageImpl bigMsg2 = new PutMessageImpl();
+        bigMsg2.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+        bigMsg2.setCompressionType(CompressionAlgorithmType.E_NONE);
 
-            PutMessageImpl smallMsg2 = new PutMessageImpl();
-            smallMsg2.appData().setProperties(props);
-            smallMsg2.appData().setPayload(ByteBuffer.allocate(10001));
+        PutMessageImpl smallMsg2 = new PutMessageImpl();
+        smallMsg2.appData().setProperties(props);
+        smallMsg2.appData().setPayload(ByteBuffer.allocate(10001));
 
-            PutMessageImpl compressedMsg = new PutMessageImpl();
-            compressedMsg
-                    .appData()
-                    .setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
-            compressedMsg.appData().setProperties(props);
-            compressedMsg.setCompressionType(CompressionAlgorithmType.E_ZLIB);
+        PutMessageImpl compressedMsg = new PutMessageImpl();
+        compressedMsg.appData().setPayload(ByteBuffer.allocate(PutHeader.MAX_PAYLOAD_SIZE_SOFT));
+        compressedMsg.appData().setProperties(props);
+        compressedMsg.setCompressionType(CompressionAlgorithmType.E_ZLIB);
 
-            poster.post(bigMsg1, smallMsg1, bigMsg2, smallMsg2, compressedMsg);
+        poster.post(bigMsg1, smallMsg1, bigMsg2, smallMsg2, compressedMsg);
 
-            assertEquals(isOldStyleProperties, bigMsg1.appData().isOldStyleProperties());
-            assertEquals(isOldStyleProperties, smallMsg1.appData().isOldStyleProperties());
-            assertEquals(isOldStyleProperties, bigMsg2.appData().isOldStyleProperties());
-            assertEquals(isOldStyleProperties, smallMsg2.appData().isOldStyleProperties());
-            assertEquals(isOldStyleProperties, compressedMsg.appData().isOldStyleProperties());
+        assertEquals(0, bigMsg1.header().schemaWireId());
+        assertEquals(1, smallMsg1.header().schemaWireId());
+        assertEquals(0, bigMsg2.header().schemaWireId());
+        assertEquals(1, smallMsg2.header().schemaWireId());
+        assertEquals(1, compressedMsg.header().schemaWireId());
 
-            assertEquals(0, bigMsg1.header().schemaWireId());
-            assertEquals(isOldStyleProperties ? 0 : 1, smallMsg1.header().schemaWireId());
-            assertEquals(0, bigMsg2.header().schemaWireId());
-            assertEquals(isOldStyleProperties ? 0 : 1, smallMsg2.header().schemaWireId());
-            assertEquals(isOldStyleProperties ? 0 : 1, compressedMsg.header().schemaWireId());
+        // Build data to check
+        PutEventBuilder builder = new PutEventBuilder();
+        EventsStats expectedStats = new EventsStats();
 
-            // Build data to check
-            PutEventBuilder builder = new PutEventBuilder();
-            EventsStats expectedStats = new EventsStats();
+        builder.packMessage(bigMsg1);
+        builder.packMessage(smallMsg1);
+        expectedStats.onEvent(EventType.PUT, builder.eventLength(), builder.messageCount());
+        ByteBuffer[] data1 = builder.build();
 
-            builder.packMessage(bigMsg1, isOldStyleProperties);
-            builder.packMessage(smallMsg1, isOldStyleProperties);
-            expectedStats.onEvent(EventType.PUT, builder.eventLength(), builder.messageCount());
-            ByteBuffer[] data1 = builder.build();
+        builder.reset();
+        builder.packMessage(bigMsg2);
+        builder.packMessage(smallMsg2);
+        builder.packMessage(compressedMsg);
+        expectedStats.onEvent(EventType.PUT, builder.eventLength(), builder.messageCount());
+        ByteBuffer[] data2 = builder.build();
 
-            builder.reset();
-            builder.packMessage(bigMsg2, isOldStyleProperties);
-            builder.packMessage(smallMsg2, isOldStyleProperties);
-            builder.packMessage(compressedMsg, isOldStyleProperties);
-            expectedStats.onEvent(EventType.PUT, builder.eventLength(), builder.messageCount());
-            ByteBuffer[] data2 = builder.build();
+        // write method can be verified using two lines below,
+        // but for clarity we at first check number of invocations and
+        // after that we check arguments
+        // verify(mockedConnection, times(1)).write(data1, true);
+        // verify(mockedConnection, times(1)).write(data2, true);
 
-            // write method can be verified using two lines below,
-            // but for clarity we at first check number of invocations and
-            // after that we check arguments
-            // verify(mockedConnection, times(1)).write(data1, true);
-            // verify(mockedConnection, times(1)).write(data2, true);
+        // Special classes to capture arguments passed to the write method
+        ArgumentCaptor<ByteBuffer[]> bbCaptor = ArgumentCaptor.forClass(ByteBuffer[].class);
+        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
 
-            // Special classes to capture arguments passed to the write method
-            ArgumentCaptor<ByteBuffer[]> bbCaptor = ArgumentCaptor.forClass(ByteBuffer[].class);
-            ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
+        // Verify that the write method has been called twice
+        verify(mockedConnection, times(2)).write(bbCaptor.capture(), boolCaptor.capture());
 
-            // Verify that the write method has been called twice
-            verify(mockedConnection, times(2)).write(bbCaptor.capture(), boolCaptor.capture());
+        // Get captured arguments
+        List<ByteBuffer[]> allData = bbCaptor.getAllValues();
+        List<Boolean> allBooleans = boolCaptor.getAllValues();
 
-            // Get captured arguments
-            List<ByteBuffer[]> allData = bbCaptor.getAllValues();
-            List<Boolean> allBooleans = boolCaptor.getAllValues();
+        // Verify first argument
+        assertArrayEquals(data1, allData.get(0));
+        assertArrayEquals(data2, allData.get(1));
 
-            // Verify first argument
-            assertArrayEquals(data1, allData.get(0));
-            assertArrayEquals(data2, allData.get(1));
+        // Verify second argument
+        assertTrue(allBooleans.get(0));
+        assertTrue(allBooleans.get(1));
 
-            // Verify second argument
-            assertTrue(allBooleans.get(0));
-            assertTrue(allBooleans.get(1));
+        StringBuilder expectedBuilder = new StringBuilder();
+        EventsStatsTest.dump(expectedStats, expectedBuilder, false);
+        String expectedStr = expectedBuilder.toString();
+        logger.info("Expected stats:\n{}", expectedStr);
 
-            StringBuilder expectedBuilder = new StringBuilder();
-            EventsStatsTest.dump(expectedStats, expectedBuilder, false);
-            String expectedStr = expectedBuilder.toString();
-            logger.info("Expected stats:\n{}", expectedStr);
+        StringBuilder actualBuilder = new StringBuilder();
+        EventsStatsTest.dump(eventsStats, actualBuilder, false);
+        String actualStr = actualBuilder.toString();
+        logger.info("Actual stats:\n{}", actualStr);
 
-            StringBuilder actualBuilder = new StringBuilder();
-            EventsStatsTest.dump(eventsStats, actualBuilder, false);
-            String actualStr = actualBuilder.toString();
-            logger.info("Actual stats:\n{}", actualStr);
-
-            assertEquals(expectedStr, actualStr);
-        }
+        assertEquals(expectedStr, actualStr);
     }
 
     @Test
     void testPostNoInfiniteLoop() throws IOException, TimeoutException, InterruptedException {
 
-        for (boolean isOldStyleProperties : new boolean[] {false, true}) {
-            BrokerConnection connection = mock(BrokerConnection.class);
-            when(connection.isOldStyleMessageProperties()).thenReturn(isOldStyleProperties);
-            when(connection.write(any(ByteBuffer[].class), anyBoolean()))
-                    .thenReturn(GenericResult.SUCCESS);
+        BrokerConnection connection = mock(BrokerConnection.class);
+        when(connection.write(any(ByteBuffer[].class), anyBoolean()))
+                .thenReturn(GenericResult.SUCCESS);
 
-            PutPoster poster = new PutPoster(connection, new EventsStats());
+        PutPoster poster = new PutPoster(connection, new EventsStats());
 
-            // Update max event size
-            final int MAX_EVENT_SIZE = 1024;
+        // Update max event size
+        final int MAX_EVENT_SIZE = 1024;
 
-            poster.setMaxEventSize(MAX_EVENT_SIZE);
+        poster.setMaxEventSize(MAX_EVENT_SIZE);
 
-            // Create a msg with payload = max event size
-            PutMessageImpl msg1 = new PutMessageImpl();
-            msg1.appData().setPayload(ByteBuffer.allocate(MAX_EVENT_SIZE));
+        // Create a msg with payload = max event size
+        PutMessageImpl msg1 = new PutMessageImpl();
+        msg1.appData().setPayload(ByteBuffer.allocate(MAX_EVENT_SIZE));
 
-            // Post async
-            ExecutorService es = Executors.newSingleThreadExecutor();
-            Future<?> f = es.submit(() -> poster.post(msg1));
+        // Post async
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        Future<?> f = es.submit(() -> poster.post(msg1));
 
-            // Get the result
-            try {
-                f.get(1, TimeUnit.SECONDS);
-            } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
+        // Get the result
+        try {
+            f.get(1, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
 
-                assertNotNull(cause);
-                assertEquals("Failed to build PUT event: PAYLOAD_TOO_BIG", cause.getMessage());
-            }
-
-            es.shutdownNow();
-
-            // Post a msg with payload = max payload size
-            PutMessageImpl msg2 = new PutMessageImpl();
-            msg2.appData()
-                    .setPayload(ByteBuffer.allocate(MAX_EVENT_SIZE - PutHeader.HEADER_SIZE - 4));
-
-            poster.post(msg2);
+            assertNotNull(cause);
+            assertEquals("Failed to build PUT event: PAYLOAD_TOO_BIG", cause.getMessage());
         }
+
+        es.shutdownNow();
+
+        // Post a msg with payload = max payload size
+        PutMessageImpl msg2 = new PutMessageImpl();
+        msg2.appData().setPayload(ByteBuffer.allocate(MAX_EVENT_SIZE - PutHeader.HEADER_SIZE - 4));
+
+        poster.post(msg2);
     }
 
     @Test
     void testRegisterAck() throws Exception {
-        for (boolean isOldStyleProperties : new boolean[] {false, true}) {
-            BrokerConnection connection = mock(BrokerConnection.class);
-            when(connection.isOldStyleMessageProperties()).thenReturn(isOldStyleProperties);
-            when(connection.write(any(ByteBuffer[].class), anyBoolean()))
-                    .thenReturn(GenericResult.SUCCESS);
+        BrokerConnection connection = mock(BrokerConnection.class);
+        when(connection.write(any(ByteBuffer[].class), anyBoolean()))
+                .thenReturn(GenericResult.SUCCESS);
 
-            PutPoster poster = new PutPoster(connection, new EventsStats());
+        PutPoster poster = new PutPoster(connection, new EventsStats());
 
-            // try to register null ACK message
-            try {
-                poster.registerAck(null);
-                fail(); // Should not get here
-            } catch (IllegalArgumentException e) {
-                assertEquals("'ackMsg' must be non-null", e.getMessage());
-            }
-
-            // Register ACK with null correlation Id
-            // When AckMessageImpl is being streamed in, its `correlationId()
-            // is initialized to some value by creating CorrelationImpl instance.
-            // Here we use 'restoreId' method to create new instance of
-            // CorrelationIdImpl with zero id to ensure its reference differs
-            // from CorrelationIdImpl.NULL_CORRELATION_ID object.
-            AckMessageImpl ackMsg =
-                    new AckMessageImpl(
-                            AckResult.UNKNOWN,
-                            CorrelationIdImpl.restoreId(0),
-                            MessageGUID.createEmptyGUID(),
-                            0);
-            poster.registerAck(ackMsg); // should be just logged and ignored
-
-            // Post PUT message and then register ACK message
-            Object userData = new Object();
-            CorrelationIdImpl cId = CorrelationIdImpl.nextId(userData);
-
-            PutMessageImpl msg = new PutMessageImpl();
-            msg.appData().setPayload(ByteBuffer.allocate(10));
-            msg.setupCorrelationId(cId);
-
-            poster.post(msg);
-
-            ackMsg =
-                    new AckMessageImpl(
-                            AckResult.SUCCESS,
-                            CorrelationIdImpl.restoreId(cId.toInt()),
-                            MessageGUID.createEmptyGUID(),
-                            0);
-
-            poster.registerAck(ackMsg);
-
-            assertEquals(cId, ackMsg.correlationId());
-            assertEquals(userData, ackMsg.correlationId().userData());
-
-            // Try to register the same ACK message again
-            ackMsg =
-                    new AckMessageImpl(
-                            AckResult.SUCCESS,
-                            CorrelationIdImpl.restoreId(cId.toInt()),
-                            ackMsg.messageGUID(),
-                            0);
-            poster.registerAck(ackMsg); // should be just logged and ignored
+        // try to register null ACK message
+        try {
+            poster.registerAck(null);
+            fail(); // Should not get here
+        } catch (IllegalArgumentException e) {
+            assertEquals("'ackMsg' must be non-null", e.getMessage());
         }
+
+        // Register ACK with null correlation Id
+        // When AckMessageImpl is being streamed in, its `correlationId()
+        // is initialized to some value by creating CorrelationImpl instance.
+        // Here we use 'restoreId' method to create new instance of
+        // CorrelationIdImpl with zero id to ensure its reference differs
+        // from CorrelationIdImpl.NULL_CORRELATION_ID object.
+        AckMessageImpl ackMsg =
+                new AckMessageImpl(
+                        AckResult.UNKNOWN,
+                        CorrelationIdImpl.restoreId(0),
+                        MessageGUID.createEmptyGUID(),
+                        0);
+        poster.registerAck(ackMsg); // should be just logged and ignored
+
+        // Post PUT message and then register ACK message
+        Object userData = new Object();
+        CorrelationIdImpl cId = CorrelationIdImpl.nextId(userData);
+
+        PutMessageImpl msg = new PutMessageImpl();
+        msg.appData().setPayload(ByteBuffer.allocate(10));
+        msg.setupCorrelationId(cId);
+
+        poster.post(msg);
+
+        ackMsg =
+                new AckMessageImpl(
+                        AckResult.SUCCESS,
+                        CorrelationIdImpl.restoreId(cId.toInt()),
+                        MessageGUID.createEmptyGUID(),
+                        0);
+
+        poster.registerAck(ackMsg);
+
+        assertEquals(cId, ackMsg.correlationId());
+        assertEquals(userData, ackMsg.correlationId().userData());
+
+        // Try to register the same ACK message again
+        ackMsg =
+                new AckMessageImpl(
+                        AckResult.SUCCESS,
+                        CorrelationIdImpl.restoreId(cId.toInt()),
+                        ackMsg.messageGUID(),
+                        0);
+        poster.registerAck(ackMsg); // should be just logged and ignored
     }
 }

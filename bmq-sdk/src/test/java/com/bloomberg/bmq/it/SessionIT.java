@@ -2867,8 +2867,6 @@ public class SessionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            assertFalse(broker.isOldStyleMessageProperties());
-
             broker.start();
 
             TestSession session = new TestSession(broker.sessionOptions());
@@ -3101,8 +3099,6 @@ public class SessionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            assertFalse(broker.isOldStyleMessageProperties());
-
             broker.start();
 
             TestSession session = new TestSession(broker.sessionOptions());
@@ -3125,8 +3121,8 @@ public class SessionIT {
                         CompressionAlgorithm.None,
                         Protocol.COMPRESSION_MIN_APPDATA_SIZE - 1);
 
-                // The message will not be compressed in case message properties
-                // are new style encoded.
+                // Message properties are not compressed, so a payload below the
+                // threshold is sent uncompressed.
                 logger.info(
                         "Step 5: Post incompressable PUT message with Zlib compression, wait for ACK event and PUSH message");
                 sendVerifyPut(

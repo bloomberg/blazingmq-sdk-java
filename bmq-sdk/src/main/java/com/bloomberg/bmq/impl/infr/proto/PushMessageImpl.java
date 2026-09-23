@@ -31,8 +31,7 @@ public final class PushMessageImpl implements Streamable {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final short INVALID_SCHEMA_WIRE_ID = (short) 1;
-    private static final int HEADER_WORDS =
-            PushHeader.HEADER_SIZE_FOR_SCHEMA_ID / Protocol.WORD_SIZE;
+    private static final int HEADER_WORDS = PushHeader.HEADER_SIZE / Protocol.WORD_SIZE;
 
     private PushHeader header;
     private ApplicationData appData;
@@ -141,7 +140,6 @@ public final class PushMessageImpl implements Streamable {
                 PushHeaderFlags.isSet(header.flags(), PushHeaderFlags.MESSAGE_PROPERTIES);
         final CompressionAlgorithmType inputCompressionType =
                 CompressionAlgorithmType.fromInt(header.compressionType());
-        final boolean isOldStyleProperties = header.schemaWireId() == 0;
 
         logger.debug(
                 "Has properties: {}, compressionType: {}, schemaWireId: {}",
@@ -153,7 +151,7 @@ public final class PushMessageImpl implements Streamable {
             throw new BMQException("IMPLICIT_PAYLOAD flag is set");
         }
 
-        appData.streamIn(dataSize, hasProperties, isOldStyleProperties, inputCompressionType, bbis);
+        appData.streamIn(dataSize, hasProperties, inputCompressionType, bbis);
 
         if (appData.unpackedSize() == 0) {
             throw new BMQException("Application data is empty");
@@ -168,12 +166,8 @@ public final class PushMessageImpl implements Streamable {
 
         CompressionAlgorithmType finalCompressionType = this.compressionType;
 
+        // Properties are not compressed.
         int dataToCompress = appData.payloadSize();
-        // New style properties are not compressed.
-        // TODO: remove after 2nd rollout of "new style" brokers.
-        if (appData.hasProperties() && appData.isOldStyleProperties()) {
-            dataToCompress += appData.propertiesSize();
-        }
 
         // When data is less than a threshold, it is not compressed.
         if (dataToCompress < Protocol.COMPRESSION_MIN_APPDATA_SIZE) {
@@ -193,12 +187,8 @@ public final class PushMessageImpl implements Streamable {
                 header.setFlags(f);
             }
 
-            // If properties are encoded using new style, we need to set
-            // schema wire id to 1 (invalid schema wire id).
-            // TODO: always set after 2nd rollout of "new style" brokers.
-            if (!appData.isOldStyleProperties()) {
-                header.setSchemaWireId(INVALID_SCHEMA_WIRE_ID);
-            }
+            // Set schema wire id to 1 (invalid schema wire id).
+            header.setSchemaWireId(INVALID_SCHEMA_WIRE_ID);
         }
 
         if (appData.payloadSize() == 0) {

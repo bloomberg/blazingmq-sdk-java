@@ -65,8 +65,7 @@ public class PlainProducerIT {
 
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static void sendMessage(
-            String msgPayload, int port, Uri uri, boolean isOldStyleProperties)
+    public static void sendMessage(String msgPayload, int port, Uri uri)
             throws IOException, InterruptedException {
 
         // ===============================
@@ -272,7 +271,7 @@ public class PlainProducerIT {
         putMsg.setCorrelationId();
 
         PutEventBuilder putBuilder = new PutEventBuilder();
-        EventBuilderResult res = putBuilder.packMessage(putMsg, isOldStyleProperties);
+        EventBuilderResult res = putBuilder.packMessage(putMsg);
 
         assertSame(EventBuilderResult.SUCCESS, res);
 
@@ -439,7 +438,7 @@ public class PlainProducerIT {
             final int PORT = broker.sessionOptions().brokerUri().getPort();
             final Uri QUEUE_URI = BmqBroker.Domains.Priority.generateQueueUri();
 
-            sendMessage(MSG, PORT, QUEUE_URI, broker.isOldStyleMessageProperties());
+            sendMessage(MSG, PORT, QUEUE_URI);
 
             broker.setDropTmpFolder();
         }

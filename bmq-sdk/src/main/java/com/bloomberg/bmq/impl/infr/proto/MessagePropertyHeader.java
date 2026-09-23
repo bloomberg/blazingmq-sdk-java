@@ -38,10 +38,10 @@ public final class MessagePropertyHeader {
     //       R2..: Reserved (2nd set of bits)
     //
     //  PropType...........: Data type of the message property
-    //  PropValueLenUpper..: Upper 10 bits of the field capturing length of the
-    //                       property value.
-    //  PropValueLenLower..: Lower 16 bits of the field capturing length of the
-    //                       property value.
+    //  PropValueLenUpper..: Upper 10 bits of the field capturing the offset of
+    //                       the property value.
+    //  PropValueLenLower..: Lower 16 bits of the field capturing the offset of
+    //                       the property value.
     //  PropNameLen........: Length of the property name.
     //  Reserved...........: For alignment and extension ~ must be 0
     // ..
@@ -98,8 +98,7 @@ public final class MessagePropertyHeader {
                                 | (value << PROP_TYPE_START_IDX));
     }
 
-    // TODO: rename to offset after 2nd rollout of "new style" brokers
-    public void setPropertyValueLength(int value) {
+    public void setPropertyValueOffset(int value) {
         Argument.expectNonNegative(value, "value");
         Argument.expectNotGreater(value, MAX_PROPERTY_VALUE_LENGTH, "value");
 
@@ -126,8 +125,7 @@ public final class MessagePropertyHeader {
         return result >>> PROP_TYPE_START_IDX;
     }
 
-    // TODO: rename to offset after 2nd rollout of "new style" brokers
-    public int propertyValueLength() {
+    public int propertyValueOffset() {
         int result =
                 (propTypeAndPropValueLenUpper & PROP_VALUE_LEN_UPPER_MASK)
                         << PROP_VALUE_LEN_LOWER_NUM_BITS;
@@ -156,14 +154,14 @@ public final class MessagePropertyHeader {
         }
 
         final int propNameLen = propertyNameLength();
-        final int propValueLen = propertyValueLength();
+        final int propValueOffset = propertyValueOffset();
 
         if (MAX_PROPERTY_NAME_LENGTH < propNameLen) {
             throw new IOException("Invalid property name length: [" + propNameLen + "]");
         }
 
-        if (MAX_PROPERTY_VALUE_LENGTH < propValueLen) {
-            throw new IOException("Invalid property value length: [" + propValueLen + "]");
+        if (MAX_PROPERTY_VALUE_LENGTH < propValueOffset) {
+            throw new IOException("Invalid property value offset: [" + propValueOffset + "]");
         }
 
         // Skip unknown bytes
@@ -187,8 +185,8 @@ public final class MessagePropertyHeader {
         sb.append("[ MessagePropertyHeader [")
                 .append(" PropertyType=")
                 .append(propertyType())
-                .append(" PropertyValueLength=")
-                .append(propertyValueLength())
+                .append(" PropertyValueOffset=")
+                .append(propertyValueOffset())
                 .append(" PropertyNameLength=")
                 .append(propertyNameLength())
                 .append(" ] ]");

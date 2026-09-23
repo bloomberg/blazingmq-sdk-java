@@ -101,12 +101,7 @@ class BrokerSessionStressIT {
                     reader.getState() == QueueState.e_OPENED, "'reader' must be OPENED");
         }
 
-        public void transfer(
-                int payloadSize,
-                int numMsgs,
-                int numPutsPerEvent,
-                boolean waitPush,
-                boolean isOldStyleProperties) {
+        public void transfer(int payloadSize, int numMsgs, int numPutsPerEvent, boolean waitPush) {
             if (!putMessages.isEmpty()) {
                 throw new IllegalStateException("'putMessages' expected to be empty");
             }
@@ -126,14 +121,11 @@ class BrokerSessionStressIT {
                             PutMessageImpl[] messages = new PutMessageImpl[minMsg];
                             for (int i = 0; i < messages.length; i++) {
                                 String payload = createPayload(payloadSize, Integer.toString(i));
-                                PutMessageImpl msg =
-                                        TestTools.preparePutMessage(payload, isOldStyleProperties);
+                                PutMessageImpl msg = TestTools.preparePutMessage(payload);
                                 logger.debug("Sending {}", msg);
 
                                 putMessages.add(msg);
-                                payloads.add(
-                                        TestTools.prepareUnpaddedData(
-                                                payload, isOldStyleProperties));
+                                payloads.add(TestTools.prepareUnpaddedData(payload));
                                 messages[i] = msg;
                             }
                             session.post(writer, messages);
@@ -364,12 +356,7 @@ class BrokerSessionStressIT {
             TransferValidator validator =
                     new TransferValidator(eventFIFO, session, queueHandle, queueHandle);
 
-            validator.transfer(
-                    payloadSize,
-                    numMsgs,
-                    numPutsPerEvent,
-                    waitPushes,
-                    broker.isOldStyleMessageProperties());
+            validator.transfer(payloadSize, numMsgs, numPutsPerEvent, waitPushes);
 
             // Close the queue.
             assertEquals(CloseQueueResult.SUCCESS, queueHandle.close(TEST_REQUEST_TIMEOUT));
@@ -617,12 +604,7 @@ class BrokerSessionStressIT {
             TransferValidator validator =
                     new TransferValidator(eventFIFO, session, queueWriterHandle, queueReaderHandle);
 
-            validator.transfer(
-                    MSG_SIZE,
-                    NUM_MESSAGES,
-                    NUM_PUTS_PER_EVENT,
-                    WAIT_FOR_PUSHES,
-                    broker.isOldStyleMessageProperties());
+            validator.transfer(MSG_SIZE, NUM_MESSAGES, NUM_PUTS_PER_EVENT, WAIT_FOR_PUSHES);
 
             // Close the queues.
             assertEquals(CloseQueueResult.SUCCESS, queueReaderHandle.close(TEST_REQUEST_TIMEOUT));

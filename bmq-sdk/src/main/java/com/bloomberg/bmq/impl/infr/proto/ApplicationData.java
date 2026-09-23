@@ -20,9 +20,6 @@ import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.util.Compression;
 import com.bloomberg.bmq.impl.infr.util.PrintUtil;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,14 +38,9 @@ public class ApplicationData {
     private CompressionAlgorithmType compressionType = CompressionAlgorithmType.E_NONE;
     private ByteBufferOutputStream compressedData;
 
-    // TODO: remove after 2nd release of "new style" brokers.
-    private boolean isOldStyleProperties = false;
-    private boolean arePropertiesCompressed;
-
     private void resetCompressedData() {
         compressionType = CompressionAlgorithmType.E_NONE;
         compressedData = null;
-        arePropertiesCompressed = false;
     }
 
     public final void setPayload(ByteBuffer... data) throws IOException {
@@ -76,15 +68,6 @@ public class ApplicationData {
         resetCompressedData();
     }
 
-    // TODO: remove after 2nd release of "new style" brokers.
-    public void setIsOldStyleProperties(boolean value) {
-        isOldStyleProperties = value;
-    }
-
-    public boolean isOldStyleProperties() {
-        return isOldStyleProperties;
-    }
-
     public ByteBuffer[] applicationData() throws IOException {
         // TODO: used only to calculate CRC32. Can we avoid creating a copy?
 
@@ -106,14 +89,6 @@ public class ApplicationData {
     }
 
     public MessagePropertiesImpl properties() {
-        if (arePropertiesCompressed) {
-            try {
-                decompressData();
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to decompress payload", e);
-            }
-        }
-
         return properties;
     }
 
@@ -134,11 +109,7 @@ public class ApplicationData {
     }
 
     public int unpackedSize() {
-        int size = 0;
-
-        if (!arePropertiesCompressed) {
-            size += propertiesSize();
-        }
+        int size = propertiesSize();
 
         if (compressionType == CompressionAlgorithmType.E_NONE) {
             size += payloadSize();
@@ -164,11 +135,9 @@ public class ApplicationData {
         return ProtocolUtil.calculatePadding(unpackedSize());
     }
 
-    // TODO: remove "isOldStyleProperties" after 2nd release of "new style" brokers.
     public void streamIn(
             int size,
             boolean hasProperties,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType,
             ByteBufferInputStream bbis)
             throws IOException {
@@ -189,16 +158,9 @@ public class ApplicationData {
 
         resetCompressedData();
 
-        // Stream in properties if they are not compressed
-        this.isOldStyleProperties = isOldStyleProperties;
+        // Properties are never compressed
         if (hasProperties) {
-            if (!isOldStyleProperties) {
-                // New properties
-                size -= streamInProperties(bbis);
-            } else if (compressionType == CompressionAlgorithmType.E_NONE) {
-                // Old properties
-                size -= streamInPropertiesOld(bbis);
-            }
+            size -= streamInProperties(bbis);
         }
 
         // Stream uncompressed payload
@@ -221,7 +183,6 @@ public class ApplicationData {
 
                 compressedData = bbos;
                 this.compressionType = compressionType;
-                arePropertiesCompressed = hasProperties && isOldStyleProperties;
             }
         }
 
@@ -245,16 +206,9 @@ public class ApplicationData {
         ByteBufferInputStream bbis = new ByteBufferInputStream(data);
 
         InputStream decompressedStream = compressionType.getCompression().decompress(bbis);
-        DataInputStream inputStream = new DataInputStream(decompressedStream);
-
-        // Stream in properties
-        if (arePropertiesCompressed) {
-            // If properties are compressed then they are encoded in old format
-            streamInPropertiesOld(inputStream);
-        }
 
         // Stream in payload
-        streamInPayload(inputStream);
+        streamInPayload(decompressedStream);
 
         // Check if all data has been read
         if (bbis.available() > 0) {
@@ -269,16 +223,6 @@ public class ApplicationData {
 
         properties = new MessagePropertiesImpl();
         read += properties.streamIn(input);
-
-        return read;
-    }
-
-    private <T extends InputStream & DataInput> int streamInPropertiesOld(T input)
-            throws IOException {
-        int read = 0;
-
-        properties = new MessagePropertiesImpl();
-        read += properties.streamInOld(input);
 
         return read;
     }
@@ -333,22 +277,14 @@ public class ApplicationData {
         //
         // Later we will need to refactor the code in order to close compressed stream without
         // closing underlying stream
-        try (OutputStream compressedStream = compression.compress(bbos);
-                DataOutputStream compressedOutput = new DataOutputStream(compressedStream)) {
-
-            // TODO: remove after 2nd rollout of "new style" brokers.
-            if (hasProperties() && isOldStyleProperties) {
-                properties.streamOutOld(compressedOutput);
-            }
-
+        try (OutputStream compressedStream = compression.compress(bbos)) {
             if (payload != null) {
-                compressedOutput.write(payload);
+                compressedStream.write(payload);
             }
         }
 
         compressedData = bbos;
         this.compressionType = compressionType;
-        arePropertiesCompressed = hasProperties() && isOldStyleProperties;
     }
 
     public void streamOut(ByteBufferOutputStream bbos) throws IOException {
@@ -358,14 +294,8 @@ public class ApplicationData {
     private void streamOut(ByteBufferOutputStream bbos, boolean addPadding) throws IOException {
         int startPosition = bbos.size();
 
-        // Stream out properties if they are not compressed (no compression or
-        // new style properties).
-        if (hasProperties() && !arePropertiesCompressed) {
-            if (isOldStyleProperties) {
-                properties.streamOutOld(bbos);
-            } else {
-                properties.streamOut(bbos);
-            }
+        if (hasProperties()) {
+            properties.streamOut(bbos);
         }
 
         if (compressionType == CompressionAlgorithmType.E_NONE) {

@@ -307,11 +307,6 @@ public class BmqBrokerContainer implements BmqBroker {
     }
 
     @Override
-    public boolean isOldStyleMessageProperties() {
-        return false;
-    }
-
-    @Override
     public SessionOptions sessionOptions() {
         return sessionOptions;
     }

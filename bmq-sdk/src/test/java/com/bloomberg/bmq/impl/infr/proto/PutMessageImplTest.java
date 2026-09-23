@@ -65,16 +65,14 @@ class PutMessageImplTest {
 
         for (ByteBuffer[] payload : payloads)
             for (MessagePropertiesImpl props : propsArray)
-                for (boolean isOldStyleProperties : new boolean[] {false, true})
-                    for (CompressionAlgorithmType compressionType : compressionTypes) {
-                        logger.info(
-                                "Stream out with payload:{}, props:{}, oldStyleProperties:{}, compression: {}",
-                                payload,
-                                props,
-                                isOldStyleProperties,
-                                compressionType);
-                        verifyStreamOut(payload, props, isOldStyleProperties, compressionType);
-                    }
+                for (CompressionAlgorithmType compressionType : compressionTypes) {
+                    logger.info(
+                            "Stream out with payload:{}, props:{}, compression: {}",
+                            payload,
+                            props,
+                            compressionType);
+                    verifyStreamOut(payload, props, compressionType);
+                }
     }
 
     @Test
@@ -100,16 +98,14 @@ class PutMessageImplTest {
 
         for (ByteBuffer[] payload : payloads)
             for (MessagePropertiesImpl props : propsArray)
-                for (boolean isOldStyleProperties : new boolean[] {false, true})
-                    for (CompressionAlgorithmType compressionType : compressionTypes) {
-                        logger.info(
-                                "Stream in with payload:{}, props:{}, oldStyleProperties:{}, compression: {}",
-                                payload,
-                                props,
-                                isOldStyleProperties,
-                                compressionType);
-                        verifyStreamIn(payload, props, isOldStyleProperties, compressionType);
-                    }
+                for (CompressionAlgorithmType compressionType : compressionTypes) {
+                    logger.info(
+                            "Stream in with payload:{}, props:{}, compression: {}",
+                            payload,
+                            props,
+                            compressionType);
+                    verifyStreamIn(payload, props, compressionType);
+                }
     }
 
     private ByteBuffer[] generatePayload(int size) throws IOException {
@@ -134,13 +130,11 @@ class PutMessageImplTest {
     private ByteBuffer[] generateOutput(
             ByteBuffer[] payload,
             MessagePropertiesImpl props,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType)
             throws IOException {
         try (ByteBufferOutputStream bbos = new ByteBufferOutputStream()) {
 
             ApplicationData appData = new ApplicationData();
-            appData.setIsOldStyleProperties(isOldStyleProperties);
 
             if (payload != null) {
                 appData.setPayload(payload);
@@ -151,15 +145,11 @@ class PutMessageImplTest {
             appData.setProperties(props);
             if (appData.hasProperties()) {
                 header.setFlags(PutHeaderFlags.setFlag(0, PutHeaderFlags.MESSAGE_PROPERTIES));
-
-                if (!isOldStyleProperties) {
-                    header.setSchemaWireId(PutMessageImpl.INVALID_SCHEMA_WIRE_ID);
-                }
+                header.setSchemaWireId(PutMessageImpl.INVALID_SCHEMA_WIRE_ID);
             }
 
-            final int sizeToCompress =
-                    isOldStyleProperties ? appData.unpackedSize() : appData.payloadSize();
-            final boolean canCompress = sizeToCompress >= Protocol.COMPRESSION_MIN_APPDATA_SIZE;
+            final boolean canCompress =
+                    appData.payloadSize() >= Protocol.COMPRESSION_MIN_APPDATA_SIZE;
 
             // Compress data if compression is set and size is not below threshold
             if (compressionType != null && canCompress) {
@@ -185,7 +175,6 @@ class PutMessageImplTest {
     private void verifyStreamOut(
             ByteBuffer[] payload,
             MessagePropertiesImpl props,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType)
             throws IOException {
 
@@ -226,12 +215,8 @@ class PutMessageImplTest {
             return;
         }
 
-        msg.appData().setIsOldStyleProperties(isOldStyleProperties);
-
-        final int dataToCompress =
-                isOldStyleProperties ? msg.appData().unpackedSize() : msg.appData().payloadSize();
         CompressionAlgorithmType actualCompressionType;
-        if (dataToCompress < Protocol.COMPRESSION_MIN_APPDATA_SIZE) {
+        if (msg.appData().payloadSize() < Protocol.COMPRESSION_MIN_APPDATA_SIZE) {
             // Data is not compressed if the size below the threshold.
             actualCompressionType = CompressionAlgorithmType.E_NONE;
         } else {
@@ -252,8 +237,7 @@ class PutMessageImplTest {
         assertEquals(0, bbos.size());
         msg.streamOut(bbos);
 
-        ByteBuffer[] expected =
-                generateOutput(duplicate(payload), props, isOldStyleProperties, compressionType);
+        ByteBuffer[] expected = generateOutput(duplicate(payload), props, compressionType);
         ByteBuffer[] streamedData = bbos.reset();
 
         assertArrayEquals(expected, streamedData);
@@ -285,15 +269,13 @@ class PutMessageImplTest {
     private void verifyStreamIn(
             ByteBuffer[] payload,
             MessagePropertiesImpl props,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType)
             throws IOException {
 
         final boolean hasProperties = props != null && props.numProperties() > 0;
         final boolean hasPayload = getSize(payload) > 0;
 
-        ByteBuffer[] input =
-                generateOutput(duplicate(payload), props, isOldStyleProperties, compressionType);
+        ByteBuffer[] input = generateOutput(duplicate(payload), props, compressionType);
         ByteBufferInputStream bbis = new ByteBufferInputStream(duplicate(input));
 
         // Get num of padding bytes
@@ -325,7 +307,6 @@ class PutMessageImplTest {
 
         // check properties
         verifyProperties(hasProperties ? props : null, msg.appData().properties());
-        assertEquals(!hasProperties || isOldStyleProperties, msg.appData().isOldStyleProperties());
 
         // Do double check. Stream out data and compare with original input
         msg = new PutMessageImpl();
@@ -337,8 +318,6 @@ class PutMessageImplTest {
         if (props != null) {
             msg.appData().setProperties(props);
         }
-
-        msg.appData().setIsOldStyleProperties(isOldStyleProperties);
 
         try {
             msg.compressData();

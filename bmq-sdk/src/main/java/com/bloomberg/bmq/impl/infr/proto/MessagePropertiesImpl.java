@@ -17,10 +17,8 @@ package com.bloomberg.bmq.impl.infr.proto;
 
 import com.bloomberg.bmq.MessageProperties;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
-import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
@@ -127,124 +125,6 @@ public class MessagePropertiesImpl implements MessageProperties {
         return propertyMap.get(name);
     }
 
-    // TODO: remove after 2nd rollout of "new style" brokers
-    public <T extends InputStream & DataInput> int streamInOld(T input) throws IOException {
-        propertyMap.clear();
-        MessagePropertiesHeader propsHeader = new MessagePropertiesHeader();
-        propsHeader.streamIn(input);
-
-        final int numProps = propsHeader.numProperties();
-        MessagePropertyHeader[] propHeaderArray = new MessagePropertyHeader[numProps];
-
-        final int propertyHeaderSize = propsHeader.messagePropertyHeaderSize();
-        for (int i = 0; i < numProps; i++) {
-            MessagePropertyHeader ph = new MessagePropertyHeader();
-            ph.streamIn(input, propertyHeaderSize);
-            propHeaderArray[i] = ph;
-        }
-
-        final int propsAreaSize = propsHeader.messagePropertiesAreaWords() * Protocol.WORD_SIZE;
-        final int headersAreaSize = propsHeader.headerSize() + numProps * propertyHeaderSize;
-
-        // Since the input stream type doesn't support setting of position,
-        // we cannot determine padding bytes before we read all properties.
-        int totalLength = headersAreaSize;
-
-        for (int i = 0; i < numProps; ++i) {
-            MessagePropertyHeader ph = propHeaderArray[i];
-            MessageProperty mp;
-            PropertyType t = PropertyType.fromInt(ph.propertyType());
-            switch (t) {
-                case BOOL:
-                    mp = new BoolMessageProperty();
-                    break;
-                case BYTE:
-                    mp = new ByteMessageProperty();
-                    break;
-                case SHORT:
-                    mp = new ShortMessageProperty();
-                    break;
-                case INT32:
-                    mp = new Int32MessageProperty();
-                    break;
-                case INT64:
-                    mp = new Int64MessageProperty();
-                    break;
-                case STRING:
-                    mp = new StringMessageProperty();
-                    break;
-                case BINARY:
-                    mp = new BinaryMessageProperty();
-                    break;
-                default:
-                    throw new IOException("Unknown property type");
-            }
-            final int nameLength = ph.propertyNameLength();
-            final int valueLength = ph.propertyValueLength();
-
-            totalLength += nameLength;
-            totalLength += valueLength;
-
-            byte[] n = new byte[nameLength];
-            byte[] v = new byte[valueLength];
-
-            // Since 'read(byte[])' might read just part of bytes, 'readFully(byte[])' is used
-            // instead
-            try {
-                input.readFully(n);
-            } catch (IOException e) {
-                throw new IOException(
-                        "Error when reading property name. Expected to read " + n.length + " bytes",
-                        e);
-            }
-            mp.setPropertyName(new String(n, StandardCharsets.US_ASCII));
-
-            // Since 'read(byte[])' might read just part of bytes, 'readFully(byte[])' is used
-            // instead
-            try {
-                input.readFully(v);
-            } catch (IOException e) {
-                throw new IOException(
-                        "Error when reading property value. Expected to read "
-                                + v.length
-                                + " bytes",
-                        e);
-            }
-            mp.setPropertyValue(v);
-
-            propertyMap.put(mp.name(), mp);
-        }
-
-        // Read padding bytes
-        final byte numPaddingBytes = input.readByte();
-
-        // Skip padding bytes
-        if (input.skip(numPaddingBytes - 1) != numPaddingBytes - 1) {
-            throw new IOException("Failed to skip " + (numPaddingBytes - 1) + " bytes");
-        }
-
-        // Verify
-        final int numPaddingBytesExp = ProtocolUtil.calculatePadding(totalLength);
-        if (numPaddingBytesExp != numPaddingBytes) {
-            throw new IOException(
-                    "Unexpected padding: " + numPaddingBytes + ", should be " + numPaddingBytesExp);
-        }
-
-        // Add padding bytes
-        totalLength += numPaddingBytes;
-
-        if (totalLength != propsAreaSize) {
-            throw new IOException(
-                    "Invalid encoding: actual "
-                            + totalLength
-                            + " bytes, expected "
-                            + propsAreaSize
-                            + " bytes");
-        }
-
-        return totalLength;
-    }
-
     public int streamIn(ByteBufferInputStream input) throws IOException {
         propertyMap.clear();
         final int initPos = input.position();
@@ -317,13 +197,13 @@ public class MessagePropertiesImpl implements MessageProperties {
                     throw new IOException("Unknown property type");
             }
             final int nameLength = ph.propertyNameLength();
-            final int offset = ph.propertyValueLength();
+            final int offset = ph.propertyValueOffset();
             int valueLength;
 
             if (!isLastProperty) {
                 // Calculate the length as delta between offsets minus
                 // current property name length.
-                final int nextOffset = propHeaderArray[i + 1].propertyValueLength();
+                final int nextOffset = propHeaderArray[i + 1].propertyValueOffset();
                 valueLength = nextOffset - offset - nameLength;
             } else {
                 // Last property.
@@ -385,18 +265,7 @@ public class MessagePropertiesImpl implements MessageProperties {
         return totalLength;
     }
 
-    // TODO: remove after 2nd rollout of "new style" brokers
-    public void streamOutOld(DataOutput output) throws IOException {
-        streamOut(output, true);
-    }
-
-    // TODO: remove after 2nd rollout of "new style" brokers
     public void streamOut(DataOutput output) throws IOException {
-        streamOut(output, false);
-    }
-
-    // TODO: remove boolean after 2nd rollout of "new style" brokers
-    private void streamOut(DataOutput output, boolean isOldStyleProperties) throws IOException {
         final int numProps = propertyMap.size();
         if (numProps == 0) {
             logger.info("No message properties to stream out");
@@ -413,12 +282,7 @@ public class MessagePropertiesImpl implements MessageProperties {
             MessagePropertyHeader mph = new MessagePropertyHeader();
             mph.setPropertyType(e.getValue().type().toInt());
 
-            if (isOldStyleProperties) {
-                mph.setPropertyValueLength(valLen);
-            } else {
-                mph.setPropertyValueLength(offset);
-            }
-
+            mph.setPropertyValueOffset(offset);
             mph.setPropertyNameLength(nameLen);
 
             int propLen = nameLen + valLen;

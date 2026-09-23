@@ -545,7 +545,7 @@ public class PlainConsumerIT {
 
             final Uri QUEUE_URI = BmqBroker.Domains.Priority.generateQueueUri();
 
-            PlainProducerIT.sendMessage(MSG, PORT, QUEUE_URI, broker.isOldStyleMessageProperties());
+            PlainProducerIT.sendMessage(MSG, PORT, QUEUE_URI);
 
             getLastMessage(PORT, QUEUE_URI);
 

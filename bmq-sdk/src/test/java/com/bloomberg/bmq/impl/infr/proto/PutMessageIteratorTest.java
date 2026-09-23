@@ -66,14 +66,8 @@ class PutMessageIteratorTest {
         int i = 0;
         while (putIt.hasNext()) {
             // Build expected content
-            final boolean isOldStyleProperties = i % 2 == 0;
-
             final ByteBufferOutputStream bbos = new ByteBufferOutputStream();
-            if (isOldStyleProperties) {
-                props.streamOutOld(bbos);
-            } else {
-                props.streamOut(bbos);
-            }
+            props.streamOut(bbos);
 
             bbos.writeAscii(PAYLOAD);
 
@@ -84,9 +78,8 @@ class PutMessageIteratorTest {
 
             // Calculate CRC32c before adding padding
             ByteBuffer[] bb = bbos.reset();
-            final long expectedCRC32C = isOldStyleProperties ? 3469549003L : 340340870L;
             final long CRC32C = Crc32c.calculate(bb);
-            assertEquals(expectedCRC32C, CRC32C);
+            assertEquals(340340870L, CRC32C);
 
             // Fill content buffer with the payload and the padding
             for (ByteBuffer b : bb) {
@@ -103,8 +96,7 @@ class PutMessageIteratorTest {
             assertEquals(QUEUE_ID, putMsg.queueId());
             assertEquals(CRC32C, putMsg.crc32c());
             assertEquals(FLAGS, putMsg.flags());
-            assertEquals(isOldStyleProperties ? 0 : 1, putMsg.header().schemaWireId());
-            assertEquals(isOldStyleProperties, putMsg.appData().isOldStyleProperties());
+            assertEquals(1, putMsg.header().schemaWireId());
 
             ByteBuffer[] pl = putMsg.appData().applicationData();
             ByteBuffer b =
@@ -139,8 +131,6 @@ class PutMessageIteratorTest {
         final PutMessageImpl[] puts = new PutMessageImpl[NUM_MSGS];
 
         for (int i = 0; i < NUM_MSGS; i++) {
-            final boolean isOldStyleProperties = i % 2 == 0;
-
             PutMessageImpl msg = new PutMessageImpl();
             msg.setFlags(FLAGS);
             msg.setQueueId(i);
@@ -153,13 +143,11 @@ class PutMessageIteratorTest {
 
             msg.appData().setPayload(payload);
 
-            EventBuilderResult rc = builder.packMessage(msg, isOldStyleProperties);
+            EventBuilderResult rc = builder.packMessage(msg);
             assertEquals(EventBuilderResult.SUCCESS, rc);
-            assertEquals(isOldStyleProperties, msg.appData().isOldStyleProperties());
-            assertEquals(isOldStyleProperties ? 0 : 1, msg.header().schemaWireId());
+            assertEquals(1, msg.header().schemaWireId());
 
-            final long expectedCRC32C = isOldStyleProperties ? 3469549003L : 340340870L;
-            assertEquals(expectedCRC32C, msg.header().crc32c());
+            assertEquals(340340870L, msg.header().crc32c());
 
             puts[i] = msg;
         }
@@ -182,8 +170,6 @@ class PutMessageIteratorTest {
                 assertEquals(exp.flags(), msg.flags());
                 assertEquals(exp.crc32c(), msg.crc32c());
                 assertEquals(exp.header().schemaWireId(), msg.header().schemaWireId());
-                assertEquals(
-                        exp.appData().isOldStyleProperties(), msg.appData().isOldStyleProperties());
                 assertEquals(exp.appData().numPaddingBytes(), msg.appData().numPaddingBytes());
                 assertArrayEquals(exp.appData().applicationData(), msg.appData().applicationData());
 

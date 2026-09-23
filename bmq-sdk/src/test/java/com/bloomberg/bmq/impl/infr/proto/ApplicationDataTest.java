@@ -57,7 +57,6 @@ public class ApplicationDataTest {
 
         assertFalse(appData.hasProperties());
         assertFalse(appData.isCompressed());
-        assertFalse(appData.isOldStyleProperties());
     }
 
     @Test
@@ -68,17 +67,14 @@ public class ApplicationDataTest {
                     new MessagePropertiesImpl[] {
                         null, new MessagePropertiesImpl(), generateProps()
                     })
-                for (boolean isOldStyleProperties : new boolean[] {false, true})
-                    for (CompressionAlgorithmType compressionType :
-                            CompressionAlgorithmType.values()) {
-                        logger.info(
-                                "Stream out with payload:{}, props:{}, oldStyleProperties:{}, compression: {}",
-                                payload,
-                                props,
-                                isOldStyleProperties,
-                                compressionType);
-                        verifyStreamOut(payload, props, isOldStyleProperties, compressionType);
-                    }
+                for (CompressionAlgorithmType compressionType : CompressionAlgorithmType.values()) {
+                    logger.info(
+                            "Stream out with payload:{}, props:{}, compression: {}",
+                            payload,
+                            props,
+                            compressionType);
+                    verifyStreamOut(payload, props, compressionType);
+                }
     }
 
     @Test
@@ -89,17 +85,14 @@ public class ApplicationDataTest {
                     new MessagePropertiesImpl[] {
                         null, new MessagePropertiesImpl(), generateProps()
                     })
-                for (boolean isOldStyleProperties : new boolean[] {false, true})
-                    for (CompressionAlgorithmType compressionType :
-                            CompressionAlgorithmType.values()) {
-                        logger.info(
-                                "Stream in with payload:{}, props:{}, oldStyleProperties:{}, compression: {}",
-                                payload,
-                                props,
-                                isOldStyleProperties,
-                                compressionType);
-                        verifyStreamIn(payload, props, isOldStyleProperties, compressionType);
-                    }
+                for (CompressionAlgorithmType compressionType : CompressionAlgorithmType.values()) {
+                    logger.info(
+                            "Stream in with payload:{}, props:{}, compression: {}",
+                            payload,
+                            props,
+                            compressionType);
+                    verifyStreamIn(payload, props, compressionType);
+                }
     }
 
     @Test
@@ -119,7 +112,7 @@ public class ApplicationDataTest {
         ApplicationData data = new ApplicationData();
 
         // Stream in uncompressed data as compressed
-        data.streamIn(bbis.available(), false, false, CompressionAlgorithmType.E_ZLIB, bbis);
+        data.streamIn(bbis.available(), false, CompressionAlgorithmType.E_ZLIB, bbis);
 
         // "Compressed" data should be buffered
         assertTrue(data.isCompressed());
@@ -156,7 +149,6 @@ public class ApplicationDataTest {
     private ByteBuffer[] generateOutput(
             ByteBuffer[] payload,
             MessagePropertiesImpl props,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType)
             throws IOException {
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
@@ -165,11 +157,7 @@ public class ApplicationDataTest {
 
         if (compressionType == CompressionAlgorithmType.E_NONE) {
             if (hasProperties) {
-                if (isOldStyleProperties) {
-                    props.streamOutOld(bbos);
-                } else {
-                    props.streamOut(bbos);
-                }
+                props.streamOut(bbos);
             }
 
             if (payload != null) {
@@ -178,8 +166,8 @@ public class ApplicationDataTest {
                 }
             }
         } else {
-            // Stream out if new style properties
-            if (hasProperties && !isOldStyleProperties) {
+            // Properties are never compressed
+            if (hasProperties) {
                 props.streamOut(bbos);
             }
             // We need to close compressed stream in order to flush all compressed bytes
@@ -194,11 +182,6 @@ public class ApplicationDataTest {
             // closing underlying stream
             try (OutputStream compressedStream = compressionType.getCompression().compress(bbos);
                     DataOutputStream compressedOutput = new DataOutputStream(compressedStream)) {
-
-                // Stream out if old style properties
-                if (hasProperties && isOldStyleProperties) {
-                    props.streamOutOld(compressedOutput);
-                }
 
                 if (payload != null) {
                     for (ByteBuffer b : payload) {
@@ -219,7 +202,6 @@ public class ApplicationDataTest {
     public void verifyStreamOut(
             ByteBuffer[] payload,
             MessagePropertiesImpl props,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType)
             throws IOException {
 
@@ -261,10 +243,8 @@ public class ApplicationDataTest {
         // Verify unpackedSize
         assertEquals(getSize(payload) + propsSize, appData.unpackedSize());
 
-        ByteBuffer[] expected =
-                generateOutput(duplicate(payload), props, isOldStyleProperties, compressionType);
+        ByteBuffer[] expected = generateOutput(duplicate(payload), props, compressionType);
 
-        appData.setIsOldStyleProperties(isOldStyleProperties);
         appData.compressData(compressionType);
 
         int numPaddingBytes = ProtocolUtil.calculatePadding(appData.unpackedSize());
@@ -300,8 +280,7 @@ public class ApplicationDataTest {
         ByteBufferInputStream bbis = new ByteBufferInputStream(expected);
         final int unpackedInputSize = bbis.available() - numPaddingBytes;
 
-        appData.streamIn(
-                getSize(expected), hasProperties, isOldStyleProperties, compressionType, bbis);
+        appData.streamIn(getSize(expected), hasProperties, compressionType, bbis);
         assertEquals(unpackedInputSize, appData.unpackedSize());
 
         verifyPayload(payload, appData.payload());
@@ -311,13 +290,11 @@ public class ApplicationDataTest {
     public void verifyStreamIn(
             ByteBuffer[] payload,
             MessagePropertiesImpl props,
-            boolean isOldStyleProperties,
             CompressionAlgorithmType compressionType)
             throws IOException {
 
         // Prepare data to stream in
-        ByteBuffer[] data =
-                generateOutput(duplicate(payload), props, isOldStyleProperties, compressionType);
+        ByteBuffer[] data = generateOutput(duplicate(payload), props, compressionType);
         ByteBufferInputStream bbis = new ByteBufferInputStream(duplicate(data));
 
         // Get num of padding bytes
@@ -330,9 +307,7 @@ public class ApplicationDataTest {
 
         final boolean hasProperties = props != null && props.numProperties() > 0;
 
-        appData.streamIn(size, hasProperties, isOldStyleProperties, compressionType, bbis);
-
-        assertEquals(isOldStyleProperties, appData.isOldStyleProperties());
+        appData.streamIn(size, hasProperties, compressionType, bbis);
 
         // Check unpacked input unpackedSize has been set
         int unpackedSize = size - numPaddingBytes;
@@ -349,9 +324,8 @@ public class ApplicationDataTest {
         // Check properties
         verifyProperties(hasProperties ? props : null, appData.properties());
 
-        // If data is compressed and properties are new style encoded, data
-        // should stay compressed
-        if (compressionType != CompressionAlgorithmType.E_NONE && !isOldStyleProperties) {
+        // Properties are not compressed, so data should stay compressed
+        if (compressionType != CompressionAlgorithmType.E_NONE) {
             assertTrue(appData.isCompressed());
         }
 
@@ -372,7 +346,6 @@ public class ApplicationDataTest {
 
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
-        appData.setIsOldStyleProperties(isOldStyleProperties);
         appData.compressData(compressionType);
 
         appData.streamOut(bbos);

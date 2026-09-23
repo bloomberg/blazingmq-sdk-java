@@ -33,36 +33,36 @@ class MessagePropertyHeaderTest {
     void testGettersSetters() {
         MessagePropertyHeader mph = new MessagePropertyHeader();
         assertEquals(0, mph.propertyType());
-        assertEquals(0, mph.propertyValueLength());
+        assertEquals(0, mph.propertyValueOffset());
         assertEquals(0, mph.propertyNameLength());
 
         MessagePropertyHeader mph2 = new MessagePropertyHeader();
         mph2.setPropertyType(31); // max per protocol
-        mph2.setPropertyValueLength((1 << 26) - 1); // max per protocol
+        mph2.setPropertyValueOffset((1 << 26) - 1); // max per protocol
         mph2.setPropertyNameLength((1 << 12) - 1); // max per protocol
 
         assertEquals(31, mph2.propertyType());
-        assertEquals(((1 << 26) - 1), mph2.propertyValueLength());
+        assertEquals(((1 << 26) - 1), mph2.propertyValueOffset());
         assertEquals(((1 << 12) - 1), mph2.propertyNameLength());
 
         MessagePropertyHeader mph3 = new MessagePropertyHeader();
         mph3.setPropertyType(17);
-        mph3.setPropertyValueLength((1 << 19) - 1);
+        mph3.setPropertyValueOffset((1 << 19) - 1);
         mph3.setPropertyNameLength((1 << 8) - 1);
 
         assertEquals(17, mph3.propertyType());
-        assertEquals(((1 << 19) - 1), mph3.propertyValueLength());
+        assertEquals(((1 << 19) - 1), mph3.propertyValueOffset());
         assertEquals(((1 << 8) - 1), mph3.propertyNameLength());
     }
 
     @Test
     void testStreamInStreamOut() throws IOException {
-        final int valueLength = (1 << 26) - 1; // max per protocol
+        final int valueOffset = (1 << 26) - 1; // max per protocol
         final int nameLength = (1 << 12) - 1; // max per protocol
 
         MessagePropertyHeader mph = new MessagePropertyHeader();
         mph.setPropertyType(PropertyType.STRING.toInt());
-        mph.setPropertyValueLength(valueLength);
+        mph.setPropertyValueOffset(valueOffset);
         mph.setPropertyNameLength(nameLength);
 
         final int[] sizes =
@@ -108,7 +108,7 @@ class MessagePropertyHeaderTest {
             }
 
             assertEquals(PropertyType.STRING.toInt(), header.propertyType());
-            assertEquals(valueLength, header.propertyValueLength());
+            assertEquals(valueOffset, header.propertyValueOffset());
             assertEquals(nameLength, header.propertyNameLength());
 
             assertEquals(0, bbis.available());

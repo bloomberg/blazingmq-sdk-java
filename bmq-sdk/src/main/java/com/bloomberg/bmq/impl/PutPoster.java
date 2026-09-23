@@ -103,9 +103,7 @@ public final class PutPoster {
             }
 
             try {
-                EventBuilderResult packResult =
-                        putBuilder.packMessage(
-                                msgImpl, brokerConnection.isOldStyleMessageProperties());
+                EventBuilderResult packResult = putBuilder.packMessage(msgImpl);
                 if (packResult == EventBuilderResult.EVENT_TOO_BIG) {
                     // Put the current message back to the deque
                     putMessages.addFirst(msgImpl);

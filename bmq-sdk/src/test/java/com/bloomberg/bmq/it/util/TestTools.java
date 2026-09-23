@@ -97,8 +97,7 @@ public class TestTools {
         }
     }
 
-    public static ByteBuffer prepareUnpaddedData(String msg, boolean isOldStyleProperties)
-            throws IOException {
+    public static ByteBuffer prepareUnpaddedData(String msg) throws IOException {
         MessagePropertiesImpl props = new MessagePropertiesImpl();
 
         props.setPropertyAsString("routingId", "abcd-efgh-ijkl");
@@ -106,11 +105,7 @@ public class TestTools {
 
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
-        if (isOldStyleProperties) {
-            props.streamOutOld(bbos);
-        } else {
-            props.streamOut(bbos);
-        }
+        props.streamOut(bbos);
 
         bbos.writeAscii(msg);
 
@@ -150,8 +145,7 @@ public class TestTools {
         return bb.flip();
     }
 
-    public static PutMessageImpl preparePutMessage(String payload, boolean isOldStyleProperties)
-            throws IOException {
+    public static PutMessageImpl preparePutMessage(String payload) throws IOException {
         ByteBuffer b = ByteBuffer.wrap(payload.getBytes());
 
         int putFlags = 0;
@@ -168,7 +162,6 @@ public class TestTools {
         putMsg.appData().setProperties(mp);
         putMsg.appData().setPayload(b);
 
-        putMsg.appData().setIsOldStyleProperties(isOldStyleProperties);
         putMsg.compressData();
 
         logger.debug("Application data size: {}", putMsg.appData().unpackedSize());

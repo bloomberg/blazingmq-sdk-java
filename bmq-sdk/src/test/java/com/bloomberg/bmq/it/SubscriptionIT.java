@@ -16,7 +16,6 @@
 package com.bloomberg.bmq.it;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -377,8 +376,6 @@ class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            assertFalse(broker.isOldStyleMessageProperties());
-
             broker.start();
 
             logger.info("Step 2: Start producer/consumer");
@@ -440,8 +437,6 @@ class SubscriptionIT {
 
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
-
-            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -508,8 +503,6 @@ class SubscriptionIT {
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
 
-            assertFalse(broker.isOldStyleMessageProperties());
-
             broker.start();
 
             logger.info("Step 2: Start producer");
@@ -575,8 +568,6 @@ class SubscriptionIT {
 
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
-
-            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
@@ -665,8 +656,6 @@ class SubscriptionIT {
 
         try (BmqBroker broker = BmqBroker.createStoppedBroker()) {
             logger.info("Step 1: Bring up the broker");
-
-            assertFalse(broker.isOldStyleMessageProperties());
 
             broker.start();
 
