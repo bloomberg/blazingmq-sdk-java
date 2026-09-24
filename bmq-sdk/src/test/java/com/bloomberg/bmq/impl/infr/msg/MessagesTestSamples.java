@@ -39,11 +39,6 @@ public class MessagesTestSamples {
         }
     }
 
-    public static final SampleFileMetadata BMQ_IO_DUMP_BIN =
-            new SampleFileMetadata("/data/bmq_io_dump_1551267643131.bin", 16520);
-    public static final SampleFileMetadata BMQ_IO_DUMP_IDX =
-            new SampleFileMetadata("/data/bmq_io_dump_1551267643131.idx", 2178);
-
     public static final SampleFileMetadata STATUS_MSG =
             new SampleFileMetadata(
                     "/data/msg_control_status_53121b03-f45d-46b2-95d0-f2df8a1a2cb2.bin", 36);
