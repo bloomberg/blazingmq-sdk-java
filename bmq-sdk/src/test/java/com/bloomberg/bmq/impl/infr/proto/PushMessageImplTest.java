@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class PushMessageImplTest {
-    static final int HEADER_WORDS = PushHeader.HEADER_SIZE_FOR_SCHEMA_ID / Protocol.WORD_SIZE;
+    static final int HEADER_WORDS = PushHeader.HEADER_SIZE / Protocol.WORD_SIZE;
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
@@ -343,7 +343,7 @@ class PushMessageImplTest {
 
         // Stream in and ensure that IMPLICIT_PAYLOAD flag is not set and data is not empty
         final int size = bbis.available();
-        final int unpackedSize = size - numPaddingBytes - PushHeader.HEADER_SIZE_FOR_SCHEMA_ID;
+        final int unpackedSize = size - numPaddingBytes - PushHeader.HEADER_SIZE;
 
         try {
             msg.streamIn(bbis);

@@ -64,10 +64,7 @@ class PushEventImplTest {
 
             header.setLength(
                     EventHeader.HEADER_SIZE
-                            + (PushHeader.HEADER_SIZE_FOR_SCHEMA_ID
-                                            + unpackedSize
-                                            + numPaddingBytes)
-                                    * NUM);
+                            + (PushHeader.HEADER_SIZE + unpackedSize + numPaddingBytes) * NUM);
 
             header.streamOut(bbos);
 
