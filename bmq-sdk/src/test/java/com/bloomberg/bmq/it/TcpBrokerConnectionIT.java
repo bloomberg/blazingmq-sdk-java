@@ -1217,10 +1217,7 @@ class TcpBrokerConnectionIT {
 
             header.setLength(
                     EventHeader.HEADER_SIZE
-                            + (PushHeader.HEADER_SIZE_FOR_SCHEMA_ID
-                                            + unpackedSize
-                                            + numPaddingBytes)
-                                    * N);
+                            + (PushHeader.HEADER_SIZE + unpackedSize + numPaddingBytes) * N);
 
             header.streamOut(bbos);
 
