@@ -82,10 +82,6 @@ public class MessagesTestSamples {
             new SampleFileMetadata("/data/msg_confirm_15082018.bin", 252);
     public static final SampleFileMetadata PUSH_MULTI_MSG =
             new SampleFileMetadata("/data/msg_push_multi.bin", 256);
-    public static final SampleFileMetadata PUSH_MSG_ZLIB =
-            new SampleFileMetadata("/data/msg_push_zlib.bin", 64);
-    public static final SampleFileMetadata PUSH_WITH_SUBQUEUE_IDS_MSG =
-            new SampleFileMetadata("/data/msg_push_subqueueids.bin", 128);
     public static final SampleFileMetadata PUT_MSG_ZLIB =
             new SampleFileMetadata("/data/msg_put_zlib_27042018.bin", 132);
     public static final SampleFileMetadata PUT_MULTI_MSG =
@@ -96,6 +92,14 @@ public class MessagesTestSamples {
             new SampleFileMetadata("/data/msg_props.bin", 64);
     public static final SampleFileMetadata MSG_PROPS_LONG_HEADERS =
             new SampleFileMetadata("/data/msg_props_long_headers.bin", 72);
+
+    // Legacy samples.  These carry a 'PushHeader' without the schema id,
+    // which is no longer supported: streaming such a header in fails.
+    public static final SampleFileMetadata PUSH_MSG_PROPERTIES_V1_ZLIB =
+            new SampleFileMetadata("/data/msg_push_properties_v1_zlib.bin", 64);
+    public static final SampleFileMetadata PUSH_PROPERTIES_V1_WITH_SUBQUEUE_IDS_MSG =
+            new SampleFileMetadata("/data/msg_push_properties_v1_subqueueids.bin", 128);
+
     public static final SampleFileMetadata STATS_EVENTQUEUE_EMPTY =
             new SampleFileMetadata("/data/stat_eventqueue_stats_empty.txt", 321);
     public static final SampleFileMetadata STATS_EVENTQUEUE_EMPTY_FINAL =
