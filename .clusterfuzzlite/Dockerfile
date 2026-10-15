@@ -1,5 +1,5 @@
 # gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
-FROM gcr.io/oss-fuzz-base/base-builder-jvm@sha256:546368aaffc9d57085256d41a3615091d8991e125dc96f40e548ca6a882ac0f8
+FROM gcr.io/oss-fuzz-base/base-builder-jvm@sha256:bd13a763de1a0fb22099442094e7e0049657a8c47f01e9d7af8bb849e0ad4699
 
 # Ubuntu ships Maven 3.8.7, below the 3.8.9 that spotbugs-maven-plugin declares
 # as a prerequisite; Maven resolves plugin descriptors before it honours
