@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -229,6 +230,29 @@ class JsonDecoderUtilTest {
         assertEquals(StatusCategory.E_SUCCESS, status.category());
         assertEquals(123, status.code());
         assertEquals("Test", status.message());
+    }
+
+    @Test
+    void testGetJsonFromInvalidInput() {
+        assertThrows(
+                IOException.class,
+                () ->
+                        JsonDecoderUtil.getJsonFromInputStream(
+                                new ByteBufferInputStream(ByteBuffer.allocate(0))));
+
+        // Padding value is larger than the input
+        assertThrows(
+                IOException.class,
+                () ->
+                        JsonDecoderUtil.getJsonFromInputStream(
+                                new ByteBufferInputStream(ByteBuffer.wrap(new byte[] {'{', 3}))));
+
+        // Input contains only padding
+        assertThrows(
+                IOException.class,
+                () ->
+                        JsonDecoderUtil.getJsonFromInputStream(
+                                new ByteBufferInputStream(ByteBuffer.wrap(new byte[] {2, 2}))));
     }
 
     @Test

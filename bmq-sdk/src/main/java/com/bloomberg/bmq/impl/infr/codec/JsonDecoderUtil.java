@@ -33,6 +33,10 @@ public final class JsonDecoderUtil {
 
     public static String getJsonFromInputStream(ByteBufferInputStream bbis) throws IOException {
         final int bytesAvailable = bbis.available();
+        if (bytesAvailable == 0) {
+            throw new IOException("No bytes to decode");
+        }
+
         byte[] bytes = new byte[bytesAvailable];
 
         final int bytesRead = bbis.read(bytes);
@@ -48,7 +52,7 @@ public final class JsonDecoderUtil {
         }
 
         final int padding = bytes[bytes.length - 1];
-        if (padding < 0 || padding > 4) {
+        if (padding < 0 || padding > 4 || bytesAvailable <= padding) {
             throw new IOException("Invalid padding value encountered while decoding " + padding);
         }
 
