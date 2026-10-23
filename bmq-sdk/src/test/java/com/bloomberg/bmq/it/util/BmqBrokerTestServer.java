@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -329,7 +328,7 @@ public class BmqBrokerTestServer implements BmqBroker {
         if (dropTmpFolder) {
             // remove tmp folder
             logger.info("Drop '{}' tmp folder for {}", tmpFolder, this);
-            FileUtils.deleteDirectory(tmpFolder.toFile());
+            TestTools.deleteDirectory(tmpFolder);
         }
     }
 
