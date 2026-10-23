@@ -124,20 +124,16 @@ limitations under the License. -->
 
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-api</artifactId>
-        <version>2.26.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
         <version>2.26.1</version>
+        <scope>test</scope>
       </dependency>
 
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-slf4j-impl</artifactId>
         <version>2.26.1</version>
+        <scope>test</scope>
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
@@ -147,15 +143,11 @@ limitations under the License. -->
       </dependency>
 
       <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.23.0</version>
-      </dependency>
-
-      <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty-all</artifactId>
+        <artifactId>netty-bom</artifactId>
         <version>4.2.19.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -168,6 +160,7 @@ limitations under the License. -->
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
         <version>4.10.5</version>
+        <scope>provided</scope>
       </dependency>
 
       <dependency>
@@ -180,22 +173,9 @@ limitations under the License. -->
 
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-junit-jupiter</artifactId>
+        <artifactId>mockito-core</artifactId>
         <version>5.24.0</version>
         <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-inline</artifactId>
-        <version>5.2.0</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>[2.7,)</version>
       </dependency>
 
       <dependency>

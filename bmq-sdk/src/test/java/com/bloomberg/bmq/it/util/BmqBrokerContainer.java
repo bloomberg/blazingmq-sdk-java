@@ -41,7 +41,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -351,7 +350,7 @@ public class BmqBrokerContainer implements BmqBroker {
 
         if (dropTmpFolder) {
             logger.info("Drop '{}' tmp folder for '{}' container", tmpFolder, containerName);
-            FileUtils.deleteDirectory(tmpFolder.toFile());
+            TestTools.deleteDirectory(tmpFolder);
         }
 
         logger.info("Remove '{}' container", containerName);
