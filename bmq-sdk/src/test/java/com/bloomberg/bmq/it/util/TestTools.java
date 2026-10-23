@@ -45,8 +45,14 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -296,5 +302,18 @@ public class TestTools {
     public static String readFileContent(String fileName) throws IOException {
         ByteBuffer bb = readFile(fileName);
         return StandardCharsets.UTF_8.decode(bb).toString();
+    }
+
+    public static void deleteDirectory(Path dir) throws IOException {
+        if (!Files.exists(dir)) {
+            return;
+        }
+        List<Path> paths;
+        try (Stream<Path> walk = Files.walk(dir)) {
+            paths = walk.sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        }
+        for (Path p : paths) {
+            Files.delete(p);
+        }
     }
 }

@@ -19,9 +19,8 @@ import com.bloomberg.bmq.impl.infr.util.Argument;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HexFormat;
 import javax.annotation.concurrent.Immutable;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +68,8 @@ public class MessageGUID {
 
     /** The size of a hexadecimal string representation of the GUID. */
     public static final int SIZE_HEX = 2 * SIZE_BINARY;
+
+    private static final HexFormat HEX = HexFormat.of().withUpperCase();
 
     private MessageGUID() {
         buffer = new byte[SIZE_BINARY];
@@ -121,7 +122,7 @@ public class MessageGUID {
      * @return String hex representation of this object
      */
     public String toHex() {
-        return Hex.encodeHexString(buffer, false);
+        return HEX.formatHex(buffer);
     }
 
     /**
@@ -157,12 +158,7 @@ public class MessageGUID {
                 isValidHexRepresentation(val.getBytes(StandardCharsets.US_ASCII)),
                 "Invalid hex value");
         MessageGUID messageGUID = new MessageGUID();
-        try {
-            System.arraycopy(
-                    Hex.decodeHex(val), 0, messageGUID.buffer, 0, messageGUID.buffer.length);
-        } catch (DecoderException e) {
-            throw new IllegalArgumentException("HEX decoding error: " + e);
-        }
+        System.arraycopy(HEX.parseHex(val), 0, messageGUID.buffer, 0, SIZE_BINARY);
         return messageGUID;
     }
 
