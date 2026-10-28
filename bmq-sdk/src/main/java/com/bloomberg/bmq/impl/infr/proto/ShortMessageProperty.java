@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 public final class ShortMessageProperty extends MessageProperty {
 
     public ShortMessageProperty() {
-        super(PropertyType.SHORT, Short.SIZE);
+        super(PropertyType.SHORT, Short.BYTES);
     }
 
     @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
