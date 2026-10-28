@@ -311,6 +311,29 @@ class MessagePropertiesTest {
     }
 
     @Test
+    void testMaxValueSize() {
+        final int maxLen = MessagePropertyHeader.MAX_PROPERTY_VALUE_LENGTH;
+
+        MessagePropertiesImpl props = new MessagePropertiesImpl();
+        assertTrue(props.setPropertyAsBinary("myProp", new byte[maxLen]));
+        try {
+            props.setPropertyAsBinary("myProp", new byte[maxLen + 1]);
+            fail(); // Should not get here
+        } catch (IllegalArgumentException e) {
+            // OK
+        }
+
+        Int32MessageProperty p = new Int32MessageProperty();
+        p.setPropertyValue(new byte[Integer.BYTES]);
+        try {
+            p.setPropertyValue(new byte[Integer.BYTES + 1]);
+            fail(); // Should not get here
+        } catch (IllegalArgumentException e) {
+            // OK
+        }
+    }
+
+    @Test
     void testUpdate() {
         final boolean BOOL_VAL = true;
         final byte BYTE_VAL = 2;
