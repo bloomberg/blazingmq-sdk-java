@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 public final class Int32MessageProperty extends MessageProperty {
 
     public Int32MessageProperty() {
-        super(PropertyType.INT32, Integer.SIZE);
+        super(PropertyType.INT32, Integer.BYTES);
     }
 
     @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods

@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 public final class Int64MessageProperty extends MessageProperty {
 
     public Int64MessageProperty() {
-        super(PropertyType.INT64, Long.SIZE);
+        super(PropertyType.INT64, Long.BYTES);
     }
 
     @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods

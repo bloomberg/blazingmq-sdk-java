@@ -79,9 +79,12 @@ public interface MessageProperties {
      * Sets a property with the specified {@code name} having the specified {@code value} of the
      * type {@code String}.
      *
+     * <p>The value can be at most 64 MiB - 1 characters long.
+     *
      * @param name property name
      * @param value property value
      * @return boolean {@code true} on success, and {@code false} in case of failure.
+     * @throws IllegalArgumentException if the value is too long
      */
     boolean setPropertyAsString(String name, String value);
 
@@ -89,9 +92,12 @@ public interface MessageProperties {
      * Sets a property with the specified {@code name} having the specified {@code value} as an
      * array of bytes.
      *
+     * <p>The value can be at most 64 MiB - 1 bytes long.
+     *
      * @param name property name
      * @param value property value
      * @return boolean {@code true} on success, and {@code false} in case of failure.
+     * @throws IllegalArgumentException if the value is too long
      */
     boolean setPropertyAsBinary(String name, byte[] value);
 }
