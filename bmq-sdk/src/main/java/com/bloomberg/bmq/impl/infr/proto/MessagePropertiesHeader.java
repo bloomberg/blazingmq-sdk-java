@@ -201,7 +201,7 @@ public final class MessagePropertiesHeader {
     }
 
     public int numProperties() {
-        return numProperties;
+        return numProperties & 0xFF;
     }
 
     public void streamIn(DataInput input) throws IOException {
