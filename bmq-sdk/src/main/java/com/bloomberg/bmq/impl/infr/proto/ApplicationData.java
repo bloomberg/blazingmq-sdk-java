@@ -245,20 +245,20 @@ public class ApplicationData {
         ByteBufferInputStream bbis = new ByteBufferInputStream(data);
 
         InputStream decompressedStream = compressionType.getCompression().decompress(bbis);
-        DataInputStream inputStream = new DataInputStream(decompressedStream);
+        try (DataInputStream inputStream = new DataInputStream(decompressedStream)) {
+            // Stream in properties
+            if (arePropertiesCompressed) {
+                // If properties are compressed then they are encoded in old format
+                streamInPropertiesOld(inputStream);
+            }
 
-        // Stream in properties
-        if (arePropertiesCompressed) {
-            // If properties are compressed then they are encoded in old format
-            streamInPropertiesOld(inputStream);
-        }
+            // Stream in payload
+            streamInPayload(inputStream);
 
-        // Stream in payload
-        streamInPayload(inputStream);
-
-        // Check if all data has been read
-        if (bbis.available() > 0) {
-            throw new IOException("Not all compressed bytes have been read");
+            // Check if all data has been read
+            if (bbis.available() > 0) {
+                throw new IOException("Not all compressed bytes have been read");
+            }
         }
 
         resetCompressedData();
