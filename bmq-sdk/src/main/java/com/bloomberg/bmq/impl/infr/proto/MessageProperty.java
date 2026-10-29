@@ -27,7 +27,7 @@ public abstract class MessageProperty {
 
     protected MessageProperty(PropertyType type, int maxValueSize) {
         propertyType = type;
-        this.maxValueSize = maxValueSize / Byte.SIZE;
+        this.maxValueSize = maxValueSize;
     }
 
     public void setPropertyName(String name) {

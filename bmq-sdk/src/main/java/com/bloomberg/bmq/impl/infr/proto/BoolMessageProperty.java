@@ -18,7 +18,7 @@ package com.bloomberg.bmq.impl.infr.proto;
 public final class BoolMessageProperty extends MessageProperty {
 
     public BoolMessageProperty() {
-        super(PropertyType.BOOL, Byte.SIZE);
+        super(PropertyType.BOOL, Byte.BYTES);
     }
 
     @SuppressWarnings("this-escape") // setPropertyValue() is `final` and calls no non-final methods
