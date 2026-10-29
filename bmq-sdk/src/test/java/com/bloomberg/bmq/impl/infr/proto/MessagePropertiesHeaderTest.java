@@ -18,6 +18,7 @@ package com.bloomberg.bmq.impl.infr.proto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
+import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.msg.MessagesTestSamples;
 import com.bloomberg.bmq.util.TestHelpers;
 import java.io.IOException;
@@ -145,5 +146,22 @@ class MessagePropertiesHeaderTest {
         assertEquals(12, mph3.messagePropertyHeaderSize());
         assertEquals(1024 * 123, mph3.messagePropertiesAreaWords());
         assertEquals(8, mph3.numProperties());
+    }
+
+    @Test
+    void testNumPropertiesStreamInOut() throws IOException {
+        final int[] values = {1, 127, 128, 200, MessagePropertiesHeader.MAX_NUM_PROPERTIES};
+        for (int numProps : values) {
+            MessagePropertiesHeader mph = new MessagePropertiesHeader();
+            mph.setNumProperties(numProps);
+            assertEquals(numProps, mph.numProperties());
+
+            ByteBufferOutputStream bbos = new ByteBufferOutputStream();
+            mph.streamOut(bbos);
+
+            MessagePropertiesHeader mph2 = new MessagePropertiesHeader();
+            mph2.streamIn(new ByteBufferInputStream(bbos.reset()));
+            assertEquals(numProps, mph2.numProperties());
+        }
     }
 }
