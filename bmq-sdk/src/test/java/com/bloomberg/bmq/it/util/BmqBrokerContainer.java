@@ -18,29 +18,21 @@ package com.bloomberg.bmq.it.util;
 import com.bloomberg.bmq.AuthnCredential;
 import com.bloomberg.bmq.SessionOptions;
 import com.bloomberg.bmq.impl.infr.util.Argument;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import com.github.dockerjava.transport.DockerHttpClient;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +45,11 @@ public class BmqBrokerContainer implements BmqBroker {
     private static final String OUTPUT_FILENAME = "output.log";
     private static final long MAX_CONTAINER_WAIT_TIME_MS = 5000;
     private static final long CONTAINER_HEALTH_CHECK_DT_MS = 100;
+    private static final long DOCKER_CMD_TIMEOUT_SEC = 45;
     private static final String BROKER_READY_MESSAGE = "Cluster (local) is available";
 
     private final SessionOptions sessionOptions;
-    private final DockerClient client;
     private final String containerName;
-    private final String containerId;
     private final Path tmpFolder;
     private final File output;
 
@@ -69,16 +60,6 @@ public class BmqBrokerContainer implements BmqBroker {
 
     public static BmqBrokerContainer createContainer(int port) throws IOException {
         Argument.expectPositive(port, "port");
-
-        DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-        DockerHttpClient httpClient =
-                new ApacheDockerHttpClient.Builder()
-                        .dockerHost(config.getDockerHost())
-                        .sslConfig(config.getSSLConfig())
-                        .maxConnections(100)
-                        .connectionTimeout(Duration.ofSeconds(30))
-                        .responseTimeout(Duration.ofSeconds(45))
-                        .build();
 
         final URI uri = URI.create("tcp://localhost:" + port);
         final SessionOptions opts =
@@ -103,23 +84,57 @@ public class BmqBrokerContainer implements BmqBroker {
 
         logger.info("Use '{}' directory for broker logs", logsPath);
 
-        final PortBinding portBinding =
-                PortBinding.parse(opts.brokerUri().getPort() + ":" + BROKER_DEFAULT_PORT);
-        final DockerClient client = DockerClientImpl.getInstance(config, httpClient);
+        docker(
+                "create",
+                "--name",
+                name,
+                "-p",
+                opts.brokerUri().getPort() + ":" + BROKER_DEFAULT_PORT,
+                "-v",
+                logsPath + ":" + CONTAINER_TMP_LOGS,
+                IMAGE_NAME);
 
-        final HostConfig hostConfig =
-                new HostConfig()
-                        .withPortBindings(portBinding)
-                        .withBinds(Bind.parse(logsPath + ":" + CONTAINER_TMP_LOGS));
+        return new BmqBrokerContainer(opts, name, tmpDir);
+    }
 
-        final String id =
-                client.createContainerCmd(IMAGE_NAME)
-                        .withName(name)
-                        .withHostConfig(hostConfig)
-                        .exec()
-                        .getId();
+    private static String docker(String... args) {
+        final List<String> cmd = new ArrayList<>();
+        cmd.add("docker");
+        cmd.addAll(Arrays.asList(args));
 
-        return new BmqBrokerContainer(opts, client, name, id, tmpDir);
+        try {
+            final Path outFile = Files.createTempFile("docker", ".out");
+            try {
+                final Process process =
+                        new ProcessBuilder(cmd)
+                                .redirectErrorStream(true)
+                                .redirectOutput(outFile.toFile())
+                                .start();
+                if (!process.waitFor(DOCKER_CMD_TIMEOUT_SEC, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    throw new IllegalStateException(
+                            String.format(
+                                    "'%s' timed out after %d s",
+                                    String.join(" ", cmd), DOCKER_CMD_TIMEOUT_SEC));
+                }
+                final String out = new String(Files.readAllBytes(outFile), StandardCharsets.UTF_8);
+                final int rc = process.exitValue();
+                if (rc != 0) {
+                    throw new IllegalStateException(
+                            String.format(
+                                    "'%s' failed with code %d: %s",
+                                    String.join(" ", cmd), rc, out));
+                }
+                return out.trim();
+            } finally {
+                Files.deleteIfExists(outFile);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
     }
 
     private static Path makeTempDir(String containerName) throws IOException {
@@ -183,12 +198,9 @@ public class BmqBrokerContainer implements BmqBroker {
         return null;
     }
 
-    private BmqBrokerContainer(
-            SessionOptions so, DockerClient dockerClient, String name, String id, Path tmp) {
+    private BmqBrokerContainer(SessionOptions so, String name, Path tmp) {
         sessionOptions = so;
-        client = dockerClient;
         containerName = name;
-        containerId = id;
         tmpFolder = tmp;
         output = tmpFolder.resolve(OUTPUT_FILENAME).toFile();
     }
@@ -196,7 +208,7 @@ public class BmqBrokerContainer implements BmqBroker {
     @Override
     public void start() {
         logger.info("Starting container '{}'...", containerName);
-        client.startContainerCmd(containerId).exec();
+        docker("start", containerName);
 
         long startTime = System.currentTimeMillis();
         try {
@@ -205,20 +217,20 @@ public class BmqBrokerContainer implements BmqBroker {
                     totalTimeMs += CONTAINER_HEALTH_CHECK_DT_MS) {
 
                 // Check if container is still running
-                InspectContainerResponse resp = client.inspectContainerCmd(containerId).exec();
-                if (!resp.getState().getRunning()) {
+                if (!Boolean.parseBoolean(inspect("{{.State.Running}}"))) {
                     logger.error(
                             "Container '{}' is not running, status = '{}'",
-                            containerId,
-                            resp.getState().getStatus());
+                            containerName,
+                            inspect("{{.State.Status}}"));
                     throw new RuntimeException(
-                            String.format("Failed to start container '%s'", containerId));
+                            String.format("Failed to start container '%s'", containerName));
                 }
 
                 // Check logs for broker readiness message
                 if (isBrokerReady()) {
                     long elapsed = System.currentTimeMillis() - startTime;
-                    logger.info("Container '{}' broker is ready after {} ms", containerId, elapsed);
+                    logger.info(
+                            "Container '{}' broker is ready after {} ms", containerName, elapsed);
                     break;
                 }
 
@@ -226,7 +238,7 @@ public class BmqBrokerContainer implements BmqBroker {
                     throw new RuntimeException(
                             String.format(
                                     "Timeout waiting for broker ready in container '%s'",
-                                    containerId));
+                                    containerName));
                 }
 
                 Thread.sleep(CONTAINER_HEALTH_CHECK_DT_MS);
@@ -236,7 +248,7 @@ public class BmqBrokerContainer implements BmqBroker {
             return;
         }
 
-        logger.info("Container '{}' broker is ready", containerId);
+        logger.info("Container '{}' broker is ready", containerName);
 
         // For BlazingMQ broker running in container default tier should be the 'lcl-{guest
         // hostname}'
@@ -259,36 +271,21 @@ public class BmqBrokerContainer implements BmqBroker {
                 CONTAINER_TMP_LOGS,
                 containerName);
 
-        final String execId =
-                client.execCreateCmd(containerId)
-                        .withCmd("/bin/bash", "-c", "chmod a+rw -R " + CONTAINER_TMP_LOGS)
-                        .withAttachStdout(true)
-                        .withAttachStderr(true)
-                        .exec()
-                        .getId();
-
-        ResultCallback.Adapter<Frame> resulCallback =
-                new ResultCallback.Adapter<Frame>() {
-                    @Override
-                    public void onNext(Frame item) {
-                        logger.info(item.toString());
-                    }
-                };
-
-        try {
-            client.execStartCmd(execId).exec(resulCallback).awaitCompletion();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
-        }
+        logger.info(
+                docker(
+                        "exec",
+                        containerName,
+                        "/bin/bash",
+                        "-c",
+                        "chmod a+rw -R " + CONTAINER_TMP_LOGS + " || true"));
 
         // Stop the broker
         logger.info("Gracefully stop the broker in '{}' container", containerName);
-        client.killContainerCmd(containerId).withSignal("SIGINT").exec();
+        docker("kill", "--signal", "SIGINT", containerName);
 
         // Stop the container
         logger.info("Stop '{}' container", containerName);
-        client.stopContainerCmd(containerId).withTimeout(20).exec();
+        docker("stop", "-t", "20", containerName);
 
         isStarted = false;
     }
@@ -354,64 +351,31 @@ public class BmqBrokerContainer implements BmqBroker {
         }
 
         logger.info("Remove '{}' container", containerName);
-        client.removeContainerCmd(containerId).withForce(true).exec();
+        docker("rm", "-f", containerName);
     }
 
     private void saveContainerOutput() throws IOException {
         logger.info("Save '{}' container output to '{}' file", containerName, output);
 
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(output, true))) {
-            ResultCallback.Adapter<Frame> resultCallback =
-                    new ResultCallback.Adapter<Frame>() {
-                        @Override
-                        public void onNext(Frame item) {
-                            try {
-                                out.append(item.toString());
-                                out.newLine();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    };
-
-            client.logContainerCmd(containerId)
-                    .withStdOut(true)
-                    .withStdErr(true)
-                    .exec(resultCallback)
-                    .awaitCompletion();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        Files.writeString(
+                output.toPath(),
+                docker("logs", containerName) + System.lineSeparator(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND);
     }
 
     private boolean isBrokerReady() {
-        final boolean[] ready = {false};
-        ResultCallback.Adapter<Frame> callback =
-                new ResultCallback.Adapter<Frame>() {
-                    @Override
-                    public void onNext(Frame item) {
-                        if (item.toString().contains(BROKER_READY_MESSAGE)) {
-                            ready[0] = true;
-                        }
-                    }
-                };
-        try {
-            client.logContainerCmd(containerId)
-                    .withStdOut(true)
-                    .withStdErr(true)
-                    .exec(callback)
-                    .awaitCompletion();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        return ready[0];
+        return docker("logs", containerName).contains(BROKER_READY_MESSAGE);
+    }
+
+    private String inspect(String format) {
+        return docker("inspect", "-f", format, containerName);
     }
 
     private String getHostname() {
         // Get container hostname
         logger.info("Get '{}' container hostname", containerName);
-        final String hostname =
-                client.inspectContainerCmd(containerId).exec().getConfig().getHostName();
+        final String hostname = inspect("{{.Config.Hostname}}");
         logger.info("'{}' container has '{}' hostname", containerName, hostname);
 
         return hostname;
