@@ -16,10 +16,13 @@
 package com.bloomberg.bmq.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
+import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import com.bloomberg.bmq.impl.infr.net.intf.TcpConnection.ReadCallback.ReadCompletionStatus;
+import com.bloomberg.bmq.impl.infr.proto.EventHeader;
 import com.bloomberg.bmq.impl.infr.proto.EventType;
 import com.bloomberg.bmq.impl.infr.proto.PushEventBuilder;
 import com.bloomberg.bmq.impl.infr.proto.PushMessageImpl;
@@ -117,5 +120,26 @@ class ProtocolEventImplTcpReaderTest {
                 }
             }
         }
+    }
+
+    @Test
+    void testEventTooLarge() throws IOException {
+        ArrayList<EventType> events = new ArrayList<>();
+        ProtocolEventTcpReader reader =
+                new ProtocolEventTcpReader((eventType, bbuf) -> events.add(eventType));
+        ReadCompletionStatus status = new ReadCompletionStatus();
+
+        for (int length : new int[] {EventHeader.MAX_SIZE_SOFT + 1, EventHeader.MAX_SIZE_HARD}) {
+            EventHeader header = new EventHeader();
+            header.setType(EventType.PUSH);
+            header.setLength(length);
+            ByteBufferOutputStream bbos = new ByteBufferOutputStream();
+            header.streamOut(bbos);
+
+            assertThrows(IOException.class, () -> reader.read(status, bbos.reset()));
+        }
+
+        reader.read(status, buildPushMessage(false));
+        assertEquals(1, events.size());
     }
 }
