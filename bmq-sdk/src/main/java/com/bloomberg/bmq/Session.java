@@ -889,10 +889,17 @@ public final class Session implements AbstractSession {
             Integer[] subQueueIds = msg.subQueueIds();
             for (Integer subQId : subQueueIds) {
                 QueueHandle queue = brokerSession.lookupQueue(subQId);
-                if (queue != null) {
-                    queue.handlePushMessage(msg);
+                if (queue == null) {
+                    logger.warn("Dropping PUSH message for unknown queue: {}", msg);
+                } else if (queue.getQueueId() != msg.queueId()) {
+                    logger.error(
+                            "Dropping PUSH message, queue Id mismatch between PUSH ({}) and queue"
+                                    + " ({}): {}",
+                            msg.queueId(),
+                            queue.getQueueId(),
+                            msg);
                 } else {
-                    logger.warn("Received PUSH message for unknown queue: {}", msg);
+                    queue.handlePushMessage(msg);
                 }
             }
         }
