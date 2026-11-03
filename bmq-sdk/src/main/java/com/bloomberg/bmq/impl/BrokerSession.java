@@ -1286,7 +1286,7 @@ public final class BrokerSession
         try {
             for (PushMessageImpl m : messages) {
                 ConfirmMessage confMsg = new ConfirmMessage();
-                confMsg.setQueueId(m.queueId());
+                confMsg.setQueueId(queueHandle.getQueueId());
                 confMsg.setSubQueueId(queueHandle.getSubQueueId());
                 confMsg.setMessageGUID(m.messageGUID());
                 ceb.packMessage(confMsg);
