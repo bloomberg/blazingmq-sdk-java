@@ -1162,9 +1162,7 @@ class TcpBrokerConnectionIT {
         // 2) Invoke session 'start' and ensure that it succeeds.
         // 3) Generate PUSH event with N messages with invalid message on K index,
         // 4) From the server send PUSH event
-        // 5) Ensure that only K-2 messages are dispatched.
-        //    Other messages are discarded due to exception
-        //    (see PushEventImpl and PushMessageIterator for details)
+        // 5) Ensure that only K-1 messages are dispatched.
         // 6) Stop the session and the server.
 
         final int NUM_RETRIES = 1;
@@ -1250,10 +1248,8 @@ class TcpBrokerConnectionIT {
             // 4) From the server send PUSH event
             server.write(bbos.reset());
 
-            // 5) Ensure that only K-2 messages are dispatched
-
-            // Check first K-2 messages
-            for (int i = 1; i <= K - 2; i++) {
+            // 5) Ensure that only K-1 messages are dispatched
+            for (int i = 1; i <= K - 1; i++) {
                 PushMessageImpl pm = session.getPush();
                 assertNotNull(pm);
 
@@ -1261,9 +1257,9 @@ class TcpBrokerConnectionIT {
                         new ByteBuffer[] {ByteBuffer.wrap(bytes)}, pm.appData().payload());
             }
 
-            logger.info("Successfully dispatched {} messages", K - 2);
+            logger.info("Successfully dispatched {} messages", K - 1);
 
-            // We should not get 'K-1'-th message.
+            // We should not get 'K'-th message.
             // Use smaller timeout because the event has been already received
             // from the broker
             try {
@@ -1272,7 +1268,7 @@ class TcpBrokerConnectionIT {
                 fail();
             } catch (IllegalStateException e) {
                 assertEquals("Missed event", e.getMessage());
-                logger.info("[EXPECTED] Failed to get message #{}", K - 1);
+                logger.info("[EXPECTED] Failed to get message #{}", K);
             }
 
         } finally {

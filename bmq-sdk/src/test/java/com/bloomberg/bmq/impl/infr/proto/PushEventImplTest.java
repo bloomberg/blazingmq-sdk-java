@@ -126,30 +126,8 @@ class PushEventImplTest {
                         }
                     };
 
-            try {
-                pushEvent.dispatch(handler);
-                fail(); // should not get here
-            } catch (IllegalArgumentException e) {
-                // According to PushMessageIterator used in 'dispatch' method,
-                // when 'next()' method is called, the next item after
-                // the current one is also prefetched and parsed.
-                // If the next item is invalid then the exception will be thrown for
-                // the current one.
-                //
-                // In our situation, the first item should be processed successfully.
-                // When the second one is being dispatched, which is valid,
-                // an exception should be thrown related to the third item.
-                // On another hand, in the 'dispatch()', method number of messages is incremented
-                // before calling the handler. So eventually when the exception is thrown,
-                // the number of messages should be equal to 2
-                assertEquals(
-                        String.format("'%d' - unknown compression algorithm type", unknownType),
-                        e.getMessage());
-
-                // only the first message should be processed successfully
-                assertEquals(2, pushEvent.messageCount());
-            }
-
+            // Dispatch stops at the third message
+            pushEvent.dispatch(handler);
             assertEquals(2, pushEvent.messageCount());
         }
     }
