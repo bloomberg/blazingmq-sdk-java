@@ -425,32 +425,16 @@ class PushMessageIteratorTest {
             PushMessageIterator pushIt = pushEvent.iterator();
 
             int counter = 0;
-            try {
-                while (pushIt.hasNext()) {
-                    PushMessageImpl pushMsg = pushIt.next();
+            while (pushIt.hasNext()) {
+                PushMessageImpl pushMsg = pushIt.next();
 
-                    assertArrayEquals(
-                            new ByteBuffer[] {ByteBuffer.wrap(bytes)}, pushMsg.appData().payload());
-                    counter++;
-                }
-            } catch (IllegalArgumentException e) {
-                // According to PushMessageIterator, when 'next()' method is called,
-                // the next item after the current one is also prefetched and parsed.
-                // If the next item is invalid then the exception will be thrown for
-                // the current one.
-                //
-                // In our situation, the first item should be processed successfully.
-                // When we call 'next()' to get the second one, which is valid,
-                // an exception should be thrown related to the third item.
-                assertEquals(
-                        String.format("'%d' - unknown compression algorithm type", unknownType),
-                        e.getMessage());
-
-                // only the first message should be processed successfully
-                assertEquals(1, counter);
+                assertArrayEquals(
+                        new ByteBuffer[] {ByteBuffer.wrap(bytes)}, pushMsg.appData().payload());
+                counter++;
             }
 
-            assertEquals(1, counter);
+            // Iteration stops at the third message
+            assertEquals(2, counter);
         }
     }
 }
