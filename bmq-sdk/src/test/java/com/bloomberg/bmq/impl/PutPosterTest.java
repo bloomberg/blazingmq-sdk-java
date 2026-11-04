@@ -27,6 +27,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.bloomberg.bmq.BMQException;
+import com.bloomberg.bmq.CorrelationId;
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.ResultCodes.AckResult;
 import com.bloomberg.bmq.ResultCodes.GenericResult;
@@ -44,13 +46,18 @@ import com.bloomberg.bmq.impl.intf.BrokerConnection;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
@@ -374,5 +381,82 @@ class PutPosterTest {
                             0);
             poster.registerAck(ackMsg); // should be just logged and ignored
         }
+    }
+
+    @Test
+    void testFailedPostDoesNotAffectOtherThreads() throws Exception {
+        // Two threads post at the same time:
+        // 1. Thread B posts msgB1 and msgB2, and pauses after msgB1 is packed.
+        // 2. Thread A posts msgA, and the write fails.
+        // 3. Thread B resumes, and its write succeeds.
+        // A's failure must not affect B's messages: they stay unacknowledged
+        // and get a NACK when the session goes down.
+
+        // First write (thread A) fails, second write (thread B) succeeds
+        BrokerConnection connection = mock(BrokerConnection.class);
+        when(connection.write(any(ByteBuffer[].class), anyBoolean()))
+                .thenReturn(GenericResult.NOT_CONNECTED, GenericResult.SUCCESS);
+
+        PutPoster poster = new PutPoster(connection, new EventsStats());
+
+        CountDownLatch firstMsgPacked = new CountDownLatch(1);
+        CountDownLatch failedPostDone = new CountDownLatch(1);
+        AtomicBoolean paused = new AtomicBoolean();
+
+        PutMessageImpl msgB1 = new PutMessageImpl();
+        PutMessageImpl msgB2 =
+                new PutMessageImpl() {
+                    @Override
+                    public CorrelationId correlationId() {
+                        // The first call happens in thread B right after msgB1 is packed.
+                        // Pause there until thread A's post is done.
+                        if (!paused.getAndSet(true)) {
+                            firstMsgPacked.countDown();
+                            try {
+                                failedPostDone.await(5, TimeUnit.SECONDS);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        return super.correlationId();
+                    }
+                };
+        PutMessageImpl msgA = new PutMessageImpl();
+        for (PutMessageImpl m : new PutMessageImpl[] {msgB1, msgB2, msgA}) {
+            m.appData().setPayload(ByteBuffer.allocate(10));
+            m.setCorrelationId();
+        }
+
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        try {
+            // Thread B
+            Future<?> postB = es.submit(() -> poster.post(msgB1, msgB2));
+            assertTrue(firstMsgPacked.await(5, TimeUnit.SECONDS));
+
+            // Thread A: the write fails, A gets an error
+            try {
+                poster.post(msgA);
+                fail(); // Should not get here
+            } catch (BMQException e) {
+                assertEquals("Failed to post PUT event: NOT_CONNECTED", e.getMessage());
+            } finally {
+                failedPostDone.countDown();
+            }
+
+            // Thread B resumes and its post succeeds
+            postB.get(5, TimeUnit.SECONDS);
+        } finally {
+            es.shutdownNow();
+        }
+
+        // No ACKs were received, so both of B's messages must get a NACK.
+        // msgA must not, because A already got an error for it.
+        Set<CorrelationId> nackIds = new HashSet<>();
+        for (AckMessageImpl nack : poster.createNegativeAcks()) {
+            nackIds.add(nack.correlationId());
+        }
+        assertEquals(
+                new HashSet<>(Arrays.asList(msgB1.correlationId(), msgB2.correlationId())),
+                nackIds);
     }
 }
