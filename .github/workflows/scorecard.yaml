@@ -20,7 +20,7 @@ permissions: read-all
 jobs:
   run-scorecard:
     # Call reusable workflow file
-    uses: bloomberg/.github/.github/workflows/_scorecard.yml@main
+    uses: bloomberg/.github/.github/workflows/_scorecard.yml@7f3c2445e0c09c95e18bf1fa7b9f5e28bfe6759c # main, 2026-09-13
     permissions:
       id-token: write
       security-events: write
