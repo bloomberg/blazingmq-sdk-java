@@ -743,9 +743,10 @@ public final class BrokerSession
     public void handleAckMessage(AckMessageImpl ackMsg) {
         assert isInSessionExecutor();
         try {
-            putPoster.registerAck(ackMsg);
-            AckMessageEvent event = AckMessageEvent.createInstance(ackMsg);
-            enqueueEvent(event);
+            if (putPoster.registerAck(ackMsg)) {
+                AckMessageEvent event = AckMessageEvent.createInstance(ackMsg);
+                enqueueEvent(event);
+            }
         } catch (IllegalStateException e) {
             logger.error("Failed to handle ACK message: ", e);
         }
@@ -1285,7 +1286,7 @@ public final class BrokerSession
         try {
             for (PushMessageImpl m : messages) {
                 ConfirmMessage confMsg = new ConfirmMessage();
-                confMsg.setQueueId(m.queueId());
+                confMsg.setQueueId(queueHandle.getQueueId());
                 confMsg.setSubQueueId(queueHandle.getSubQueueId());
                 confMsg.setMessageGUID(m.messageGUID());
                 ceb.packMessage(confMsg);
