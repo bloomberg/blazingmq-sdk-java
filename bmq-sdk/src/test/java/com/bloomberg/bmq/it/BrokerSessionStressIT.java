@@ -177,17 +177,17 @@ class BrokerSessionStressIT {
                                 logger.error("Failed to CONFIRM. GUID: {}", pm.messageGUID());
                                 state = TransferState.DONE;
                             }
-
-                            if (pushMessages.size() == numMsg && ackMessages.size() == numMsg) {
-                                logger.info("Received all ACKs and PUSHs");
-                                state = TransferState.DONE;
-                            }
                         } else if (event instanceof AckMessageEvent) {
                             AckMessageImpl msg = ((AckMessageEvent) event).rawMessage();
                             logger.debug(
                                     "Got ACK [{}] with GUID: {}", msg.status(), msg.messageGUID());
                             logger.debug("Got ACK: {}", msg);
                             ackMessages.add(msg);
+                        }
+
+                        if (pushMessages.size() == numMsg && ackMessages.size() == numMsg) {
+                            logger.info("Received all ACKs and PUSHs");
+                            state = TransferState.DONE;
                         }
                         break;
                     default:

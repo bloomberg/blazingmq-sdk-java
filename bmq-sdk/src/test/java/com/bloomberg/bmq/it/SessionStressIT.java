@@ -172,15 +172,15 @@ class SessionStressIT {
                     logger.error("Failed to CONFIRM. GUID: {}", pm.messageGUID());
                     state = TransferState.DONE;
                 }
-                if (pushMessages.size() == numberOfPushMessages
-                        && ackMessages.size() == numberOfPutMessages) {
-                    logger.info("Received all ACKs and PUSHs");
-                    state = TransferState.DONE;
-                }
             } else if (event instanceof AckMessage) {
                 AckMessage msg = (AckMessage) event;
                 logger.debug("Got ACK [{}] with GUID: {}", msg.status(), msg.messageGUID());
                 ackMessages.add(msg);
+            }
+            if (pushMessages.size() == numberOfPushMessages
+                    && ackMessages.size() == numberOfPutMessages) {
+                logger.info("Received all ACKs and PUSHs");
+                state = TransferState.DONE;
             }
             return state;
         }
