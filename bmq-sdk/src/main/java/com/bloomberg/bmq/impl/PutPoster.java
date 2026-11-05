@@ -165,7 +165,11 @@ public final class PutPoster {
         logger.info("Unacknowledged PUT messages {}", unacknowledgedPuts.size());
     }
 
-    public void registerAck(AckMessageImpl ackMsg) {
+    /**
+     * Returns true if the ACK is correct and must be processed, or return false if it is malformed
+     * and must be dropped.
+     */
+    public boolean registerAck(AckMessageImpl ackMsg) {
         Argument.expectNonNull(ackMsg, "ackMsg");
 
         // In some cases broker may send ACK messages with UNKNOWN status and null correlation Id.
@@ -173,11 +177,11 @@ public final class PutPoster {
         // we just log such ACK message and return
         if (CorrelationIdImpl.NULL_CORRELATION_ID.equals(ackMsg.correlationId())) {
             logger.warn("Got ACK message with NULL correlation Id: {}", ackMsg);
-            return;
+            return true;
         }
 
         CorrelationIdImpl ackId = ackMsg.correlationId();
-        PutMessageImpl putMsg = unacknowledgedPuts.remove(ackId);
+        PutMessageImpl putMsg = unacknowledgedPuts.get(ackId);
 
         // In some cases broker may send an ACK message with UNKNOWN correlation Id.  Most likely
         // this means we receive the ACK message which has been already processed.  Since there is
@@ -185,10 +189,21 @@ public final class PutPoster {
         // return
         if (putMsg == null) {
             logger.warn("Got ACK message with unknown correlation Id: {}", ackMsg);
-            return;
+            return true;
         }
 
+        if (ackMsg.queueId() != putMsg.queueId()) {
+            logger.error(
+                    "Dropping ACK message, queue Id mismatch between ACK ({}) and PUT ({}): {}",
+                    ackMsg.queueId(),
+                    putMsg.queueId(),
+                    ackMsg);
+            return false;
+        }
+
+        unacknowledgedPuts.remove(ackId);
         ackMsg.setCorrelationId((CorrelationIdImpl) putMsg.correlationId());
+        return true;
     }
 
     public Collection<AckMessageImpl> createNegativeAcks() {
