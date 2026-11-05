@@ -17,7 +17,9 @@ package com.bloomberg.bmq.impl;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
@@ -350,6 +352,7 @@ class PutPosterTest {
             PutMessageImpl msg = new PutMessageImpl();
             msg.appData().setPayload(ByteBuffer.allocate(10));
             msg.setupCorrelationId(cId);
+            msg.setQueueId(5);
 
             poster.post(msg);
 
@@ -358,9 +361,20 @@ class PutPosterTest {
                             AckResult.SUCCESS,
                             CorrelationIdImpl.restoreId(cId.toInt()),
                             MessageGUID.createEmptyGUID(),
-                            0);
+                            7);
 
-            poster.registerAck(ackMsg);
+            // ACK with a queue Id different from the PUT is dropped
+            assertFalse(poster.registerAck(ackMsg));
+            assertNull(ackMsg.correlationId().userData());
+
+            ackMsg =
+                    new AckMessageImpl(
+                            AckResult.SUCCESS,
+                            CorrelationIdImpl.restoreId(cId.toInt()),
+                            MessageGUID.createEmptyGUID(),
+                            5);
+
+            assertTrue(poster.registerAck(ackMsg));
 
             assertEquals(cId, ackMsg.correlationId());
             assertEquals(userData, ackMsg.correlationId().userData());
