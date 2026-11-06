@@ -470,6 +470,9 @@ limitations under the License. -->
                 <reuseForks>true</reuseForks>
                 <trimStackTrace>false</trimStackTrace>
                 <useFile>false</useFile>
+                <environmentVariables>
+                  <HOSTNAME>localhost</HOSTNAME>
+                </environmentVariables>
               </configuration>
             </execution>
           </executions>
