@@ -678,7 +678,6 @@ class TcpBrokerConnectionIT {
     private void testNegotiationFailed(StatusCategory status) {
         final int NUM_RETRIES = 1;
 
-        sleepForSeconds(10);
         ConnectionOptions opts = new ConnectionOptions();
         opts.setStartNumRetries(NUM_RETRIES).setBrokerUri(getServerUri());
 
