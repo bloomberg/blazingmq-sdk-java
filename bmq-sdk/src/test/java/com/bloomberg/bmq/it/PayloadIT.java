@@ -27,6 +27,7 @@ import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -68,6 +69,8 @@ class PayloadIT {
             // Check netty producer and consumer
             // ==================================
             final int NUM_MESSAGES = 1;
+            final Duration MESSAGE_WAIT = Duration.ofSeconds(15);
+            final Duration NO_MESSAGE_WAIT = Duration.ofSeconds(2);
             String[] payloads = new String[NUM_MESSAGES];
             Arrays.fill(payloads, TEST_MESSAGE);
 
@@ -76,7 +79,8 @@ class PayloadIT {
             // Read PUSH message but don't confirm it
             boolean DO_CONFIRM = false;
 
-            ByteBuffer[] res = NettyConsumerIT.getLastMessage(OPTS, QUEUE_URI, DO_CONFIRM);
+            ByteBuffer[] res =
+                    NettyConsumerIT.getLastMessage(OPTS, QUEUE_URI, DO_CONFIRM, MESSAGE_WAIT);
             assertNotNull(res);
             logger.info("Last message: \n{}", PrintUtil.hexDump(res));
             assertTrue(TestTools.equalContent(unpaddedPayload, res));
@@ -84,12 +88,12 @@ class PayloadIT {
             // Read unconfirmed PUSH message and confirm it this time
             DO_CONFIRM = true;
 
-            res = NettyConsumerIT.getLastMessage(OPTS, QUEUE_URI, DO_CONFIRM);
+            res = NettyConsumerIT.getLastMessage(OPTS, QUEUE_URI, DO_CONFIRM, MESSAGE_WAIT);
             assertNotNull(res);
             assertTrue(TestTools.equalContent(unpaddedPayload, res));
 
             // No more PUSH messages should be in the queue
-            res = NettyConsumerIT.getLastMessage(OPTS, QUEUE_URI, DO_CONFIRM);
+            res = NettyConsumerIT.getLastMessage(OPTS, QUEUE_URI, DO_CONFIRM, NO_MESSAGE_WAIT);
             assertNull(res);
 
             broker.setDropTmpFolder();
