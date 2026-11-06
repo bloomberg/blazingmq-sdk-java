@@ -214,8 +214,12 @@ class TcpBrokerConnectionIT {
         }
 
         StopStatus stopStatus() {
+            return stopStatus(DEFAULT_CALLBACK_STATUS_EXCHANGE_TIMEOUT);
+        }
+
+        StopStatus stopStatus(int sec) {
             StopStatus stopStatus = null;
-            return exchangeStopStatus(stopStatus, DEFAULT_CALLBACK_STATUS_EXCHANGE_TIMEOUT);
+            return exchangeStopStatus(stopStatus, sec);
         }
 
         SessionStatus sessionStatus() {
@@ -1122,13 +1126,17 @@ class TcpBrokerConnectionIT {
         // 1) Create session with a valid but unresolved broker URI
         SessionOptions opts =
                 SessionOptions.builder().setBrokerUri(new URI("http://abc:1")).build();
-        TestSession session = new TestSession(new ConnectionOptions(opts));
+        ConnectionOptions connOpts = new ConnectionOptions(opts);
+        TestSession session = new TestSession(connOpts);
+
+        // Wait longer than one reconnect interval
+        final int noStatusTimeout = (int) connOpts.startRetryInterval().getSeconds() + 1;
 
         try {
             // 2) Verify that no start status received with a given timeout
             session.start();
 
-            session.startStatus();
+            session.startStatus(noStatusTimeout);
             fail("Expected exception during start status exchange");
         } catch (IllegalStateException e) {
             assertEquals("Missed start status", e.getMessage());
@@ -1138,7 +1146,7 @@ class TcpBrokerConnectionIT {
             // 3) Verify that no stop status received with a given timeout
             session.stop();
 
-            session.stopStatus();
+            session.stopStatus(noStatusTimeout);
             fail("Expected exception during stop status exchange");
         } catch (IllegalStateException e) {
             assertEquals("Missed stop status", e.getMessage());
