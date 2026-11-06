@@ -76,4 +76,19 @@ class ConfirmEventImplBuilderTest {
 
         TestHelpers.compareWithFileContent(message, MessagesTestSamples.CONFIRM_MSG);
     }
+
+    @Test
+    void testHeaderBufferIsNotOverAllocated() throws IOException {
+        // The event header is streamed into its own buffer. That buffer used to
+        // be created with the default 4 KiB size to hold EventHeader.HEADER_SIZE
+        // bytes, leaving a mostly empty buffer in the built event.
+        ConfirmEventBuilder builder = new ConfirmEventBuilder();
+        builder.packMessage(new ConfirmMessage());
+
+        ByteBuffer[] message = builder.build();
+
+        ByteBuffer header = message[0];
+        assertEquals(EventHeader.HEADER_SIZE, header.limit());
+        assertEquals(EventHeader.HEADER_SIZE, header.capacity());
+    }
 }
