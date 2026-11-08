@@ -16,6 +16,7 @@
 package com.bloomberg.bmq.impl.infr.proto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bloomberg.bmq.MessageGUID;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
@@ -98,8 +99,11 @@ class PushHeaderTest {
     }
 
     @Test
-    void testStreamInZlib() throws IOException {
-        ByteBuffer buf = TestHelpers.readFile(MessagesTestSamples.PUSH_MSG_ZLIB.filePath());
+    void testStreamInPropertiesV1Rejected() throws IOException {
+        // A 'PushHeader' must carry the schema id.  Legacy headers without it
+        // are rejected when streaming in.
+        ByteBuffer buf =
+                TestHelpers.readFile(MessagesTestSamples.PUSH_MSG_PROPERTIES_V1_ZLIB.filePath());
 
         ByteBufferInputStream bbis = new ByteBufferInputStream(buf);
         EventHeader header = new EventHeader();
@@ -114,16 +118,8 @@ class PushHeaderTest {
 
         PushHeader pushHeader = new PushHeader();
 
-        pushHeader.streamIn(bbis);
-
-        assertEquals(0, pushHeader.flags());
-        assertEquals(14, pushHeader.messageWords());
-        assertEquals(0, pushHeader.optionsWords());
-        assertEquals(1, pushHeader.compressionType());
-        assertEquals(7, pushHeader.headerWords());
-        assertEquals(9876, pushHeader.queueId());
-
-        assertEquals("ABCDEF0123456789ABCDEF0123456789", pushHeader.messageGUID().toString());
+        IOException e = assertThrows(IOException.class, () -> pushHeader.streamIn(bbis));
+        assertEquals("Invalid size: 28", e.getMessage());
     }
 
     @Test

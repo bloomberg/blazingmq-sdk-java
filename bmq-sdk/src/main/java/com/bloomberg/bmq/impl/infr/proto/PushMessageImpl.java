@@ -31,8 +31,7 @@ public final class PushMessageImpl implements Streamable {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final short INVALID_SCHEMA_WIRE_ID = (short) 1;
-    private static final int HEADER_WORDS =
-            PushHeader.HEADER_SIZE_FOR_SCHEMA_ID / Protocol.WORD_SIZE;
+    private static final int HEADER_WORDS = PushHeader.HEADER_SIZE / Protocol.WORD_SIZE;
 
     private PushHeader header;
     private ApplicationData appData;
