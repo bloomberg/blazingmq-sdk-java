@@ -43,7 +43,7 @@ public final class TestTcpConnection implements TcpConnection {
     private static final int WAIT_TO_WRITE_TIMEOUT = 10;
 
     private final Semaphore writeSemaphore = new Semaphore(0);
-    private WriteStatus writeStatus = WriteStatus.SUCCESS;
+    private volatile WriteStatus writeStatus = WriteStatus.SUCCESS;
 
     private LinkedBlockingQueue<ByteBuffer[]> clientRequests =
             new LinkedBlockingQueue<ByteBuffer[]>();
@@ -114,13 +114,14 @@ public final class TestTcpConnection implements TcpConnection {
     @Override
     public WriteStatus write(ByteBuffer[] data) {
         logger.info("Called write");
+        WriteStatus status = writeStatus;
         try {
             clientRequests.put(data);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Unsupported interruption.");
         }
-        return writeStatus;
+        return status;
     }
 
     @Override
