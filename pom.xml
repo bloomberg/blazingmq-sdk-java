@@ -145,7 +145,7 @@ limitations under the License. -->
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-bom</artifactId>
-        <version>4.2.19.Final</version>
+        <version>4.2.20.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -297,7 +297,7 @@ limitations under the License. -->
         <plugin>
           <groupId>com.github.ferstl</groupId>
           <artifactId>depgraph-maven-plugin</artifactId>
-          <version>4.0.5</version>
+          <version>4.0.6</version>
           <configuration />
           <executions>
             <execution>
@@ -333,7 +333,7 @@ limitations under the License. -->
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>3.10.4</version>
+          <version>3.11.0</version>
           <configuration>
             <upToDateChecking>
               <enabled>true</enabled>
