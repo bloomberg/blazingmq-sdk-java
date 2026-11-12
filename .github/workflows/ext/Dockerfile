@@ -1,4 +1,4 @@
-FROM ubuntu/jdk:25-26.04_stable@sha256:01a3a41da3511b8d9f696d31044eb8ca1d4bfc2a537a93d131965fb62cdbb4e8
+FROM ubuntu/jdk:25-26.04_stable@sha256:1dde130a4a7be1abaa9c5275b67d8b38d3381d26399959c3404fc9c3e618a5c3
 
 USER root
 
