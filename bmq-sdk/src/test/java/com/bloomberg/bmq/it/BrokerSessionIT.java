@@ -86,7 +86,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2692,8 +2691,6 @@ public class BrokerSessionIT {
      * </ul>
      */
     @Test
-    @Disabled(
-            "Temporarily disable this test until achieved more stable repeatability on slow hosts")
     public void closeQueueOnPendingConfigureRequest() {
         logger.info("#TEST_BEGIN BrokerSessionIT closeQueueOnPendingConfigureRequest");
 

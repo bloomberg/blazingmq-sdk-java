@@ -2302,8 +2302,6 @@ public class SessionIT {
      * </ul>
      */
     @Test
-    @Disabled(
-            "Temporarily disable this test until achieved more stable repeatability on slow hosts")
     void closeQueueOnPendingConfigureRequest() {
         logger.info("============================================================");
         logger.info("BEGIN Testing SessionIT closeQueueOnPendingConfigureRequest.");
