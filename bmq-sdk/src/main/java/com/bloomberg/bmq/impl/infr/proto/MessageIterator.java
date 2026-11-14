@@ -59,7 +59,7 @@ public abstract class MessageIterator {
                 logger.debug("Input stream is empty");
                 return null;
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             logger.debug("Fails to decode Message: ", e);
             return null;
         }
