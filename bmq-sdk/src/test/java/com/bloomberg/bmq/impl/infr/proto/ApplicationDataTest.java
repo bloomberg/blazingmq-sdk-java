@@ -300,6 +300,21 @@ public class ApplicationDataTest {
         ByteBufferInputStream bbis = new ByteBufferInputStream(expected);
         final int unpackedInputSize = bbis.available() - numPaddingBytes;
 
+        if (compressionType == CompressionAlgorithmType.E_NONE && getSize(payload) == 0) {
+            try {
+                appData.streamIn(
+                        getSize(expected),
+                        hasProperties,
+                        isOldStyleProperties,
+                        compressionType,
+                        bbis);
+                fail();
+            } catch (IOException e) {
+                assertEquals("Malformed message: empty payload is not supported", e.getMessage());
+            }
+            return;
+        }
+
         appData.streamIn(
                 getSize(expected), hasProperties, isOldStyleProperties, compressionType, bbis);
         assertEquals(unpackedInputSize, appData.unpackedSize());
@@ -329,6 +344,16 @@ public class ApplicationDataTest {
         ApplicationData appData = new ApplicationData();
 
         final boolean hasProperties = props != null && props.numProperties() > 0;
+
+        if (compressionType == CompressionAlgorithmType.E_NONE && getSize(payload) == 0) {
+            try {
+                appData.streamIn(size, hasProperties, isOldStyleProperties, compressionType, bbis);
+                fail();
+            } catch (IOException e) {
+                assertEquals("Malformed message: empty payload is not supported", e.getMessage());
+            }
+            return;
+        }
 
         appData.streamIn(size, hasProperties, isOldStyleProperties, compressionType, bbis);
 

@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import com.bloomberg.bmq.BMQException;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferInputStream;
 import com.bloomberg.bmq.impl.infr.io.ByteBufferOutputStream;
 import java.io.IOException;
@@ -262,18 +261,7 @@ class PutMessageImplTest {
         ByteBufferInputStream bbis = new ByteBufferInputStream(streamedData);
 
         msg = new PutMessageImpl();
-
-        final boolean isPayloadEmpty = getSize(payload) == 0;
-        try {
-            msg.streamIn(bbis);
-            assertFalse(isPayloadEmpty);
-        } catch (BMQException e) {
-            assertEquals("Application data is empty.", e.getMessage());
-            assertTrue(isPayloadEmpty);
-
-            // Nothing more to do.
-            return;
-        }
+        msg.streamIn(bbis);
 
         // check payload
         verifyPayload(payload, msg.appData().payload());
@@ -304,16 +292,12 @@ class PutMessageImplTest {
         // Stream in
         final int size = bbis.available();
         final int unpackedSize = size - numPaddingBytes - PutHeader.HEADER_SIZE;
-        final boolean isDataEmpty = unpackedSize == 0;
         try {
             msg.streamIn(bbis);
-            assertFalse(isDataEmpty);
-        } catch (BMQException e) {
-            // Fail to stream in if data is empty
-            assertTrue(isDataEmpty);
-            assertEquals("Application data is empty.", e.getMessage());
-
-            // Nothing more to do.
+            assertTrue(hasPayload);
+        } catch (IOException e) {
+            assertFalse(hasPayload);
+            assertEquals("Malformed message: empty payload is not supported", e.getMessage());
             return;
         }
 
@@ -340,16 +324,7 @@ class PutMessageImplTest {
 
         msg.appData().setIsOldStyleProperties(isOldStyleProperties);
 
-        try {
-            msg.compressData();
-            assertTrue(hasPayload);
-        } catch (IllegalStateException e) {
-            assertEquals("Empty payload.", e.getMessage());
-            assertFalse(hasPayload);
-
-            // Nothing more to do.
-            return;
-        }
+        msg.compressData();
 
         ByteBufferOutputStream bbos = new ByteBufferOutputStream();
 
