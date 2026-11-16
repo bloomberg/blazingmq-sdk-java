@@ -201,21 +201,24 @@ public class ApplicationData {
             }
         }
 
+        if (size < 0) {
+            throw new IOException(
+                    "Malformed message: the size is not consistent with message contents");
+        }
+        if (size == 0) {
+            throw new IOException("Malformed message: empty payload is not supported");
+        }
+
         // Stream uncompressed payload
         if (compressionType == CompressionAlgorithmType.E_NONE) {
-            if (size > 0) {
-                size -= streamInPayload(size, bbis);
-            }
-
-            if (size != 0) {
-                throw new IOException("Failed to read uncompressed payload from input stream");
-            }
+            streamInPayload(size, bbis);
         } else { // or buffer compressed data
             try (ByteBufferOutputStream bbos = new ByteBufferOutputStream(size)) {
                 byte[] buffer = new byte[size];
 
                 if (bbis.read(buffer) != size) {
-                    throw new IOException("failed to read compressed payload into buffer");
+                    throw new IOException(
+                            "Malformed message: failed to read compressed payload into buffer");
                 }
                 bbos.write(buffer);
 
@@ -283,15 +286,13 @@ public class ApplicationData {
         return read;
     }
 
-    private int streamInPayload(int size, ByteBufferInputStream bbis) throws IOException {
+    private void streamInPayload(int size, ByteBufferInputStream bbis) throws IOException {
         payload = new byte[size];
 
         int read = bbis.read(payload);
         if (read != size) {
-            throw new IOException("Failed to read payload from input stream");
+            throw new IOException("Malformed message: failed to read payload from input stream");
         }
-
-        return read;
     }
 
     private void streamInPayload(InputStream input) throws IOException {
