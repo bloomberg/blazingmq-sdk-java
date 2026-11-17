@@ -113,16 +113,22 @@ public final class PushMessageImpl implements Streamable {
         int totalSize = header.messageWords() * Protocol.WORD_SIZE;
         int headerSize = header.headerWords() * Protocol.WORD_SIZE;
         int appDataSize = totalSize - headerSize;
-        if (totalSize <= 0 || headerSize <= 0 || bbis.available() < appDataSize) {
+        if (totalSize <= 0
+                || headerSize <= 0
+                || appDataSize <= 0
+                || bbis.available() < appDataSize) {
             logger.error(
                     "Total: {}, header: {}, required: {}, available: {}",
                     totalSize,
                     headerSize,
-                    totalSize - headerSize,
+                    appDataSize,
                     bbis.available());
             throw new IOException("Cannot read application data.");
         }
         int optionSize = header.optionsWords() * Protocol.WORD_SIZE;
+        if (appDataSize <= optionSize) {
+            throw new IOException("Invalid options size: " + optionSize);
+        }
         int dataSize = appDataSize - optionSize;
 
         logger.debug(
