@@ -109,6 +109,20 @@ public class ProtocolEventTcpReader {
                                 eventHeader = new EventHeader();
                                 eventHeader.streamIn(bbis);
                                 eventSize = eventHeader.length();
+                                if (eventSize < EventHeader.HEADER_SIZE) {
+                                    throw new IOException(
+                                            "Event size "
+                                                    + eventSize
+                                                    + " is less than header size "
+                                                    + EventHeader.HEADER_SIZE);
+                                }
+                                if (EventHeader.MAX_SIZE_SOFT < eventSize) {
+                                    throw new IOException(
+                                            "Event size "
+                                                    + eventSize
+                                                    + " exceeds max size "
+                                                    + EventHeader.MAX_SIZE_SOFT);
+                                }
                                 expectedDataSize = eventSize - partialHeaderSize;
                                 expectedEventType = eventHeader.type();
                                 logger.debug("New event header: {}", eventHeader);
