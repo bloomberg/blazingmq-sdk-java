@@ -39,7 +39,6 @@ import com.bloomberg.bmq.impl.infr.util.Argument;
 import com.bloomberg.bmq.impl.intf.EventHandler;
 import com.bloomberg.bmq.impl.intf.QueueHandle;
 import com.bloomberg.bmq.it.util.BmqBroker;
-import com.bloomberg.bmq.it.util.TestTools;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
@@ -48,6 +47,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +60,10 @@ public class NettyConsumerIT {
         return new QueueImpl(session, uri, flags, null, null, null);
     }
 
-    public static ByteBuffer[] getLastMessage(SessionOptions sesOpts, Uri uri, boolean doConfirm) {
+    public static ByteBuffer[] getLastMessage(
+            SessionOptions sesOpts, Uri uri, boolean doConfirm, Duration waitTime) {
         Argument.expectNonNull(sesOpts, "sesOpts");
+        Argument.expectNonNull(waitTime, "waitTime");
 
         final Duration TEST_REQUEST_TIMEOUT = Duration.ofSeconds(45);
 
@@ -101,9 +103,7 @@ public class NettyConsumerIT {
             assertEquals(OpenQueueResult.SUCCESS, qh.open(queueOptions, TEST_REQUEST_TIMEOUT));
             logger.info("Queue opened");
 
-            TestTools.acquireSema(dataSem, 15);
-
-            if (events.isEmpty()) {
+            if (!dataSem.tryAcquire(waitTime.toMillis(), TimeUnit.MILLISECONDS)) {
                 logger.info("No incoming messages");
                 return msg;
             }
@@ -150,7 +150,7 @@ public class NettyConsumerIT {
 
         try (BmqBroker broker = BmqBroker.createStartedBroker()) {
             final boolean DO_CONFIRM = true;
-            getLastMessage(broker.sessionOptions(), QUEUE_URI, DO_CONFIRM);
+            getLastMessage(broker.sessionOptions(), QUEUE_URI, DO_CONFIRM, Duration.ofSeconds(2));
 
             broker.setDropTmpFolder();
         }
