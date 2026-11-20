@@ -32,12 +32,13 @@ import com.bloomberg.bmq.impl.intf.BrokerConnection;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,16 +49,10 @@ public final class PutPoster {
     private final BrokerConnection brokerConnection;
     private final EventsStats eventsStats;
 
-    private final LinkedBlockingDeque<PutMessageImpl> putMessages = new LinkedBlockingDeque<>();
-
     private final ConcurrentHashMap<CorrelationId, PutMessageImpl> unacknowledgedPuts =
             new ConcurrentHashMap<>();
 
     private int maxEventSize = EventHeader.MAX_SIZE_SOFT;
-
-    private boolean hasMessages() {
-        return putMessages.peekFirst() != null;
-    }
 
     public PutPoster(BrokerConnection con, EventsStats eventsStats) {
         brokerConnection = Argument.expectNonNull(con, "connection");
@@ -68,9 +63,10 @@ public final class PutPoster {
         maxEventSize = Argument.expectNotGreater(val, EventHeader.MAX_SIZE_SOFT, "max event size");
     }
 
-    public void pack(PutMessageImpl... msgs) {
+    public void post(PutMessageImpl... msgs) {
         Argument.expectNonNull(msgs, "msgs");
         Argument.expectPositive(msgs.length, "message array length");
+        Deque<PutMessageImpl> putMessages = new ArrayDeque<>(msgs.length);
         for (PutMessageImpl m : msgs) {
             Argument.expectNonNull(m, "put message");
 
@@ -79,28 +75,18 @@ public final class PutPoster {
             }
             putMessages.add(m);
         }
-    }
 
-    public void flush() {
-        while (hasMessages()) {
-            sendEvent();
+        while (!putMessages.isEmpty()) {
+            sendEvent(putMessages);
         }
     }
 
-    public void post(PutMessageImpl... msgs) {
-        pack(msgs);
-        flush();
-    }
-
-    private void sendEvent() {
+    private void sendEvent(Deque<PutMessageImpl> putMessages) {
         PutEventBuilder putBuilder = new PutEventBuilder();
         putBuilder.setMaxEventSize(maxEventSize);
         Collection<PutMessageImpl> packedMsgs = new ArrayList<>();
-        while (hasMessages()) {
+        while (!putMessages.isEmpty()) {
             PutMessageImpl msgImpl = putMessages.pollFirst();
-            if (msgImpl == null) {
-                continue;
-            }
 
             try {
                 EventBuilderResult packResult =
