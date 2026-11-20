@@ -1367,7 +1367,7 @@ public class SessionIT {
             verifyConfigureRequest(server.nextClientRequest());
             verifyCloseRequest(server.nextClientRequest());
 
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
             session.checkNoEvent();
             assertFalse(queue.isOpen());
         } catch (Exception e) {
@@ -2148,7 +2148,7 @@ public class SessionIT {
 
             logger.info("8. attempt to close queue");
             server.pushItem(StatusCategory.E_TIMEOUT);
-            queue.closeAsync(DEFAULT_TIMEOUT);
+            queue.closeAsync(Duration.ofSeconds(1));
 
             logger.info(
                     "9. check that single event was generated queue control event of E_TIMEOUT type");
@@ -2161,7 +2161,7 @@ public class SessionIT {
 
             verifyConfigureRequest(server.nextClientRequest());
             // There should be no close request until late broker response
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
         } finally {
             logger.info("11. stop session");
             server.pushItem(StatusCategory.E_SUCCESS);
@@ -2442,7 +2442,7 @@ public class SessionIT {
             assertTrue(queue.isOpen());
 
             verifyOpenRequest(server.nextClientRequest());
-            assertNull(server.nextClientRequest()); // no configure request
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT)); // no configure request
 
             logger.info("17. set host health to back to healthy");
             monitor.setState(HostHealthState.Healthy);
@@ -2467,7 +2467,7 @@ public class SessionIT {
             assertFalse(queue.isOpen());
 
             session.checkNoEvent();
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
         } catch (Exception e) {
             logger.error("Exception: ", e);
             throw e;
@@ -2646,6 +2646,7 @@ public class SessionIT {
             verifyCloseRequest(server.nextClientRequest());
         } finally {
             logger.info("9. stop session");
+            server.pushSuccess(); // OK for disconnect
             session.stop(DEFAULT_TIMEOUT);
             session.linger();
             server.stop();
@@ -4630,7 +4631,7 @@ public class SessionIT {
                     queue2);
 
             verifyConfigureRequest(server.nextClientRequest());
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
 
             logger.info("9. configure insensitive queue (configuration request is sent)");
             QueueOptions newOptions =
@@ -4657,11 +4658,11 @@ public class SessionIT {
                 assertEquals(
                         insensitiveOptions.getMaxUnconfirmedBytes(), info.maxUnconfirmedBytes());
             }
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
 
             logger.info("10. configure sensitive queue (configuration request is not sent)");
             queue2.configure(newOptions, SEQUENCE_TIMEOUT);
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
 
             logger.info("11. set host health back to healthy");
             monitor.setState(HostHealthState.Healthy);
@@ -4694,7 +4695,7 @@ public class SessionIT {
             }
 
             session.checkNoEvent();
-            assertNull(server.nextClientRequest());
+            assertNull(server.nextClientRequest(NO_CLIENT_REQUEST_TIMEOUT));
         } catch (Exception e) {
             logger.error("Exception: ", e);
             throw e;
