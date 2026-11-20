@@ -52,7 +52,6 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
     }
 
     private GenericResult sendOpenRequest() {
-        generateNextQueueIdForQueueIfNeeded();
         RequestManager.Request req = createOpenQueueRequest();
         setResponseHandler(req, this::onOpenQueueResponse);
         return sendRawRequest(req);
@@ -135,7 +134,7 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
         }
 
         if (!isReopen) {
-            if (alreadyPresentQueue != null) {
+            if (alreadyPresentQueue == queue) {
                 logger.error("Queue already exists and has queueId={}", queue.getQueueId());
                 return OpenQueueResult.QUEUE_ID_NOT_UNIQUE;
             }
@@ -146,6 +145,10 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
             if (queue.getState() != QueueState.e_CLOSED) {
                 logger.error("Queue is in process of either opening, closing or configuring.");
                 return OpenQueueResult.ALREADY_IN_PROGRESS;
+            }
+            if (!generateNextQueueId()) {
+                logger.error("Queue already exists and has queueId={}", queue.getQueueId());
+                return OpenQueueResult.QUEUE_ID_NOT_UNIQUE;
             }
         } else {
             if (state != QueueState.e_OPENED) return OpenQueueResult.NOT_SUPPORTED;
@@ -194,18 +197,11 @@ public class OpenQueueStrategy extends QueueControlStrategy<OpenQueueCode> {
         resultHook(OpenQueueResult.SUCCESS);
     }
 
-    private void generateNextQueueIdForQueueIfNeeded() {
+    private boolean generateNextQueueId() {
         QueueImpl queue = getQueue();
-        int qId = queue.getQueueId();
-        if (qId != QueueImpl.INVALID_QUEUE_ID) {
-            logger.debug("Queue has been already in use with queueId={}", qId);
-            return;
-        }
         QueueId queueKey = getQueueStateManager().generateNextQueueId(queue.getUri());
         queue.setQueueId(queueKey.getQId()).setSubQueueId(queueKey.getSubQId());
-        if (getQueueStateManager().findByQueueId(queueKey) != null) {
-            throw new IllegalStateException("Queue already exists among active queues");
-        }
+        return getQueueStateManager().findByQueueId(queueKey) == null;
     }
 
     @Override

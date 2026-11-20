@@ -17,6 +17,7 @@ package com.bloomberg.bmq.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -775,6 +776,49 @@ class BrokerSessionTest {
             assertNull(queue.getStrategy());
         } finally {
             obj.session().stop(Duration.ofMillis(100));
+            obj.session().linger();
+        }
+    }
+
+    /** Each open from the closed state assigns a queue id that is unique among open queues. */
+    @Test
+    void openAssignsUniqueQueueIdTest() throws TimeoutException {
+        TestSession obj = new TestSession();
+
+        try {
+            obj.start();
+
+            QueueOptions queueOptions = QueueOptions.builder().build();
+            long flags = QueueFlags.setReader(0);
+
+            QueueImpl queueA = obj.createQueue(createUri(), flags);
+            obj.openQueue(queueA, queueOptions);
+            obj.closeQueue(queueA);
+
+            obj.stop();
+            obj.start();
+
+            QueueImpl queueB = obj.createQueue(createUri(), flags);
+            obj.openQueue(queueB, queueOptions);
+            obj.openQueue(queueA, queueOptions);
+            assertNotEquals(queueA.getQueueId(), queueB.getQueueId());
+
+            obj.closeQueue(queueA);
+            obj.closeQueue(queueB);
+
+            obj.stop();
+            obj.start();
+
+            obj.openQueue(queueA, queueOptions);
+            QueueImpl queueC = obj.createQueue(createUri(), flags);
+            obj.openQueue(queueC, queueOptions);
+            assertNotEquals(queueA.getQueueId(), queueC.getQueueId());
+
+            obj.closeQueue(queueA);
+            obj.closeQueue(queueC);
+
+            obj.stop();
+        } finally {
             obj.session().linger();
         }
     }
