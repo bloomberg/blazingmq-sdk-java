@@ -42,60 +42,20 @@ class PushMessageIteratorTest {
     static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
-    void testPatternWithOptions() throws IOException {
+    void testPropertiesV1Rejected() throws IOException {
+        // The sample carries a legacy 'PushHeader' without the schema id.
+        // Such a header is rejected when streaming in, so no message is
+        // decoded.
         ByteBuffer buf =
-                TestHelpers.readFile(MessagesTestSamples.PUSH_WITH_SUBQUEUE_IDS_MSG.filePath());
+                TestHelpers.readFile(
+                        MessagesTestSamples.PUSH_PROPERTIES_V1_WITH_SUBQUEUE_IDS_MSG.filePath());
 
         PushEventImpl pushEvent = new PushEventImpl(new ByteBuffer[] {buf});
         assertTrue(pushEvent.isValid());
 
         PushMessageIterator pushIt = pushEvent.iterator();
         assertTrue(pushIt.isValid());
-
-        int i = 0;
-        final String GUID = "ABCDEF0123456789ABCDEF0123456789";
-        final String PAYLOAD = "abcdefghijklmnopqrstuvwxyz";
-        final int numPad = ProtocolUtil.calculatePadding(PAYLOAD.length());
-
-        ByteBuffer paddedPayload = ByteBuffer.allocate(PAYLOAD.length() + numPad);
-        paddedPayload.put(PAYLOAD.getBytes());
-        paddedPayload.put(ProtocolUtil.getPaddingBytes(numPad), 0, numPad);
-        paddedPayload.flip();
-
-        while (pushIt.hasNext()) {
-            PushMessageImpl pushMsg = pushIt.next();
-            assertEquals(GUID, pushMsg.messageGUID().toHex());
-            assertEquals(9876, pushMsg.queueId());
-
-            SubQueueIdsOption subId = pushMsg.options().subQueueIdsOption();
-            assertNotNull(subId);
-
-            Integer[] ids = subId.subQueueIds();
-            assertNotNull(ids);
-            assertEquals(3, ids.length);
-
-            Integer[] patt = {777, 11, 987};
-            assertArrayEquals(patt, ids);
-
-            ByteBuffer[] payload = pushMsg.appData().applicationData();
-            assertNotNull(payload);
-
-            ByteBuffer b =
-                    ByteBuffer.allocate(
-                            pushMsg.appData().unpackedSize() + pushMsg.appData().numPaddingBytes());
-            for (ByteBuffer p : payload) {
-                b.put(p);
-            }
-            b.put(
-                    ProtocolUtil.getPaddingBytes(pushMsg.appData().numPaddingBytes()),
-                    0,
-                    pushMsg.appData().numPaddingBytes());
-            b.flip();
-
-            assertEquals(paddedPayload, b);
-            i++;
-        }
-        assertEquals(1, i);
+        assertFalse(pushIt.hasNext());
     }
 
     @Test
@@ -393,10 +353,7 @@ class PushMessageIteratorTest {
 
             header.setLength(
                     EventHeader.HEADER_SIZE
-                            + (PushHeader.HEADER_SIZE_FOR_SCHEMA_ID
-                                            + unpackedSize
-                                            + numPaddingBytes)
-                                    * NUM);
+                            + (PushHeader.HEADER_SIZE + unpackedSize + numPaddingBytes) * NUM);
 
             header.streamOut(bbos);
 

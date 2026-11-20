@@ -56,10 +56,7 @@ public class PushEventBuilder extends EventBuilder {
         int numPaddingBytes = msg.appData().numPaddingBytes();
 
         final int sizeNoOptions =
-                bbos.size()
-                        + PushHeader.HEADER_SIZE_FOR_SCHEMA_ID
-                        + appDataLength
-                        + numPaddingBytes;
+                bbos.size() + PushHeader.HEADER_SIZE + appDataLength + numPaddingBytes;
 
         if (sizeNoOptions > EventHeader.MAX_SIZE_SOFT) {
             return EventBuilderResult.EVENT_TOO_BIG; // RETURN
