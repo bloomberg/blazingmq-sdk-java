@@ -136,13 +136,6 @@ public class BmqBrokerSimulator implements TestTcpServer {
         void processControlMessageChoice(ControlMessageChoice controlMessageChoice) {
             Argument.expectNonNull(controlMessageChoice, "controlMessageChoice");
             logger.info("Process control message choice: {}", controlMessageChoice);
-            // Store received request.
-            try {
-                receivedRequests.put(controlMessageChoice);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Unsupported interruption.");
-            }
             ControlMessageChoice ctrlResp = null;
             int rId = controlMessageChoice.id();
             if (controlMessageChoice.isOpenQueueValue()) {
@@ -154,8 +147,16 @@ public class BmqBrokerSimulator implements TestTcpServer {
             } else if (controlMessageChoice.isDisconnectValue()) {
                 ctrlResp = makeDisconnectResponse(rId);
             }
+            // Take the response before storing the request: once the test sees
+            // the request, it may push responses meant for the next requests.
+            ResponseItem item = ctrlResp != null ? nextItem() : null;
+            try {
+                receivedRequests.put(controlMessageChoice);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Unsupported interruption.");
+            }
             if (ctrlResp != null) {
-                ResponseItem item = nextItem();
                 if (item == null || item.getStatus() == StatusCategory.E_TIMEOUT) {
                     logger.info("Do nothing for ctrl message: {}", item);
                     return; // Do nothing
