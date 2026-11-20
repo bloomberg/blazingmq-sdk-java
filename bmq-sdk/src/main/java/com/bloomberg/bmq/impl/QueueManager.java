@@ -22,6 +22,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -49,7 +50,6 @@ public class QueueManager {
     private Map<QueueId, QueueImpl> expiredQueueMap;
 
     private Map<Integer, QueueImpl> subscriptionIdMap;
-    private Map<String, Integer> appId_subQId_Map;
     private AtomicInteger nextQueueId;
 
     private QueueManager() {
@@ -58,7 +58,6 @@ public class QueueManager {
         keyQueueIdMap = new HashMap<>();
         expiredQueueMap = new HashMap<>();
         subscriptionIdMap = new HashMap<>();
-        appId_subQId_Map = new HashMap<>();
         lock = new Object();
         nextQueueId = new AtomicInteger(0);
     }
@@ -71,7 +70,6 @@ public class QueueManager {
             keyQueueIdMap = new HashMap<>();
             expiredQueueMap = new HashMap<>();
             subscriptionIdMap = new HashMap<>();
-            appId_subQId_Map = new HashMap<>();
             nextQueueId = new AtomicInteger(0);
         }
     }
@@ -147,14 +145,6 @@ public class QueueManager {
                 return false;
             }
             expiredQueueMap.put(queueId, queue);
-
-            SubQueueIdInfo subQueueIdInfo = queue.getParameters().getSubIdInfo();
-            if (subQueueIdInfo != null) {
-                String appId = subQueueIdInfo.appId();
-                if (appId != null) {
-                    appId_subQId_Map.put(appId, queueId.getSubQId());
-                }
-            }
         }
         return true;
     }
@@ -236,14 +226,6 @@ public class QueueManager {
                                 "Wrong QueueIds: %d != %d",
                                 queue.getQueueId(), qHandle.getQueueId()));
             }
-
-            SubQueueIdInfo subQueueIdInfo = queue.getParameters().getSubIdInfo();
-            if (subQueueIdInfo != null) {
-                String appId = subQueueIdInfo.appId();
-                if (appId != null) {
-                    appId_subQId_Map.remove(appId);
-                }
-            }
         }
         return true;
     }
@@ -294,9 +276,37 @@ public class QueueManager {
         }
     }
 
-    public Integer findSubQId(String appId) {
+    /**
+     * Find subQueueId of an expired queue by queue id and appId.
+     *
+     * <p>All subQueues of one canonical URI share the queue id, and each of them has its own appId,
+     * so the two together identify the queue. The same appId may be reopened with a greater
+     * subQueueId while the previous one is still expired; in that case the oldest subQueueId is
+     * returned, as responses come in the order of the requests.
+     *
+     * <p>Thread safe.
+     *
+     * @param qId queue id used for search
+     * @param appId appId used for search
+     * @return subQueueId if the queue is found, otherwise null.
+     */
+    public Integer findSubQId(int qId, String appId) {
         synchronized (lock) {
-            return appId_subQId_Map.get(appId);
+            Integer subQId = null;
+            for (Map.Entry<QueueId, QueueImpl> entry : expiredQueueMap.entrySet()) {
+                QueueId queueId = entry.getKey();
+                if (queueId.getQId() != qId) {
+                    continue;
+                }
+                SubQueueIdInfo subQueueIdInfo = entry.getValue().getParameters().getSubIdInfo();
+                if (subQueueIdInfo == null || !Objects.equals(subQueueIdInfo.appId(), appId)) {
+                    continue;
+                }
+                if (subQId == null || queueId.getSubQId() < subQId) {
+                    subQId = queueId.getSubQId();
+                }
+            }
+            return subQId;
         }
     }
 

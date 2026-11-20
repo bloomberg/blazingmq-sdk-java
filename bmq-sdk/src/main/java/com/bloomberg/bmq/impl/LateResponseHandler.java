@@ -106,7 +106,7 @@ public final class LateResponseHandler {
         }
 
         int qId = originalRequest.id();
-        Integer subQId = queueStateManager.findSubQId(parameters.appId());
+        Integer subQId = queueStateManager.findSubQId(qId, parameters.appId());
         if (subQId == null) {
             subQId = QueueId.k_DEFAULT_SUBQUEUE_ID;
         }
