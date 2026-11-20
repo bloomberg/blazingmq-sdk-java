@@ -50,7 +50,7 @@ public abstract class EventBuilder {
 
         eventHeader.setLength(EventHeader.HEADER_SIZE + payloadLen);
 
-        ByteBufferOutputStream headerStream = new ByteBufferOutputStream();
+        ByteBufferOutputStream headerStream = new ByteBufferOutputStream(EventHeader.HEADER_SIZE);
         try {
             eventHeader.streamOut(headerStream);
         } catch (IOException ex) {
