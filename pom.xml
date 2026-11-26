@@ -145,7 +145,7 @@ limitations under the License. -->
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-bom</artifactId>
-        <version>4.2.20.Final</version>
+        <version>4.2.21.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -320,7 +320,7 @@ limitations under the License. -->
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>5.8.0.7211</version>
+          <version>5.9.0.7382</version>
           <executions>
             <execution>
               <goals>
